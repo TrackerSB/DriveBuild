@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="environment">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="author" type="xs:string"/>
+                <xs:element name="name" type="xs:ID"/>
+                <xs:element name="version" type="positiveDecimal"/>
+
+                <xs:element name="lanes" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="lane" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="laneSegment" minOccurs="2" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attributeGroup ref="positionAttributes"/>
+                                                <xs:attribute name="width" type="positiveDecimal" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="id" type="xs:ID" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+                <xs:element name="obstacles" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="obstacle" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attributeGroup ref="positionAttributes"/>
+                                    <xs:attribute name="width" type="positiveDecimal" use="required"/>
+                                    <xs:attribute name="length" type="positiveDecimal" use="required"/>
+                                    <xs:attribute name="height" type="positiveDecimal" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="criteria">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="participants">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="participant" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:all>
+                                        <xs:element name="initialState">
+                                            <xs:complexType>
+                                                <xs:attributeGroup ref="movementGroup"/>
+                                                <xs:attribute name="orientation" use="required">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:decimal">
+                                                            <xs:minInclusive value="0"/>
+                                                            <xs:maxExclusive value="360"/>
+                                                            <xs:fractionDigits value="2"/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:attribute>
+                                                <xs:attribute name="model" use="required">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:string">
+                                                            <xs:enumeration value="etk800"/>
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:attribute>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="ai" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:attribute name="address" type="xs:string" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="movement" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="waypoint" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:attributeGroup ref="movementGroup"/>
+                                                            <xs:attributeGroup ref="positionAttributes"/>
+                                                            <xs:attribute name="tolerance" type="positiveDecimal"
+                                                                          use="required"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:all>
+                                    <xs:attribute name="id" type="xs:ID" use="required"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:attributeGroup name="positionAttributes">
+        <xs:attribute name="x" type="xs:decimal" use="required"/>
+        <xs:attribute name="y" type="xs:decimal" use="required"/>
+    </xs:attributeGroup>
+
+    <xs:complexType name="positiveDecimal">
+        <xs:simpleContent>
+            <xs:restriction base="xs:decimal">
+                <xs:minExclusive value="0"/>
+                <xs:fractionDigits value="2"/>
+            </xs:restriction>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="aiMode">
+        <xs:simpleContent>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="manual"/>
+                <xs:enumeration value="autonomous"/>
+                <xs:enumeration value="training"/>
+            </xs:restriction>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:attributeGroup name="movementGroup">
+        <xs:attributeGroup ref="positionAttributes"/>
+        <xs:attribute name="aiMode" type="aiMode" use="required"/>
+        <xs:attribute name="speed" type="xs:nonNegativeInteger"/>
+        <xs:attribute name="speedLimit" type="xs:nonNegativeInteger"/>
+    </xs:attributeGroup>
+</xs:schema>
