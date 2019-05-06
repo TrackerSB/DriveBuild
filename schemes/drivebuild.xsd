@@ -101,10 +101,15 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+
+                <xs:element name="precondition" type="criterion"/>
+                <xs:element name="success" type="criterion"/>
+                <xs:element name="failure" type="criterion"/>
             </xs:all>
         </xs:complexType>
     </xs:element>
 
+    <!-- Basic types -->
     <xs:attributeGroup name="positionAttributes">
         <xs:attribute name="x" type="xs:decimal" use="required"/>
         <xs:attribute name="y" type="xs:decimal" use="required"/>
@@ -119,6 +124,7 @@
         </xs:simpleContent>
     </xs:complexType>
 
+    <!-- Types for participants -->
     <xs:complexType name="aiMode">
         <xs:simpleContent>
             <xs:restriction base="xs:string">
@@ -135,4 +141,44 @@
         <xs:attribute name="speed" type="xs:nonNegativeInteger"/>
         <xs:attribute name="speedLimit" type="xs:nonNegativeInteger"/>
     </xs:attributeGroup>
+
+    <!-- Connective types -->
+    <xs:complexType name="binaryOp">
+        <xs:sequence>
+            <xs:element ref="criterion" minOccurs="2" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="connective" abstract="true"/>
+    <xs:element name="and" substitutionGroup="connective" type="binaryOp"/>
+    <xs:element name="or" type="binaryOp"/>
+    <xs:element name="not">
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="criterion"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Criterion types -->
+    <xs:element name="criterion" type="criterion" abstract="true"/>
+    <xs:element name="stateCondition" abstract="true"/>
+    <xs:element name="validationCriterion" abstract="true">
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="criterion"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="criterion">
+        <xs:choice>
+            <xs:element ref="connective"/>
+            <xs:element ref="stateCondition"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <!-- Lane criterion -->
+    <xs:element name="scLane" substitutionGroup="stateCondition"/>
+    <xs:element name="vcLane" substitutionGroup="validationCriterion"/>
 </xs:schema>
