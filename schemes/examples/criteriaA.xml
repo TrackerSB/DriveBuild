@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<criteria xmlns="http://drivebuild.com"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://drivebuild.com ../drivebuild.xsd">
+    <author>Stefan Huber</author>
+    <version>1</version>
+    <environment>environmentA.xml</environment>
+
+    <participants>
+        <participant id="ego">
+            <initialState x="0" y="0" aiMode="manual" orientation="0" model="etk800"/>
+        </participant>
+    </participants>
+
+    <failure>
+        <scDamage participant="ego"/>
+    </failure>
+</criteria>

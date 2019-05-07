@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<environment xmlns="http://drivebuild.com"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://drivebuild.com ../drivebuild.xsd">
+    <author>Stefan Huber</author>
+    <name>Environment A</name>
+    <version>1</version>
+
+    <lanes>
+        <lane>
+            <laneSegment x="0" y="0" width="5"/>
+            <laneSegment x="10" y="0" width="5"/>
+            <laneSegment x="15" y="5" width="5"/>
+        </lane>
+    </lanes>
+
+    <obstacles>
+        <obstacle shape="(5,5) (7,5) (13,8)" height="4"/>
+    </obstacles>
+</environment>
