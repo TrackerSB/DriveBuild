@@ -324,4 +324,20 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- Time criterion -->
+    <xs:attributeGroup name="time">
+        <xs:attribute name="from" type="xs:nonNegativeInteger" use="required"/>
+        <xs:attribute name="to" type="xs:nonNegativeInteger" use="required"/>
+        <!-- <xs:assert test="@from le @to"/> --> <!-- FIXME Introduce assert -->
+    </xs:attributeGroup>
+    <xs:element name="time" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="time"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
