@@ -96,7 +96,6 @@
                                                     <xs:element name="waypoint" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:attributeGroup ref="movementGroup"/>
-                                                            <xs:attributeGroup ref="positionAttributes"/>
                                                             <xs:attribute name="tolerance" type="positiveDecimal"
                                                                           use="required"/>
                                                             <xs:attribute name="id" type="xs:ID"/>
@@ -113,9 +112,9 @@
                     </xs:complexType>
                 </xs:element>
 
-                <xs:element name="precondition" type="criterion"/>
-                <xs:element name="success" type="criterion"/>
-                <xs:element name="failure" type="criterion"/>
+                <xs:element name="precondition" type="criterion" minOccurs="0"/>
+                <xs:element name="success" type="criterion" minOccurs="0"/>
+                <xs:element name="failure" type="criterion" minOccurs="0"/>
             </xs:all>
         </xs:complexType>
     </xs:element>
