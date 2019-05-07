@@ -215,6 +215,38 @@
         </xs:complexType>
     </xs:element>
 
+    <!-- Area criterion -->
+    <xs:simpleType name="pointTuple">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\(\d+,\d+\)"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:attributeGroup name="area">
+        <xs:attribute name="points" use="required">
+            <xs:simpleType>
+                <xs:list itemType="pointTuple"/>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="scArea" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="area"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcArea" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="area"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
     <!-- Lane criterion -->
     <xs:attributeGroup name="lane">
         <xs:attribute name="onLane" use="required">
