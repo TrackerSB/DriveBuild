@@ -96,7 +96,7 @@
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:all>
-                                    <xs:attribute name="id" type="xs:ID" use="required"/>
+                                    <xs:attribute name="id" type="xs:ID" use="required"/> <!-- FIXME Disallow "any" -->
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -163,6 +163,21 @@
 
     <!-- Criterion types -->
     <xs:complexType name="stateCondition">
+        <xs:attribute name="participant" use="required">
+            <xs:simpleType>
+                <xs:union>
+                    <xs:simpleType>
+                        <xs:list itemType="xs:IDREF"/>
+                    </xs:simpleType>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="any"/>
+                            <!-- Allow "inherit"? => A car that fulfills a certain criterion has to fulfill another -->
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
     <xs:complexType name="validationConstraint">
         <xs:complexContent>
