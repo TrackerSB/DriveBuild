@@ -1,5 +1,8 @@
 <?xml version="1.1" encoding="utf-8" ?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema elementFormDefault="qualified"
+           targetNamespace="http://drivebuild.com"
+           xmlns="http://drivebuild.com"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:element name="environment">
         <xs:complexType>
             <xs:all>
@@ -20,8 +23,7 @@
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
-                                    <xs:attribute name="id" type="xs:ID"
-                                                  use="required"/> <!-- FIXME Exclude offroad as ID -->
+                                    <xs:attribute name="id" type="xs:ID"/> <!-- FIXME Exclude offroad as ID -->
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -37,6 +39,7 @@
                                     <xs:attribute name="width" type="positiveDecimal" use="required"/>
                                     <xs:attribute name="length" type="positiveDecimal" use="required"/>
                                     <xs:attribute name="height" type="positiveDecimal" use="required"/>
+                                    <xs:attribute name="id" type="xs:ID"/>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -90,7 +93,7 @@
                                                             <xs:attributeGroup ref="positionAttributes"/>
                                                             <xs:attribute name="tolerance" type="positiveDecimal"
                                                                           use="required"/>
-                                                            <xs:attribute name="id" type="xs:ID" use="optional"/>
+                                                            <xs:attribute name="id" type="xs:ID"/>
                                                         </xs:complexType>
                                                     </xs:element>
                                                 </xs:sequence>
