@@ -379,4 +379,28 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- Output criterion -->
+    <xs:attributeGroup name="output">
+        <xs:attribute name="pattern" type="xs:string" use="required"/>
+        <!-- FIXME Any way to force a regex as a type? -->
+    </xs:attributeGroup>
+    <xs:element name="scOutput" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="output"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcOutput" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="output"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
