@@ -90,6 +90,7 @@
                                                             <xs:attributeGroup ref="positionAttributes"/>
                                                             <xs:attribute name="tolerance" type="positiveDecimal"
                                                                           use="required"/>
+                                                            <xs:attribute name="id" type="xs:ID" use="optional"/>
                                                         </xs:complexType>
                                                     </xs:element>
                                                 </xs:sequence>
@@ -433,4 +434,27 @@
             </xs:simpleType>
         </xs:attribute>
     </xs:attributeGroup>
+
+    <!-- Waypoint criterion -->
+    <xs:attributeGroup name="waypoint">
+        <xs:attribute name="waypoint" type="xs:IDREF"/>
+    </xs:attributeGroup>
+    <xs:element name="scWaypoint" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="waypoint"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcWaypoint" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="waypoint"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
