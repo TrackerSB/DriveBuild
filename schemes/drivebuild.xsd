@@ -20,7 +20,8 @@
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
-                                    <xs:attribute name="id" type="xs:ID" use="required"/> <!-- FIXME Exclude offroad as ID -->
+                                    <xs:attribute name="id" type="xs:ID"
+                                                  use="required"/> <!-- FIXME Exclude offroad as ID -->
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
