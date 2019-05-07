@@ -403,4 +403,34 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- Light criterion -->
+    <xs:attributeGroup name="light">
+        <xs:attribute name="state" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <!-- NOTE Lights were found in: -->
+                    <!-- [...]/trunk/lua/vehicle/extensions/outgauge.lua -->
+                    <!-- [...]/trunk/lua/vehicle/electrics.lua -->
+
+                    <!-- Dash/show lights -->
+                    <xs:enumeration value="lowBeam"/>
+                    <xs:enumeration value="fullBeam"/>
+                    <xs:enumeration value="handbrake"/>
+                    <xs:enumeration value="signalL"/>
+                    <xs:enumeration value="signalR"/>
+                    <xs:enumeration value="fogLights"/>
+
+                    <!-- TODO Do the following exist in BeamNG? -->
+                    <!--<xs:enumeration value="lowBeam"/>
+                    <xs:enumeration value="highBeam"/>
+                    <xs:enumeration value="blinkerRight"/>
+                    <xs:enumeration value="blinkerLeft"/>
+                    <xs:enumeration value="backupLight"/>
+                    <xs:enumeration value="rearFogLamp"/>
+                    <xs:enumeration value="frontFogLamp"/>-->
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
 </xs:schema>
