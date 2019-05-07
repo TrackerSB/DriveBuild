@@ -52,6 +52,7 @@
     <xs:element name="criteria">
         <xs:complexType>
             <xs:all>
+                <xs:element name="environment" type="xs:string"/>
                 <xs:element name="participants">
                     <xs:complexType>
                         <xs:sequence>
