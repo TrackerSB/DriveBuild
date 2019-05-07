@@ -190,13 +190,7 @@
     </xs:complexType>
     <xs:element name="criterion" type="criterion" abstract="true"/>
     <xs:element name="stateCondition" type="stateCondition" abstract="true"/>
-    <xs:element name="validationConstraint" type="validationConstraint" abstract="true">
-        <xs:complexType>
-            <xs:all>
-                <xs:element ref="criterion"/>
-            </xs:all>
-        </xs:complexType>
-    </xs:element>
+    <xs:element name="validationConstraint" type="validationConstraint" abstract="true"/>
 
     <xs:complexType name="criterion">
         <xs:choice>
