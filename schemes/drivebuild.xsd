@@ -288,4 +288,27 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- Speed criterion -->
+    <xs:attributeGroup name="speed">
+        <xs:attribute name="limit" type="xs:nonNegativeInteger" use="required"/>
+    </xs:attributeGroup>
+    <xs:element name="scSpeed" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="speed"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcSpeed" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="speed"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
