@@ -190,9 +190,35 @@
     </xs:complexType>
 
     <!-- Lane criterion -->
-    <xs:complexType name="lane">
-        <xs:attribute name="id" type="xs:IDREF"/>
-    </xs:complexType>
-    <xs:element name="scLane" substitutionGroup="stateCondition"/>
-    <xs:element name="vcLane" substitutionGroup="validationConstraint"/>
+    <xs:attributeGroup name="lane">
+        <xs:attribute name="onLane" use="required">
+            <xs:simpleType>
+                <xs:union memberTypes="xs:IDREF">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="offroad"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="scLane" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="lane"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcLane" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="lane"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
