@@ -20,7 +20,7 @@
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
-                                    <xs:attribute name="id" type="xs:ID" use="required"/>
+                                    <xs:attribute name="id" type="xs:ID" use="required"/> <!-- FIXME Exclude offroad as ID -->
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -161,9 +161,20 @@
     </xs:element>
 
     <!-- Criterion types -->
+    <xs:complexType name="stateCondition">
+    </xs:complexType>
+    <xs:complexType name="validationConstraint">
+        <xs:complexContent>
+            <xs:extension base="stateCondition">
+                <xs:sequence>
+                    <xs:element ref="criterion"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
     <xs:element name="criterion" type="criterion" abstract="true"/>
-    <xs:element name="stateCondition" abstract="true"/>
-    <xs:element name="validationCriterion" abstract="true">
+    <xs:element name="stateCondition" type="stateCondition" abstract="true"/>
+    <xs:element name="validationConstraint" type="validationConstraint" abstract="true">
         <xs:complexType>
             <xs:all>
                 <xs:element ref="criterion"/>
@@ -179,6 +190,9 @@
     </xs:complexType>
 
     <!-- Lane criterion -->
+    <xs:complexType name="lane">
+        <xs:attribute name="id" type="xs:IDREF"/>
+    </xs:complexType>
     <xs:element name="scLane" substitutionGroup="stateCondition"/>
-    <xs:element name="vcLane" substitutionGroup="validationCriterion"/>
+    <xs:element name="vcLane" substitutionGroup="validationConstraint"/>
 </xs:schema>
