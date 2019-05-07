@@ -340,4 +340,28 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- Distance criterion -->
+    <xs:attributeGroup name="distance">
+        <xs:attribute name="to" type="xs:IDREF" use="required"/>
+        <xs:attribute name="max" type="positiveDecimal" use="required"/>
+    </xs:attributeGroup>
+    <xs:element name="scDistance" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="distance"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcDistance" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="distance"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
