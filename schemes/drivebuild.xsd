@@ -311,4 +311,21 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- Damage criterion -->
+    <!-- NOTE Currently it is only supported to detect whether a car has been damaged -->
+    <xs:element name="scDamage" substitutionGroup="stateCondition">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcDamage" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
