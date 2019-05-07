@@ -364,4 +364,19 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+
+    <!-- TTC criterion -->
+    <xs:attributeGroup name="ttc">
+        <xs:attribute name="to" type="xs:IDREF" use="required"/>
+        <xs:attribute name="max" type="positiveDecimal" use="required"/>
+    </xs:attributeGroup>
+    <xs:element name="vcTTC" substitutionGroup="validationConstraint">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="ttc"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>
