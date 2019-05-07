@@ -116,25 +116,21 @@
         <xs:attribute name="y" type="xs:decimal" use="required"/>
     </xs:attributeGroup>
 
-    <xs:complexType name="positiveDecimal">
-        <xs:simpleContent>
-            <xs:restriction base="xs:decimal">
-                <xs:minExclusive value="0"/>
-                <xs:fractionDigits value="2"/>
-            </xs:restriction>
-        </xs:simpleContent>
-    </xs:complexType>
+    <xs:simpleType name="positiveDecimal">
+        <xs:restriction base="xs:decimal">
+            <xs:minExclusive value="0"/>
+            <xs:fractionDigits value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <!-- Types for participants -->
-    <xs:complexType name="aiMode">
-        <xs:simpleContent>
-            <xs:restriction base="xs:string">
-                <xs:enumeration value="manual"/>
-                <xs:enumeration value="autonomous"/>
-                <xs:enumeration value="training"/>
-            </xs:restriction>
-        </xs:simpleContent>
-    </xs:complexType>
+    <xs:simpleType name="aiMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="manual"/>
+            <xs:enumeration value="autonomous"/>
+            <xs:enumeration value="training"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:attributeGroup name="movementGroup">
         <xs:attributeGroup ref="positionAttributes"/>
