@@ -54,7 +54,10 @@
     <xs:element name="criteria">
         <xs:complexType>
             <xs:all>
+                <xs:element name="author" type="xs:string"/>
+                <xs:element name="version" type="positiveDecimal"/>
                 <xs:element name="environment" type="xs:string"/>
+
                 <xs:element name="participants">
                     <xs:complexType>
                         <xs:sequence>
