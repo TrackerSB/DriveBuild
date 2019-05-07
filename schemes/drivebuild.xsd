@@ -182,9 +182,9 @@
     <xs:complexType name="validationConstraint">
         <xs:complexContent>
             <xs:extension base="stateCondition">
-                <xs:sequence>
+                <xs:all>
                     <xs:element ref="criterion"/>
-                </xs:sequence>
+                </xs:all>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
