@@ -9,6 +9,7 @@
     <participants>
         <participant id="ego">
             <initialState x="0" y="0" aiMode="manual" orientation="0" model="etk800"/>
+            <ai address="localhost:5001"/>
         </participant>
     </participants>
 
