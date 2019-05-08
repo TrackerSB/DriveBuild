@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, flash, redirect, url_for
-from werkzeug.datastructures import FileStorage
+from flask import Flask, render_template, request, flash, redirect
+
+from tc_manager import execute_tests
 
 app = Flask(__name__)
 app.config.from_pyfile('app.cfg')
@@ -23,7 +24,7 @@ def test_launcher():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-
+            execute_tests(file)
             return render_template("testMonitor.html")
     return render_template("test_launcher.html")
 
