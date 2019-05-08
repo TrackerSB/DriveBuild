@@ -4,7 +4,7 @@
           xsi:schemaLocation="http://drivebuild.com ../drivebuild.xsd">
     <author>Stefan Huber</author>
     <version>1</version>
-    <environment>environmentA.xml</environment>
+    <environment>environmentA.dbe.xml</environment>
 
     <participants>
         <participant id="ego">
