@@ -232,7 +232,7 @@
     <!-- Area criterion -->
     <xs:simpleType name="minThreePointTuples">
         <xs:restriction base="xs:string">
-            <xs:pattern value="\(-?\d+,-?\d+\)(\s\(-?\d+,-?\d+\)){2,}"/>
+            <xs:pattern value='\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\)){2,}'/>
         </xs:restriction>
     </xs:simpleType>
     <xs:attributeGroup name="area">

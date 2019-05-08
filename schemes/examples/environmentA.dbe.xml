@@ -15,6 +15,6 @@
     </lanes>
 
     <obstacles>
-        <obstacle shape="(5,5) (7,5) (13,8)" height="4"/>
+        <obstacle shape="(5,5);(7,5);(13,8)" height="4"/>
     </obstacles>
 </environment>
