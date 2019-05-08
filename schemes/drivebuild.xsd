@@ -37,7 +37,7 @@
                                 <xs:complexType>
                                     <xs:attribute name="shape" use="required">
                                         <xs:simpleType>
-                                            <xs:list itemType="pointTuple"/>
+                                            <xs:list itemType="minThreePointTuples"/>
                                         </xs:simpleType>
                                     </xs:attribute>
                                     <xs:attribute name="height" type="positiveDecimal" use="required"/>
@@ -230,17 +230,13 @@
     </xs:element>
 
     <!-- Area criterion -->
-    <xs:simpleType name="pointTuple">
+    <xs:simpleType name="minThreePointTuples">
         <xs:restriction base="xs:string">
-            <xs:pattern value="\(\d+,\d+\)"/>
+            <xs:pattern value="\(-?\d+,-?\d+\)(\s\(-?\d+,-?\d+\)){2,}"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:attributeGroup name="area">
-        <xs:attribute name="points" use="required">
-            <xs:simpleType>
-                <xs:list itemType="pointTuple"/>
-            </xs:simpleType>
-        </xs:attribute>
+        <xs:attribute name="points" type="minThreePointTuples" use="required"/>
     </xs:attributeGroup>
     <xs:element name="scArea" substitutionGroup="stateCondition">
         <xs:complexType>
