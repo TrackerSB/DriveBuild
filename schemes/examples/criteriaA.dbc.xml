@@ -10,8 +10,16 @@
         <participant id="ego">
             <initialState x="0" y="0" aiMode="manual" orientation="0" model="etk800"/>
             <ai address="localhost:5001"/>
+            <movement>
+                <waypoint x="10" y="0" aiMode="manual" tolerance="1"/>
+                <waypoint x="15" y="5" aiMode="manual" tolerance="1"/>
+            </movement>
         </participant>
     </participants>
+
+    <success>
+        <scArea participant="ego" points="(13,3) (17,3) (17,7) (13,7)"/>
+    </success>
 
     <failure>
         <scDamage participant="ego"/>
