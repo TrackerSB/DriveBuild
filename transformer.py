@@ -11,3 +11,4 @@ def transform(envs: List[ElementTree], crit_defs: List[ElementTree]) -> Tuple[Li
     generated_criteria = [generate_criteria(crit_def) for crit_def in crit_defs]
     return generated_envs, generated_criteria
     # TODO Add movements to the participants
+    # TODO Determine which sensors are needed and add them
