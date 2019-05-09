@@ -1,6 +1,6 @@
 from typing import List
 
-from beamngpy import Scenario, Road
+from beamngpy import Scenario, Road, Vehicle
 from lxml.etree import ElementTree
 
 from types import Lane, Obstacle, Participant
@@ -24,7 +24,11 @@ class ScenarioBuilder:
 
     def add_participants_to_scenario(self, scenario: Scenario) -> None:
         for participant in self.participants:
-            pass  # FIXME Not implemented yet
+            vehicle = Vehicle(participant.id, model=participant.model)
+            initial_state = participant.initial_state
+            scenario.add_vehicle(vehicle,
+                                 pos=(initial_state.position[0], initial_state.position[1], 0),
+                                 rot=(0, 0, initial_state.orientation))
 
     def add_all(self, scenario: Scenario) -> None:
         self.add_lanes_to_scenario(scenario)

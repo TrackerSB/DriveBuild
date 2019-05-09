@@ -47,6 +47,7 @@ class Obstacle:
 
 @dataclass
 class Participant:
+    id: str
     initial_state: InitialState
     model: CarModel
     movement: List[MovementNode]
