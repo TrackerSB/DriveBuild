@@ -7,7 +7,9 @@ from db_types import Lane, Obstacle, Participant
 
 
 class ScenarioBuilder:
-    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant]):
+    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant] = None):
+        if participants is None:
+            participants = list()
         self.lanes = lanes
         self.obstacles = obstacles
         self.participants = participants
@@ -42,4 +44,5 @@ class ScenarioBuilder:
 
 def generate_scenario(env: _ElementTree, participants: _ElementTree) -> ScenarioBuilder:
     lanes = list()
-    return None
+    obstacles = list()
+    return ScenarioBuilder(lanes, obstacles)
