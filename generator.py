@@ -1,7 +1,7 @@
 from typing import List
 
 from beamngpy import Scenario, Road, Vehicle
-from lxml.etree import ElementTree
+from lxml.etree import _ElementTree
 
 from types import Lane, Obstacle, Participant
 
@@ -36,5 +36,5 @@ class ScenarioBuilder:
         self.add_participants_to_scenario(scenario)
 
 
-def generate_scenario(env: ElementTree) -> ScenarioBuilder:
+def generate_scenario(env: _ElementTree) -> ScenarioBuilder:
     pass

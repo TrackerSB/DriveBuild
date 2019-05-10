@@ -3,7 +3,7 @@ import zipfile
 from tempfile import mkdtemp
 from typing import Tuple, List
 
-from lxml.etree import ElementTree
+from lxml.etree import _ElementTree
 from werkzeug.datastructures import FileStorage
 
 from common import eprint, is_dbe, is_dbc
@@ -19,7 +19,7 @@ def extract_test_cases(zip_file: FileStorage) -> str:
     return temp_dir
 
 
-def is_complete(environment_filenames: List[str], criteria_defs: List[ElementTree]) -> bool:
+def is_complete(environment_filenames: List[str], criteria_defs: List[_ElementTree]) -> bool:
     complete = True
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
@@ -31,7 +31,7 @@ def is_complete(environment_filenames: List[str], criteria_defs: List[ElementTre
     return complete
 
 
-def get_valid(folder: str) -> Tuple[List[ElementTree], List[ElementTree]]:
+def get_valid(folder: str) -> Tuple[List[_ElementTree], List[_ElementTree]]:
     valid_envs = list()
     valid_crit_defs = list()
     for filename in os.listdir(folder):
