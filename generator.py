@@ -3,7 +3,7 @@ from typing import List
 from beamngpy import Scenario, Road, Vehicle
 from lxml.etree import _ElementTree
 
-from types import Lane, Obstacle, Participant
+from db_types import Lane, Obstacle, Participant
 
 
 class ScenarioBuilder:
@@ -30,11 +30,16 @@ class ScenarioBuilder:
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
                                  rot=(0, 0, initial_state.orientation))
 
+    def add_movements_to_scenario(self, scenario: Scenario):
+            pass  # FIXME Not implemented yet
+
     def add_all(self, scenario: Scenario) -> None:
         self.add_lanes_to_scenario(scenario)
         self.add_obstacles_to_scenario(scenario)
         self.add_participants_to_scenario(scenario)
+        self.add_movements_to_scenario(scenario)
 
 
-def generate_scenario(env: _ElementTree) -> ScenarioBuilder:
-    pass
+def generate_scenario(env: _ElementTree, participants: _ElementTree) -> ScenarioBuilder:
+    lanes = list()
+    return None

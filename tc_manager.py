@@ -7,6 +7,7 @@ from lxml.etree import _ElementTree
 from werkzeug.datastructures import FileStorage
 
 from common import eprint, is_dbe, is_dbc
+from db_types import ScenarioMapping
 from transformer import transform
 from xml_util import validate, xpath
 
@@ -19,39 +20,45 @@ def extract_test_cases(zip_file: FileStorage) -> str:
     return temp_dir
 
 
-def is_complete(environment_filenames: List[str], criteria_defs: List[_ElementTree]) -> bool:
-    complete = True
+def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
+        -> List[ScenarioMapping]:
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
             needed_environment = element.text
-            if needed_environment not in environment_filenames:
+            found_env = False
+            for stub in mapping_stubs:
+                if needed_environment == stub.filename:
+                    stub.crit_defs.append(criteria_def)
+                    found_env = True
+                    break
+            if not found_env:
                 eprint("A criteria definition needs " + needed_environment
                        + " but it is either not valid or not available")
-                complete = False
-    return complete
+    return [mapping for mapping in mapping_stubs if mapping.crit_defs]
 
 
-def get_valid(folder: str) -> Tuple[List[_ElementTree], List[_ElementTree]]:
-    valid_envs = list()
+def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
+    scenario_mapping_stubs = list()
     valid_crit_defs = list()
     for filename in os.listdir(folder):
         path = os.path.join(folder, filename)
         valid, root = validate(path)
         if valid:
             if is_dbe(path):
-                valid_envs.append(root)
+                scenario_mapping_stubs.append(ScenarioMapping(root, filename))
             elif is_dbc(path):
                 valid_crit_defs.append(root)
             else:
                 eprint(filename + " is valid but can not be classified as DBE or DBC.")
-    return valid_envs, valid_crit_defs
+    return scenario_mapping_stubs, valid_crit_defs
 
 
 def execute_tests(zip_file: FileStorage) -> None:
     folder = extract_test_cases(zip_file)
-    valid_envs, valid_crit_defs = get_valid(folder)
+    mapping_stubs, valid_crit_defs = get_valid(folder)
 
-    if is_complete(valid_envs, valid_crit_defs):
-        envs, crit_defs = transform(valid_envs, valid_crit_defs)
+    mapping = associate_criteria(mapping_stubs, valid_crit_defs)
+    if mapping:
+        scenario_builder, crit_defs = transform(mapping)
     else:
         eprint("Some criteria definitions have no valid environment.")

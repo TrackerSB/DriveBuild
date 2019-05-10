@@ -1,6 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Tuple
+
+from lxml.etree import _ElementTree
+
+from generator import ScenarioBuilder
+from kp_transformer import Criteria
 
 
 class AIMode(Enum):
@@ -26,7 +31,7 @@ class WayPoint:
 class MovementNode:
     waypoint: WayPoint
     mode: AIMode = None
-    speed_limit: float = None,
+    speed_limit: float = None
     target_speed: float = None
 
 
@@ -60,3 +65,16 @@ class LaneNode:
 
 
 Lane = List[LaneNode]
+
+
+@dataclass
+class ScenarioMapping:
+    environment: _ElementTree
+    filename: str
+    crit_defs: List[_ElementTree] = field(default_factory=list)
+
+
+@dataclass
+class TestCase:
+    scenario: ScenarioBuilder
+    crit_def: Criteria
