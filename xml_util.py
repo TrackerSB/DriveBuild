@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 from lxml import etree
 from lxml.etree import _ElementTree, _Element
@@ -27,5 +27,5 @@ def validate(path: str) -> Tuple[bool, _ElementTree]:
     return valid, parsed
 
 
-def xpath(xml_tree: Union[_Element, _ElementTree], expression: str) -> list:
+def xpath(xml_tree: Union[_Element, _ElementTree], expression: str) -> List[_Element]:
     return xml_tree.xpath(expression, namespaces=NAMESPACES)
