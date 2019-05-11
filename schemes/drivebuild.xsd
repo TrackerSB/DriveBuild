@@ -7,7 +7,6 @@
         <xs:complexType>
             <xs:all>
                 <xs:element name="author" type="xs:string"/>
-                <xs:element name="version" type="positiveDecimal"/>
 
                 <xs:element name="lanes" minOccurs="0">
                     <xs:complexType>
