@@ -1,12 +1,11 @@
-from typing import List
-
-from beamngpy import Scenario, Road, Vehicle
 from lxml.etree import _ElementTree
-
-from db_types import Lane, Obstacle, Participant
 
 
 class ScenarioBuilder:
+    from typing import List
+    from beamngpy import Scenario
+    from db_types import Lane, Obstacle, Participant
+
     def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant] = None):
         if participants is None:
             participants = list()
@@ -15,6 +14,7 @@ class ScenarioBuilder:
         self.participants = participants
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
+        from beamngpy import Road
         for lane in self.lanes:
             road = Road('track_editor_C_center')  # FIXME Maybe change road material
             road.nodes.extend([(lp.position[0], lp.position[1], lp.width) for lp in lane])
@@ -25,6 +25,7 @@ class ScenarioBuilder:
             pass  # FIXME Not implemented yet
 
     def add_participants_to_scenario(self, scenario: Scenario) -> None:
+        from beamngpy import Vehicle
         for participant in self.participants:
             vehicle = Vehicle(participant.id, model=participant.model)
             initial_state = participant.initial_state
@@ -33,7 +34,7 @@ class ScenarioBuilder:
                                  rot=(0, 0, initial_state.orientation))
 
     def add_movements_to_scenario(self, scenario: Scenario):
-            pass  # FIXME Not implemented yet
+        pass  # FIXME Not implemented yet
 
     def add_all(self, scenario: Scenario) -> None:
         self.add_lanes_to_scenario(scenario)

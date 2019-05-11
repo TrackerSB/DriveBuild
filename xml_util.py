@@ -4,7 +4,6 @@ from typing import Tuple, Union
 from lxml import etree
 from lxml.etree import _ElementTree, _Element
 
-from common import eprint, is_dbe, is_dbc
 
 XSD_FILE_PATH = os.path.join(os.path.dirname(__file__), "schemes/drivebuild.xsd")
 SCHEMA_ROOT = etree.parse(XSD_FILE_PATH)
@@ -16,6 +15,7 @@ NAMESPACES = {
 
 
 def validate(path: str) -> Tuple[bool, _ElementTree]:
+    from common import eprint, is_dbe, is_dbc
     valid: bool = False
     parsed: _ElementTree = None
     if is_dbe(path) or is_dbc(path):

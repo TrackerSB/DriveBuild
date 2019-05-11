@@ -1,11 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
-
-from lxml.etree import _ElementTree
-
-from generator import ScenarioBuilder
-from kp_transformer import Criteria
 
 
 class AIMode(Enum):
@@ -69,6 +64,8 @@ Lane = List[LaneNode]
 
 @dataclass
 class ScenarioMapping:
+    from dataclasses import field
+    from lxml.etree import _ElementTree
     environment: _ElementTree
     filename: str
     crit_defs: List[_ElementTree] = field(default_factory=list)
@@ -76,5 +73,7 @@ class ScenarioMapping:
 
 @dataclass
 class TestCase:
+    from generator import ScenarioBuilder
+    from kp_transformer import Criteria
     scenario: ScenarioBuilder
     crit_def: Criteria

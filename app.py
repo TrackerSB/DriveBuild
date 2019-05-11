@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, flash, redirect
+from flask import Flask
 
-from tc_manager import execute_tests
 
 app = Flask(__name__)
 app.config.from_pyfile('app.cfg')
@@ -12,6 +11,8 @@ def allowed_file(filename):
 
 @app.route('/', methods=['GET', 'POST'])
 def test_launcher():
+    from flask import render_template, request, flash, redirect
+    from tc_manager import execute_tests
     input_field_name = 'testInput'
     if request.method == 'POST':
         # check if the post request has the file part
@@ -31,11 +32,13 @@ def test_launcher():
 
 @app.errorhandler(404)
 def page_not_found(error):
+    from flask import render_template
     return render_template('error404.html', error=error), 404
 
 
 @app.errorhandler(500)
 def page_not_found(error):
+    from flask import render_template
     return render_template('error500.html', error=error), 500
 
 

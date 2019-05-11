@@ -1,8 +1,6 @@
-import sys
-
-
 def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+    from sys import stderr
+    print(*args, file=stderr, **kwargs)
 
 
 def is_dbe(filename_path: str) -> bool:

@@ -1,12 +1,12 @@
 from typing import List
 
 from db_types import ScenarioMapping, TestCase
-from generator import generate_scenario
-from kp_transformer import generate_criteria
-from xml_util import xpath
 
 
 def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
+    from generator import generate_scenario
+    from kp_transformer import generate_criteria
+    from xml_util import xpath
     test_cases = list()
     for mapping in mappings:
         for crit_def in mapping.crit_defs:

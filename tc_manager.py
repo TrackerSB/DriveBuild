@@ -1,18 +1,14 @@
-import os
-import zipfile
-from tempfile import mkdtemp
 from typing import Tuple, List
 
 from lxml.etree import _ElementTree
 from werkzeug.datastructures import FileStorage
 
-from common import eprint, is_dbe, is_dbc
 from db_types import ScenarioMapping
-from transformer import transform
-from xml_util import validate, xpath
 
 
 def extract_test_cases(zip_file: FileStorage) -> str:
+    import zipfile
+    from tempfile import mkdtemp
     zip_ref = zipfile.ZipFile(zip_file, 'r')
     temp_dir = mkdtemp(prefix="drivebuild_")
     zip_ref.extractall(temp_dir)
@@ -22,6 +18,8 @@ def extract_test_cases(zip_file: FileStorage) -> str:
 
 def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
         -> List[ScenarioMapping]:
+    from common import eprint
+    from xml_util import xpath
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
             needed_environment = element.text
@@ -38,6 +36,9 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
 
 
 def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
+    import os
+    from common import eprint, is_dbe, is_dbc
+    from xml_util import validate
     scenario_mapping_stubs = list()
     valid_crit_defs = list()
     for filename in os.listdir(folder):
@@ -54,6 +55,8 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
 
 
 def execute_tests(zip_file: FileStorage) -> None:
+    from common import eprint
+    from transformer import transform
     folder = extract_test_cases(zip_file)
     mapping_stubs, valid_crit_defs = get_valid(folder)
 
