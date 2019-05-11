@@ -7,7 +7,6 @@
         <xs:complexType>
             <xs:all>
                 <xs:element name="author" type="xs:string"/>
-                <xs:element name="name" type="xs:ID"/>
                 <xs:element name="version" type="positiveDecimal"/>
 
                 <xs:element name="lanes" minOccurs="0">
@@ -56,6 +55,7 @@
             <xs:all>
                 <xs:element name="author" type="xs:string"/>
                 <xs:element name="version" type="positiveDecimal"/>
+                <xs:element name="name" type="xs:string"/>
                 <xs:element name="environment" type="xs:string"/>
 
                 <xs:element name="participants">

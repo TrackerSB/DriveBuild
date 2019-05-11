@@ -3,7 +3,6 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://drivebuild.com ../drivebuild.xsd">
     <author>Stefan Huber</author>
-    <name>EnvironmentA</name>
     <version>1</version>
 
     <lanes>
