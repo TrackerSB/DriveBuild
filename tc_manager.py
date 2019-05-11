@@ -62,6 +62,6 @@ def execute_tests(zip_file: FileStorage) -> None:
 
     mapping = associate_criteria(mapping_stubs, valid_crit_defs)
     if mapping:
-        scenario_builder, crit_defs = transform(mapping)
+        test_cases = transform(mapping)
     else:
         eprint("Some criteria definitions have no valid environment.")

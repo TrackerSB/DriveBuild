@@ -26,5 +26,5 @@ def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
     return valid, parsed
 
 
-def xpath(xml_tree: Union[_Element, _ElementTree], expression: str) -> List[_Element]:
+def xpath(xml_tree: Union[_Element, _ElementTree], expression: str) -> Union[List[_Element], _ElementTree]:
     return xml_tree.xpath(expression, namespaces=NAMESPACES)
