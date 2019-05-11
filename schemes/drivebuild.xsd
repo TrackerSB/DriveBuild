@@ -75,13 +75,6 @@
                                                         </xs:restriction>
                                                     </xs:simpleType>
                                                 </xs:attribute>
-                                                <xs:attribute name="model" use="required">
-                                                    <xs:simpleType>
-                                                        <xs:restriction base="xs:string">
-                                                            <xs:enumeration value="etk800"/>
-                                                        </xs:restriction>
-                                                    </xs:simpleType>
-                                                </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
                                         <xs:element name="ai" minOccurs="0">
@@ -105,6 +98,13 @@
                                         </xs:element>
                                     </xs:all>
                                     <xs:attribute name="id" type="xs:ID" use="required"/> <!-- FIXME Disallow "any" -->
+                                    <xs:attribute name="model" use="required">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="ETK800"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -134,9 +134,9 @@
     <!-- Types for participants -->
     <xs:simpleType name="aiMode">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="manual"/>
-            <xs:enumeration value="autonomous"/>
-            <xs:enumeration value="training"/>
+            <xs:enumeration value="MANUAL"/>
+            <xs:enumeration value="AUTONOMOUS"/>
+            <xs:enumeration value="TRAINING"/>
         </xs:restriction>
     </xs:simpleType>
 

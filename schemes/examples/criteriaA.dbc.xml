@@ -8,12 +8,12 @@
     <environment>environmentA.dbe.xml</environment>
 
     <participants>
-        <participant id="ego">
-            <initialState x="0" y="0" aiMode="manual" orientation="0" model="etk800"/>
+        <participant id="ego" model="ETK800">
+            <initialState x="0" y="0" aiMode="MANUAL" orientation="0"/>
             <ai address="localhost:5001"/>
             <movement>
-                <waypoint x="10" y="0" aiMode="manual" tolerance="1"/>
-                <waypoint x="15" y="5" aiMode="manual" tolerance="1"/>
+                <waypoint x="10" y="0" aiMode="MANUAL" tolerance="1"/>
+                <waypoint x="15" y="5" aiMode="MANUAL" tolerance="1"/>
             </movement>
         </participant>
     </participants>

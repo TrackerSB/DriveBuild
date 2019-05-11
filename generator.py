@@ -1,51 +1,10 @@
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from lxml.etree import _ElementTree
+from lxml.etree import _ElementTree, _Element
 
 from common import static_vars
 from db_types import Position
-
-
-class ScenarioBuilder:
-    from beamngpy import Scenario
-    from db_types import Lane, Obstacle, Participant
-
-    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant]):
-        if participants is None:
-            participants = list()
-        self.lanes = lanes
-        self.obstacles = obstacles
-        self.participants = participants
-
-    def add_lanes_to_scenario(self, scenario: Scenario) -> None:
-        from beamngpy import Road
-        for lane in self.lanes:
-            road = Road('track_editor_C_center')  # FIXME Maybe change road material
-            road.nodes.extend([(lp.position[0], lp.position[1], lp.width) for lp in lane.nodes])
-            scenario.add_road(road)
-
-    def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
-        for obstacle in self.obstacles:
-            pass  # FIXME Not implemented yet
-
-    def add_participants_to_scenario(self, scenario: Scenario) -> None:
-        from beamngpy import Vehicle
-        for participant in self.participants:
-            vehicle = Vehicle(participant.id, model=participant.model)
-            initial_state = participant.initial_state
-            scenario.add_vehicle(vehicle,
-                                 pos=(initial_state.position[0], initial_state.position[1], 0),
-                                 rot=(0, 0, initial_state.orientation))
-
-    def add_movements_to_scenario(self, scenario: Scenario):
-        pass  # FIXME Not implemented yet
-
-    def add_all(self, scenario: Scenario) -> None:
-        self.add_lanes_to_scenario(scenario)
-        self.add_obstacles_to_scenario(scenario)
-        self.add_participants_to_scenario(scenario)
-        self.add_movements_to_scenario(scenario)
 
 
 @static_vars(pattern=re.compile(r"\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\))*"))
@@ -75,9 +34,52 @@ def string_to_shape(shape_string: str) -> Optional[List[Position]]:
         return None
 
 
-def generate_scenario(env: _ElementTree, participants: _ElementTree) -> ScenarioBuilder:
+class ScenarioBuilder:
+    from beamngpy import Scenario
+    from db_types import Lane, Obstacle, Participant
+
+    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant]):
+        if participants is None:
+            participants = list()
+        self.lanes = lanes
+        self.obstacles = obstacles
+        self.participants = participants
+
+    def add_lanes_to_scenario(self, scenario: Scenario) -> None:
+        from beamngpy import Road
+        for lane in self.lanes:
+            road = Road('a_asphalt_01_a')  # FIXME Maybe change road material
+            road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
+            road.nodes.extend(road_nodes)
+            scenario.add_road(road)
+
+    def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
+        for obstacle in self.obstacles:
+            pass  # FIXME Not implemented yet
+
+    def add_participants_to_scenario(self, scenario: Scenario) -> None:
+        from beamngpy import Vehicle
+        for participant in self.participants:
+            # FIXME Adjust color
+            vehicle = Vehicle(participant.id, model=participant.model, color="White", licence=participant.id)
+            initial_state = participant.initial_state
+            scenario.add_vehicle(vehicle,
+                                 pos=(initial_state.position[0], initial_state.position[1], 0),
+                                 rot=(0, 0, initial_state.orientation))
+
+    def add_movements_to_scenario(self, scenario: Scenario):
+        pass  # FIXME Not implemented yet
+
+    def add_all(self, scenario: Scenario) -> None:
+        self.add_lanes_to_scenario(scenario)
+        self.add_obstacles_to_scenario(scenario)
+        self.add_participants_to_scenario(scenario)
+        self.add_movements_to_scenario(scenario)
+
+
+def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
-    from db_types import LaneNode, Lane, Obstacle
+    from db_types import LaneNode, Lane, Obstacle, Participant, InitialState, AIMode, CarModel
     from xml_util import xpath
 
     def node_to_lane(node: _Element) -> LaneNode:
@@ -85,16 +87,28 @@ def generate_scenario(env: _ElementTree, participants: _ElementTree) -> Scenario
 
     lanes = list()
     lane_nodes = xpath(env, "db:lanes/db:lane")
-    for lane_node in lane_nodes:
-        lane_segment_nodes = xpath(lane_node, "db:laneSegment")
+    for node in lane_nodes:
+        lane_segment_nodes = xpath(node, "db:laneSegment")
         lane = Lane(list(map(node_to_lane, lane_segment_nodes)))
         lanes.append(lane)
 
     obstacles = list()
     obstacle_nodes = xpath(env, "db:obstacles/db:obstacle")
-    for obstacle_node in obstacle_nodes:
-        points = string_to_shape(obstacle_node.get("shape"))
-        obstacles.append(Obstacle(points, obstacle_node.get("height")))
+    for node in obstacle_nodes:
+        points = string_to_shape(node.get("shape"))
+        obstacles.append(Obstacle(points, node.get("height")))
 
     participants = list()
+    participant_nodes = xpath(participants_node, "db:participant")
+    for node in participant_nodes:
+        id = node.get("id")
+        initial_state_node = xpath(node, "db:initialState")[0]
+        initial_state = InitialState(
+            (initial_state_node.get("x"), initial_state_node.get("y")),
+            int(initial_state_node.get("orientation")),
+            AIMode[initial_state_node.get("aiMode")].value
+            # FIXME Speeds missing
+        )
+        # FIXME Movements missing
+        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, list()))
     return ScenarioBuilder(lanes, obstacles, participants)

@@ -79,3 +79,4 @@ class TestCase:
     from kp_transformer import Criteria
     scenario: ScenarioBuilder
     crit_def: Criteria
+    authors: List[str]

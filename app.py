@@ -12,7 +12,7 @@ def allowed_file(filename):
 @app.route('/', methods=['GET', 'POST'])
 def test_launcher():
     from flask import render_template, request, flash, redirect
-    from tc_manager import execute_tests
+    from tc_manager import run_tests
     input_field_name = 'testInput'
     if request.method == 'POST':
         # check if the post request has the file part
@@ -25,7 +25,7 @@ def test_launcher():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            execute_tests(file)
+            run_tests(file)
             return render_template("testMonitor.html")
     return render_template("test_launcher.html")
 
