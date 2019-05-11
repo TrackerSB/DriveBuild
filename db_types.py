@@ -59,7 +59,9 @@ class LaneNode:
     width: float
 
 
-Lane = List[LaneNode]
+@dataclass
+class Lane:
+    nodes: List[LaneNode]
 
 
 @dataclass
