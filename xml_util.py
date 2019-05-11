@@ -1,9 +1,8 @@
 import os
-from typing import Tuple, Union, List
+from typing import Tuple, Union, List, Optional
 
 from lxml import etree
 from lxml.etree import _ElementTree, _Element
-
 
 XSD_FILE_PATH = os.path.join(os.path.dirname(__file__), "schemes/drivebuild.xsd")
 SCHEMA_ROOT = etree.parse(XSD_FILE_PATH)
@@ -14,10 +13,10 @@ NAMESPACES = {
 }
 
 
-def validate(path: str) -> Tuple[bool, _ElementTree]:
+def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
     from common import eprint, is_dbe, is_dbc
     valid: bool = False
-    parsed: _ElementTree = None
+    parsed: Optional[_ElementTree] = None
     if is_dbe(path) or is_dbc(path):
         try:
             parsed = etree.parse(path, PARSER)
