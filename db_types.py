@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 class AIMode(Enum):
@@ -20,9 +20,9 @@ Position = Tuple[float, float]
 class WayPoint:
     position: Position
     tolerance: float
-    mode: AIMode = None
-    speed_limit: float = None
-    target_speed: float = None
+    mode: Optional[AIMode] = None
+    speed_limit: Optional[float] = None
+    target_speed: Optional[float] = None
 
 
 @dataclass
@@ -30,8 +30,8 @@ class InitialState:
     position: Tuple[float, float]
     orientation: float
     mode: AIMode
-    speed_limit: float = None
-    target_speed: float = None
+    speed_limit: Optional[float] = None
+    target_speed: Optional[float] = None
 
 
 @dataclass
