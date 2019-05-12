@@ -120,6 +120,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             movements.append(WayPoint(
                 get_point(wp_node),
                 float(wp_node.get("tolerance")),
+                wp_node.get("id"),
                 AIMode[wp_node.get("aiMode")],
                 None if speed_limit is None else float(speed_limit),
                 None if target_speed is None else float(target_speed)

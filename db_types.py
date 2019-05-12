@@ -20,6 +20,7 @@ Position = Tuple[float, float]
 class WayPoint:
     position: Position
     tolerance: float
+    id: Optional[str] = None
     mode: Optional[AIMode] = None
     speed_limit: Optional[float] = None
     target_speed: Optional[float] = None
