@@ -68,10 +68,59 @@ class ScenarioBuilder:
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
                                  rot=(0, 0, initial_state.orientation))
 
+    @staticmethod
+    def add_to_scenario_file(new_content: List[str]) -> None:
+        """
+        Workaround for adding content to a scenario prefab if there is no explicit method for it.
+        :param new_content: The lines of content to add.
+        """
+        from app import app
+        import os
+        prefab_file_path = os.path.join(
+            app.config["BEAMNG_USER_PATH"],
+            "levels",
+            app.config["BEAMNG_LEVEL_NAME"],
+            "scenarios",
+            app.config["BEAMNG_SCENARIO_NAME"] + ".prefab"
+        )
+        prefab_file = open(prefab_file_path, "r")
+        original_content = prefab_file.readlines()
+        prefab_file.close()
+        for line in new_content:
+            original_content.insert(-2, line + "\n")
+        prefab_file = open(prefab_file_path, "w")
+        prefab_file.writelines(original_content)
+        prefab_file.close()
+
+    def add_waypoints_to_scenario(self, scenario: Scenario) -> None:
+        for participant in self.participants:
+            wp_prefix = "wp_" + participant.id + "_"
+            counter = 0
+            for waypoint in participant.movement:
+                # scenario.add_waypoint(...)  # FIXME Such a call does not exist yet
+                if waypoint.id is None:
+                    waypoint.id = wp_prefix + str(counter)
+                    counter += 1
+                tolerance = str(waypoint.tolerance)
+                self.add_to_scenario_file([
+                    "new BeamNGWaypoint(" + waypoint.id + "){",
+                    "   drawDebug = \"0\";",
+                    "   directionalWaypoint = \"0\";",  # FIXME Should I use directional waypoints?
+                    "   position = \"" + str(waypoint.position[0]) + " " + str(waypoint.position[1]) + " 0\";",
+                    "   scale = \"" + tolerance + " " + tolerance + " " + tolerance + "\";",
+                    "   rotationMatrix = \"0 0 0 0 0 0 0 0 1\";",  # FIXME Think about it
+                    "   mode = \"Ignore\";",  # FIXME Which mode is suitable?
+                    "   canSave = \"1\";",  # FIXME Think about it
+                    "   canSaveDynamicFields = \"1\";",  # FIXME Think about it
+                    "};"
+                ])
+
     def add_all(self, scenario: Scenario) -> None:
         self.add_lanes_to_scenario(scenario)
         self.add_obstacles_to_scenario(scenario)
         self.add_participants_to_scenario(scenario)
+        # FIXME As long as manually inserting text it can only be called after make
+        # self.add_waypoints_to_scenario(scenario)
 
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:

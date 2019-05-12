@@ -21,11 +21,14 @@ def add_movements_to_scenario(participants: List[Participant], scenario: Scenari
             # FIXME Recognize AIModes
             # FIXME Recognize speed limits
             # FIXME Recognize tolerances
-            path = [{
-                'pos': (wp.position[0], wp.position[1], 0),  # FIXME Recognize z-offset of car model
-                'speed': wp.target_speed
-            } for wp in participant.movement]
-            vehicle.ai_set_line(path)
+            # path = [{
+            #     'pos': (wp.position[0], wp.position[1], 0),  # FIXME Recognize z-offset of car model
+            #     'speed': wp.target_speed
+            # } for wp in participant.movement]
+            # vehicle.ai_set_line(path)
+            for waypoint in participant.movement:
+                vehicle.ai_set_waypoint(waypoint.id)
+                break  # FIXME Wait for reaching the waypoint and only then change it
 
 
 def run_test_case(test_case: TestCase):
@@ -39,6 +42,8 @@ def run_test_case(test_case: TestCase):
     bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], app.config["BEAMNG_SCENARIO_NAME"], authors=authors)
     test_case.scenario.add_all(bng_scenario)
     bng_scenario.make(bng_instance)
+    # FIXME As long as manually inserting text it can only be called after make
+    test_case.scenario.add_waypoints_to_scenario(bng_scenario)
     bng_instance.open(launch=True)
     try:
         bng_instance.load_scenario(bng_scenario)
