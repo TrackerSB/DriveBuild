@@ -67,23 +67,22 @@ class ScenarioBuilder:
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
                                  rot=(0, 0, initial_state.orientation))
 
-    def add_movements_to_scenario(self, scenario: Scenario):
-        pass  # FIXME Not implemented yet
-
     def add_all(self, scenario: Scenario) -> None:
         self.add_lanes_to_scenario(scenario)
         self.add_obstacles_to_scenario(scenario)
         self.add_participants_to_scenario(scenario)
-        self.add_movements_to_scenario(scenario)
 
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
-    from db_types import LaneNode, Lane, Obstacle, Participant, InitialState, AIMode, CarModel
+    from db_types import LaneNode, Lane, Obstacle, Participant, InitialState, AIMode, CarModel, WayPoint
     from xml_util import xpath
 
+    def get_point(node: _Element) -> Tuple[float, float]:
+        return float(node.get("x")), float(node.get("y"))
+
     def node_to_lane(node: _Element) -> LaneNode:
-        return LaneNode((node.get("x"), node.get("y")), node.get("width"))
+        return LaneNode(get_point(node), node.get("width"))
 
     lanes = list()
     lane_nodes = xpath(env, "db:lanes/db:lane")
@@ -103,12 +102,26 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     for node in participant_nodes:
         id = node.get("id")
         initial_state_node = xpath(node, "db:initialState")[0]
+        speed_limit = initial_state_node.get("speedLimit")
+        target_speed = initial_state_node.get("speed")
         initial_state = InitialState(
-            (initial_state_node.get("x"), initial_state_node.get("y")),
-            int(initial_state_node.get("orientation")),
-            AIMode[initial_state_node.get("aiMode")].value
-            # FIXME Speeds missing
+            get_point(initial_state_node),
+            float(initial_state_node.get("orientation")),
+            AIMode[initial_state_node.get("aiMode")],
+            None if speed_limit is None else float(speed_limit),
+            None if target_speed is None else float(target_speed)
         )
-        # FIXME Movements missing
-        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, list()))
+        movements = list()
+        waypoint_nodes = xpath(node, "db:movement/db:waypoint")
+        for wp_node in waypoint_nodes:
+            speed_limit = wp_node.get("speedLimit")
+            target_speed = wp_node.get("speed")
+            movements.append(WayPoint(
+                get_point(wp_node),
+                float(wp_node.get("tolerance")),
+                AIMode[wp_node.get("aiMode")],
+                None if speed_limit is None else float(speed_limit),
+                None if target_speed is None else float(target_speed)
+            ))
+        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, movements))
     return ScenarioBuilder(lanes, obstacles, participants)

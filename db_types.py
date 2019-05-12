@@ -20,11 +20,6 @@ Position = Tuple[float, float]
 class WayPoint:
     position: Position
     tolerance: float
-
-
-@dataclass
-class MovementNode:
-    waypoint: WayPoint
     mode: AIMode = None
     speed_limit: float = None
     target_speed: float = None
@@ -50,7 +45,7 @@ class Participant:
     id: str
     initial_state: InitialState
     model: CarModel
-    movement: List[MovementNode]
+    movement: List[WayPoint]
 
 
 @dataclass
