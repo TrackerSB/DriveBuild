@@ -32,12 +32,11 @@ def run_test_case(test_case: TestCase):
     from app import app
     from beamngpy import BeamNGpy
     home_path = app.config["BEAMNG_INSTALL_FOLDER"]
-    # TODO Is a user_path needed?
-    # user_path = os.path.join(home_path, "../../BeamNG_user_path")  # FIXME user_path not working
-    # FIXME Determine port and host automatically
-    bng_instance = BeamNGpy('localhost', 64256, home=home_path)
+    user_path = app.config["BEAMNG_USER_PATH"]
+    # FIXME Determine port and host automatically. (Is it required to do so?)
+    bng_instance = BeamNGpy('localhost', 64256, home=home_path, user=user_path)
     authors = ", ".join(test_case.authors)
-    bng_scenario = Scenario("smallgrid", "Test", authors=authors)  # FIXME Generate name for scenario
+    bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], app.config["BEAMNG_SCENARIO_NAME"], authors=authors)
     test_case.scenario.add_all(bng_scenario)
     bng_scenario.make(bng_instance)
     bng_instance.open(launch=True)
