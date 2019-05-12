@@ -82,7 +82,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         return float(node.get("x")), float(node.get("y"))
 
     def node_to_lane(node: _Element) -> LaneNode:
-        return LaneNode(get_point(node), node.get("width"))
+        return LaneNode(get_point(node), float(node.get("width")))
 
     lanes = list()
     lane_nodes = xpath(env, "db:lanes/db:lane")
