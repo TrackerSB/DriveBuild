@@ -31,9 +31,11 @@ def add_movements_to_scenario(participants: List[Participant], scenario: Scenari
 def run_test_case(test_case: TestCase):
     from app import app
     from beamngpy import BeamNGpy
-    # user_path = mkdtemp(prefix="drivebuild_beamng_")  # FIXME user_path not working
+    home_path = app.config["BEAMNG_INSTALL_FOLDER"]
+    # TODO Is a user_path needed?
+    # user_path = os.path.join(home_path, "../../BeamNG_user_path")  # FIXME user_path not working
     # FIXME Determine port and host automatically
-    bng_instance = BeamNGpy('localhost', 64256, home=app.config["BEAMNG_INSTALL_FOLDER"])
+    bng_instance = BeamNGpy('localhost', 64256, home=home_path)
     authors = ", ".join(test_case.authors)
     bng_scenario = Scenario("smallgrid", "Test", authors=authors)  # FIXME Generate name for scenario
     test_case.scenario.add_all(bng_scenario)
