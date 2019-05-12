@@ -44,6 +44,5 @@ def run_test_case(test_case: TestCase):
         bng_instance.start_scenario()
         add_movements_to_scenario(test_case.scenario.participants, bng_scenario)
         input("Press enter to end...")
-        roads = bng_instance.get_roads()
     finally:
         bng_instance.close()
