@@ -71,6 +71,24 @@ def add_trigger_for_changing_waypoint() -> None:
     ])
 
 
+def make_lanes_visible() -> None:
+    from common import get_prefab_path
+    prefab_file_path = get_prefab_path()
+    prefab_file = open(prefab_file_path, "r")
+    original_content = prefab_file.readlines()
+    prefab_file.close()
+    new_content = list()
+    for line in original_content:
+        if "overObjects" in line:
+            new_line = line.replace("0", "1")
+        else:
+            new_line = line
+        new_content.append(new_line)
+    prefab_file = open(prefab_file_path, "w")
+    prefab_file.writelines(new_content)
+    prefab_file.close()
+
+
 def add_movements_to_scenario(participants: List[Participant], scenario: Scenario) -> None:
     """
     Makes cars move. Must be called after starting the scenario.
@@ -108,9 +126,12 @@ def run_test_case(test_case: TestCase):
     bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], app.config["BEAMNG_SCENARIO_NAME"], authors=authors)
     test_case.scenario.add_all(bng_scenario)
     bng_scenario.make(bng_instance)
+
     add_trigger_for_changing_waypoint()
+    make_lanes_visible()
     # FIXME As long as manually inserting text it can only be called after make
     test_case.scenario.add_waypoints_to_scenario(bng_scenario)
+
     bng_instance.open(launch=True)
     try:
         bng_instance.load_scenario(bng_scenario)

@@ -48,9 +48,7 @@ class ScenarioBuilder:
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         for lane in self.lanes:
-            road = Road('a_asphalt_01_a')  # FIXME Maybe change road material
-            road = Road('track_editor_C_center')  # FIXME Maybe change road material
-            # FIXME Add "overObjects = 1" to prefab
+            road = Road('a_asphalt_01_a')
             road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
             road.nodes.extend(road_nodes)
             scenario.add_road(road)
