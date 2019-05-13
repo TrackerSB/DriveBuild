@@ -55,18 +55,18 @@ def add_trigger_for_changing_waypoint() -> None:
         "    TriggerMode = \"Overlaps\";",
         "    TriggerTestType = \"Bounding Box\";",
         "    luaFunction = \"onBeamNGTrigger\";",
-        "    tickPeriod = \"100\";",
+        "    tickPeriod = \"100\";",  # FIXME Think about it
         "    debug = \"0\";",
-        "    ticking = \"0\";",
+        "    ticking = \"0\";",  # FIXME Think about it
         "    triggerColor = \"255 192 0 45\";",
         # "    cameraOnEnter = \"pierCamera\";",
-        "    defaultOnLeave = \"1\";",
+        "    defaultOnLeave = \"1\";",  # FIXME Think about it
         "    position = \"10 0 0\";",
         "    scale = \"20 20 20\";",
         "    rotationMatrix = \"0 0 0 0 0 0 0 0 0\";",
         "    mode = \"Ignore\";",
-        "    canSave = \"1\";",
-        "    canSaveDynamicFields = \"1\";",
+        "    canSave = \"1\";",  # FIXME Think about it
+        "    canSaveDynamicFields = \"1\";",  # FIXME Think about it
         "};"
     ])
 
