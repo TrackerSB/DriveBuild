@@ -1,3 +1,6 @@
+from typing import List
+
+
 def eprint(*args, **kwargs):
     from sys import stderr
     print(*args, file=stderr, **kwargs)
@@ -29,3 +32,27 @@ def static_vars(**kwargs):
         return func
 
     return decorate
+
+
+def add_to_prefab_file(new_content: List[str]) -> None:
+    """
+    Workaround for adding content to a scenario prefab if there is no explicit method for it.
+    :param new_content: The lines of content to add.
+    """
+    from app import app
+    import os
+    prefab_file_path = os.path.join(
+        app.config["BEAMNG_USER_PATH"],
+        "levels",
+        app.config["BEAMNG_LEVEL_NAME"],
+        "scenarios",
+        app.config["BEAMNG_SCENARIO_NAME"] + ".prefab"
+    )
+    prefab_file = open(prefab_file_path, "r")
+    original_content = prefab_file.readlines()
+    prefab_file.close()
+    for line in new_content:
+        original_content.insert(-2, line + "\n")
+    prefab_file = open(prefab_file_path, "w")
+    prefab_file.writelines(original_content)
+    prefab_file.close()
