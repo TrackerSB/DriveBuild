@@ -5,9 +5,10 @@ from beamngpy import Scenario
 from db_types import TestCase, Participant
 
 
-def add_trigger_for_changing_waypoint() -> None:
+def enable_participant_movements(participants: List[Participant]) -> None:
     from app import app
     from common import add_to_prefab_file
+    from db_types import WayPoint
     import os
     lua_file_path = os.path.join(
         app.config["BEAMNG_USER_PATH"],
@@ -19,56 +20,62 @@ def add_trigger_for_changing_waypoint() -> None:
     lua_file = open(lua_file_path, "w")
     lua_file.writelines([
         "local M = {}\n",
-        "map = require(\"map\")\n",
-        "\n",
-        "local function onWaypoint(args)\n",
-        "  log('I', 'Test','onWaypoint called ')\n",
-        "end\n",
-        "\n",
-        "local function onBeamNGWaypoint(args)\n",
-        "  log('I', 'Test','onBeamNGWaypoint called ')\n",
-        "end\n",
-        "\n",
-        "local function onRaceWaypointReached(args)\n",
-        "  log('I', 'Test','onRaceWaypointReached called ')\n",
-        "end\n",
         "\n",
         "local function onRaceStart()\n",
         "  log('I', 'Test','onRaceStart called ')\n",
         "end\n",
         "\n",
-        "local function onBeamNGTrigger()\n",
+        "local function onBeamNGTrigger(data)\n",
         "  log('I', 'Test','onBeamNGTrigger called ')\n",
+        "  dump(data)\n",
         "end\n",
         "\n",
-        "M.onWaypoint = onWaypoint\n",
-        "M.onBeamNGWaypoint = onBeamNGWaypoint\n",
-        "M.onRaceWaypointReached = onRaceWaypointReached\n",
         "M.onRaceStart = onRaceStart\n",
         "M.onBeamNGTrigger = onBeamNGTrigger\n",
         "return M"
     ])
 
-    add_to_prefab_file([
-        "new BeamNGTrigger(pierTrigger) {",
-        "    TriggerType = \"Sphere\";",
-        "    TriggerMode = \"Overlaps\";",
-        "    TriggerTestType = \"Bounding Box\";",
-        "    luaFunction = \"onBeamNGTrigger\";",
-        "    tickPeriod = \"100\";",  # FIXME Think about it
-        "    debug = \"0\";",
-        "    ticking = \"0\";",  # FIXME Think about it
-        "    triggerColor = \"255 192 0 45\";",
-        # "    cameraOnEnter = \"pierCamera\";",
-        "    defaultOnLeave = \"1\";",  # FIXME Think about it
-        "    position = \"10 0 0\";",
-        "    scale = \"20 20 20\";",
-        "    rotationMatrix = \"0 0 0 0 0 0 0 0 0\";",
-        "    mode = \"Ignore\";",
-        "    canSave = \"1\";",  # FIXME Think about it
-        "    canSaveDynamicFields = \"1\";",  # FIXME Think about it
-        "};"
-    ])
+    def to_inline_lua(lines: List[str]) -> str:
+        return "\\r\\n".join(lines)
+
+    for participant in participants:
+        waypoints = [WayPoint(participant.initial_state.position, 0)]
+        waypoints.extend(participant.movement)
+        for waypoint in waypoints:
+            x_pos = waypoint.position[0]
+            y_pos = waypoint.position[1]
+            # NOTE Add further tolerance for oversize of bounding box compared to the actual car
+            tolerance = waypoint.tolerance + 0.5
+            add_to_prefab_file([
+                "new BeamNGTrigger() {",
+                "    TriggerType = \"Sphere\";",
+                "    TriggerMode = \"Overlaps\";",
+                "    TriggerTestType = \"Race Corners\";",
+                "    luaFunction = \""
+                + to_inline_lua([
+                    "local function onWaypoint(data)",
+                    "  dump(data)",
+                    "  local vehicle = be:getObjectByID(data['subjectID'])",
+                    "  dump(vehicle)",
+                    "  print(vehicle:getField('position', '0'))",
+                    "end",
+                    "",
+                    "return onWaypoint"
+                ])
+                + "\";",
+                "    tickPeriod = \"100\";",  # FIXME Think about it
+                "    debug = \"0\";",
+                "    ticking = \"0\";",  # FIXME Think about it
+                "    triggerColor = \"255 192 0 45\";",
+                "    defaultOnLeave = \"1\";",  # FIXME Think about it
+                "    position = \"" + str(x_pos) + " " + str(y_pos) + " 0.5\";",
+                "    scale = \"" + str(tolerance) + " " + str(tolerance) + " 10\";",
+                "    rotationMatrix = \"1 0 0 0 1 0 0 0 1\";",
+                "    mode = \"Ignore\";",
+                "    canSave = \"1\";",  # FIXME Think about it
+                "    canSaveDynamicFields = \"1\";",  # FIXME Think about it
+                "};"
+            ])
 
 
 def make_lanes_visible() -> None:
@@ -92,7 +99,7 @@ def make_lanes_visible() -> None:
     prefab_file.close()
 
 
-def add_movements_to_scenario(participants: List[Participant], scenario: Scenario) -> None:
+def start_moving_participants(participants: List[Participant], scenario: Scenario) -> None:
     """
     Makes cars move. Must be called after starting the scenario.
     :param participants: The participants whose movements have to be added.
@@ -108,13 +115,12 @@ def add_movements_to_scenario(participants: List[Participant], scenario: Scenari
             # FIXME Recognize AIModes
             # FIXME Recognize speed limits
             # FIXME Recognize tolerances
-            # path = [{
-            #     'pos': (wp.position[0], wp.position[1], 0),  # FIXME Recognize z-offset of car model
-            #     'speed': wp.target_speed
-            # } for wp in participant.movement]
-            # vehicle.ai_set_line(path)
             for waypoint in participant.movement:
-                vehicle.ai_set_waypoint(waypoint.id)
+                # vehicle.ai_set_waypoint(waypoint.id)  # FIXME Only approaches to the border of the waypoint
+                vehicle.ai_set_line([{
+                    'pos': (waypoint.position[0], waypoint.position[1], 0),  # FIXME Recognize z-offset of car model
+                    'speed': waypoint.target_speed
+                }])
                 break  # FIXME Wait for reaching the waypoint and only then change it
 
 
@@ -136,16 +142,16 @@ def run_test_case(test_case: TestCase):
     test_case.scenario.add_all(bng_scenario)
     bng_scenario.make(bng_instance)
 
-    add_trigger_for_changing_waypoint()
+    enable_participant_movements(test_case.scenario.participants)
     make_lanes_visible()
     # FIXME As long as manually inserting text it can only be called after make
-    test_case.scenario.add_waypoints_to_scenario(bng_scenario)
+    # test_case.scenario.add_waypoints_to_scenario(bng_scenario)
 
     bng_instance.open(launch=True)
     try:
         bng_instance.load_scenario(bng_scenario)
         bng_instance.start_scenario()
-        add_movements_to_scenario(test_case.scenario.participants, bng_scenario)
+        # start_moving_participants(test_case.scenario.participants, bng_scenario)
         input("Press enter to end...")
     finally:
         bng_instance.close()
