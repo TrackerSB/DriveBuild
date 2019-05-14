@@ -84,7 +84,7 @@ class ScenarioBuilder:
                     "   directionalWaypoint = \"0\";",  # FIXME Should I use directional waypoints?
                     "   position = \"" + str(waypoint.position[0]) + " " + str(waypoint.position[1]) + " 0\";",
                     "   scale = \"" + tolerance + " " + tolerance + " " + tolerance + "\";",
-                    "   rotationMatrix = \"0 0 0 0 0 0 0 0 1\";",  # FIXME Think about it
+                    "   rotationMatrix = \"1 0 0 0 1 0 0 0 1\";",
                     "   mode = \"Ignore\";",  # FIXME Which mode is suitable?
                     "   canSave = \"1\";",  # FIXME Think about it
                     "   canSaveDynamicFields = \"1\";",  # FIXME Think about it
