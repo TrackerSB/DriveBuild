@@ -121,8 +121,14 @@ def add_movements_to_scenario(participants: List[Participant], scenario: Scenari
 def run_test_case(test_case: TestCase):
     from app import app
     from beamngpy import BeamNGpy
+    from shutil import rmtree
+    import os
     home_path = app.config["BEAMNG_INSTALL_FOLDER"]
     user_path = app.config["BEAMNG_USER_PATH"]
+
+    # Make sure there is no inference with previous tests while keeping the cache
+    rmtree(os.path.join(user_path, "levels"))
+
     # FIXME Determine port and host automatically. (Is it required to do so?)
     bng_instance = BeamNGpy('localhost', 64256, home=home_path, user=user_path)
     authors = ", ".join(test_case.authors)
