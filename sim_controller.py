@@ -53,11 +53,20 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                 "    TriggerTestType = \"Race Corners\";",
                 "    luaFunction = \""
                 + to_inline_lua([
+                    "local res = require('vehicle/extensions/researchVE')",
                     "local function onWaypoint(data)",
                     "  dump(data)",
                     "  local vehicle = be:getObjectByID(data['subjectID'])",
                     "  dump(vehicle)",
                     "  print(vehicle:getField('position', '0'))",
+                    "  res.handleSetAiLine({",
+                    "    cling = true,",
+                    "    line = { {",
+                    "      pos = { 10, 20, 0},",
+                    "      speed = 60",
+                    "    } },",
+                    "    type = \\\"SetAiLine\\\"",
+                    "  })",
                     "end",
                     "",
                     "return onWaypoint"
@@ -151,6 +160,10 @@ def run_test_case(test_case: TestCase):
     try:
         bng_instance.load_scenario(bng_scenario)
         bng_instance.start_scenario()
+        bng_scenario.get_vehicle("ego").ai_set_line([{
+            'pos': (15, 25, 0),
+            'speed': 65
+        }])
         # start_moving_participants(test_case.scenario.participants, bng_scenario)
         input("Press enter to end...")
     finally:
