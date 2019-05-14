@@ -72,6 +72,9 @@ def add_trigger_for_changing_waypoint() -> None:
 
 
 def make_lanes_visible() -> None:
+    """
+    Workaround for making lanes visible.
+    """
     from common import get_prefab_path
     prefab_file_path = get_prefab_path()
     prefab_file = open(prefab_file_path, "r")
