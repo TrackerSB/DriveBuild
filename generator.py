@@ -101,7 +101,7 @@ class ScenarioBuilder:
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
-    from db_types import LaneNode, Lane, Obstacle, Participant, InitialState, AIMode, CarModel, WayPoint
+    from db_types import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
     from xml_util import xpath
 
     def get_point(node: _Element) -> Tuple[float, float]:
@@ -133,7 +133,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         initial_state = InitialState(
             get_point(initial_state_node),
             float(initial_state_node.get("orientation")),
-            AIMode[initial_state_node.get("aiMode")],
+            MovementMode[initial_state_node.get("movementMode")],
             None if speed_limit is None else float(speed_limit),
             None if target_speed is None else float(target_speed)
         )
@@ -146,7 +146,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 get_point(wp_node),
                 float(wp_node.get("tolerance")),
                 wp_node.get("id"),
-                AIMode[wp_node.get("aiMode")],
+                MovementMode[wp_node.get("movementMode")],
                 None if speed_limit is None else float(speed_limit),
                 None if target_speed is None else float(target_speed)
             ))

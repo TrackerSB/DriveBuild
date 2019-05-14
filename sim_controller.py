@@ -121,7 +121,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
         if vehicle is None:
             eprint("Vehicle to add movement to not found. You may wan to add vehicles first.")
         else:
-            # FIXME Recognize AIModes
+            # FIXME Recognize MovmentModes
             # FIXME Recognize speed limits
             # FIXME Recognize tolerances
             for waypoint in participant.movement:

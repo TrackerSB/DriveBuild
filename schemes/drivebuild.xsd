@@ -132,7 +132,7 @@
     </xs:simpleType>
 
     <!-- Types for participants -->
-    <xs:simpleType name="aiMode">
+    <xs:simpleType name="movementMode">
         <xs:restriction base="xs:string">
             <xs:enumeration value="MANUAL"/>
             <xs:enumeration value="AUTONOMOUS"/>
@@ -142,7 +142,7 @@
 
     <xs:attributeGroup name="movementGroup">
         <xs:attributeGroup ref="positionAttributes"/>
-        <xs:attribute name="aiMode" type="aiMode" use="required"/>
+        <xs:attribute name="movementMode" type="movementMode" use="required"/>
         <xs:attribute name="speed" type="xs:nonNegativeInteger"/>
         <xs:attribute name="speedLimit" type="xs:nonNegativeInteger"/>
     </xs:attributeGroup>
