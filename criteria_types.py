@@ -147,6 +147,7 @@ class SCDistance(StateCondition):
         super().__init__(scenario, participant)
         if max_distance < 0:
             raise ValueError("The maximum allowed distance has to be non negative.")
+        # TODO Check whether other_participant id exists
         self.other_participant = other_participant
         self.max_distance = max_distance
 
