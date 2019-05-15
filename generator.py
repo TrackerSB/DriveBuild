@@ -5,7 +5,7 @@ from beamngpy.sensors import Damage
 from lxml.etree import _ElementTree, _Element
 
 from common import static_vars
-from db_types import Position
+from types.scheme import Position
 
 
 @static_vars(pattern=re.compile(r"\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\))*"))
@@ -37,7 +37,7 @@ def string_to_shape(shape_string: str) -> Optional[List[Position]]:
 
 class ScenarioBuilder:
     from beamngpy import Scenario
-    from db_types import Lane, Obstacle, Participant
+    from types.scheme import Lane, Obstacle, Participant
 
     def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant]):
         if participants is None:
@@ -48,7 +48,7 @@ class ScenarioBuilder:
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
-        from db_types import DBRoad
+        from types.beamng import DBRoad
         for lane in self.lanes:
             if lane.id is None:
                 road = Road('a_asphalt01_a')
@@ -108,7 +108,7 @@ class ScenarioBuilder:
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
-    from db_types import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
+    from types.scheme import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
     from xml_util import xpath
 
     def get_point(node: _Element) -> Tuple[float, float]:

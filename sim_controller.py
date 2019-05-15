@@ -2,7 +2,8 @@ from typing import List
 
 from beamngpy import Scenario
 
-from db_types import TestCase, Participant
+from types.criteria import TestCase
+from types.scheme import Participant
 
 
 def enable_participant_movements(participants: List[Participant]) -> None:
@@ -13,7 +14,7 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     """
     from app import app
     from common import add_to_prefab_file
-    from db_types import WayPoint
+    from types.scheme import WayPoint
     import os
     lua_file_path = os.path.join(
         app.config["BEAMNG_USER_PATH"],
@@ -133,7 +134,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
 
 def run_test_case(test_case: TestCase):
     from app import app
-    from db_types import DBBeamNGpy
+    from types.beamng import DBBeamNGpy
     from shutil import rmtree
     import os
     home_path = app.config["BEAMNG_INSTALL_FOLDER"]

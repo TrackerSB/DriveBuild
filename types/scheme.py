@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple, Optional
-
-from beamngpy import Road, BeamNGpy
+from typing import Tuple, Optional, List
 
 
 class MovementMode(Enum):
@@ -63,12 +61,6 @@ class Lane:
     id: Optional[str] = None
 
 
-class DBRoad(Road):
-    def __init__(self, id: str, material, **options):
-        super().__init__(material, **options)
-        self.id = id
-
-
 @dataclass
 class ScenarioMapping:
     from dataclasses import field
@@ -76,13 +68,3 @@ class ScenarioMapping:
     environment: _ElementTree
     filename: str
     crit_defs: List[_ElementTree] = field(default_factory=list)
-
-
-class DBBeamNGpy(BeamNGpy):
-    def __init__(self, host, port, home=None, user=None):
-        super().__init__(host, port, home, user)
-        self.current_tick = 0
-
-    def step(self, count, wait=True):
-        super().step(count, wait)
-        self.current_tick += 1

@@ -2,7 +2,8 @@ from typing import List
 
 from lxml.etree import _ElementTree
 
-from db_types import ScenarioMapping, TestCase
+from types.criteria import TestCase
+from types.scheme import ScenarioMapping
 
 
 def get_author(root: _ElementTree) -> str:
