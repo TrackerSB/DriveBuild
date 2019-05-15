@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List, Tuple, Optional
 
 
-class MovmentMode(Enum):
+class MovementMode(Enum):
     MANUAL = "manual"
     AUTONOMOUS = "autonomous"
     TRAINING = "training"
@@ -22,7 +22,7 @@ class WayPoint:
     position: Position
     tolerance: float
     id: Optional[str] = None
-    mode: Optional[MovmentMode] = None
+    mode: Optional[MovementMode] = None
     speed_limit: Optional[float] = None
     target_speed: Optional[float] = None
 
@@ -31,7 +31,7 @@ class WayPoint:
 class InitialState:
     position: Tuple[float, float]
     orientation: float
-    mode: MovmentMode
+    mode: MovementMode
     speed_limit: Optional[float] = None
     target_speed: Optional[float] = None
 
