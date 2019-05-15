@@ -47,8 +47,12 @@ class ScenarioBuilder:
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
+        from db_types import DBRoad
         for lane in self.lanes:
-            road = Road('a_asphalt_01_a')
+            if lane.id is None:
+                road = Road('a_asphalt01_a')
+            else:
+                road = DBRoad('a_asphalt_01_a', lane.id)
             road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
             road.nodes.extend(road_nodes)
             scenario.add_road(road)
@@ -114,7 +118,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     lane_nodes = xpath(env, "db:lanes/db:lane")
     for node in lane_nodes:
         lane_segment_nodes = xpath(node, "db:laneSegment")
-        lane = Lane(list(map(node_to_lane, lane_segment_nodes)))
+        lane = Lane(list(map(node_to_lane, lane_segment_nodes)), node.get("db:id"))
         lanes.append(lane)
 
     obstacles = list()

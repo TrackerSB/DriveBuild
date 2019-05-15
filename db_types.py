@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple, Optional
 
+from beamngpy import Road
+
 
 class MovementMode(Enum):
     MANUAL = "manual"
@@ -58,6 +60,13 @@ class LaneNode:
 @dataclass
 class Lane:
     nodes: List[LaneNode]
+    id: Optional[str] = None
+
+
+class DBRoad(Road):
+    def __init__(self, id: str, material, **options):
+        super().__init__(material, **options)
+        self.id = id
 
 
 @dataclass

@@ -92,6 +92,24 @@ class SCArea(StateCondition):
         return self.polygon.contains((x, y))
 
 
+class SCLane(StateCondition):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, participant: str, lane: str):
+        super().__init__(scenario, participant)
+        self.lane = lane
+
+    def eval(self) -> KPValue:
+        # FIXME Implement SCLane
+        if self.lane == "offroad":
+            for road in self.scenario.roads:
+                pass
+        else:
+            for road in self.scenario.roads:
+                pass
+        return KPValue.UNKNOWN
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -130,6 +148,17 @@ class VCArea(ValidationConstraint):
 
     def eval_cond(self) -> KPValue:
         return self.scArea.eval()
+
+
+class VCLane(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, lane: str):
+        super().__init__(scenario, inner)
+        self.scLane = SCLane(scenario, participant, lane)
+
+    def eval_cond(self) -> KPValue:
+        return self.scLane.eval()
 
 
 # Connectives
