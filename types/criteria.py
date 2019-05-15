@@ -173,6 +173,19 @@ class SCLight(StateCondition):
         return KPValue.UNKNOWN
 
 
+class SCWaypoint(StateCondition):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, participant: str, waypoint: str):
+        super().__init__(scenario, participant)
+        # TODO Check whether waypoint id exists
+        self.waypoint = waypoint
+
+    def eval(self) -> KPValue:
+        # FIXME Implement waypoint criterion
+        return KPValue.UNKNOWN
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -300,6 +313,17 @@ class VCLight(ValidationConstraint):
 
     def eval_cond(self) -> KPValue:
         return self.scLight.eval()
+
+
+class VCWaypoint(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, waypoint: str):
+        super().__init__(scenario, inner)
+        self.scWaypoint = SCWaypoint(scenario, participant, waypoint)
+
+    def eval_cond(self) -> KPValue:
+        return self.scWaypoint.eval()
 
 
 # Connectives
