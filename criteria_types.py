@@ -126,6 +126,20 @@ class SCSpeed(StateCondition):
         return KPValue.FALSE if norm(self.get_participant().state["vel"]) > self.speed_limit else KPValue.TRUE
 
 
+class SCDamage(StateCondition):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, participant: str):
+        super().__init__(scenario, participant)
+
+    def eval(self) -> KPValue:
+        damage = self.scenario.bng.poll_sensors()["damage"]
+        print(damage)
+        # FIXME Determine overall damage
+        # TODO Determine whether a car is really "damaged"
+        return KPValue.UNKNOWN
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -186,6 +200,17 @@ class VCSpeed(ValidationConstraint):
 
     def eval_cond(self) -> KPValue:
         return self.scSpeed.eval()
+
+
+class VCDamage(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str):
+        super().__init__(scenario, inner)
+        self.scDamage = SCDamage(scenario, participant)
+
+    def eval_cond(self) -> KPValue:
+        return self.scDamage.eval()
 
 
 # Connectives

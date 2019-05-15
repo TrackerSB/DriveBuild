@@ -1,6 +1,7 @@
 import re
 from typing import List, Optional, Tuple
 
+from beamngpy.sensors import Damage
 from lxml.etree import _ElementTree, _Element
 
 from common import static_vars
@@ -66,6 +67,8 @@ class ScenarioBuilder:
         for participant in self.participants:
             # FIXME Adjust color
             vehicle = Vehicle(participant.id, model=participant.model, color="White", licence=participant.id)
+            # FIXME Always add all possibly needed sensors?
+            vehicle.attach_sensor("damage", Damage())
             initial_state = participant.initial_state
             scenario.add_vehicle(vehicle,
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
