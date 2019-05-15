@@ -414,22 +414,18 @@
             <xs:simpleType>
                 <xs:restriction base="xs:string">
                     <!-- NOTE Lights were found in: -->
-                    <!-- [...]/trunk/lua/vehicle/extensions/outgauge.lua -->
+                    <!-- Dash lights: [...]/trunk/lua/vehicle/extensions/outgauge.lua -->
                     <!-- [...]/trunk/lua/vehicle/electrics.lua -->
 
                     <!-- Dash/show lights -->
-                    <xs:enumeration value="lowBeam"/>
-                    <xs:enumeration value="fullBeam"/>
-                    <xs:enumeration value="handbrake"/>
+                    <xs:enumeration value="lowBeam"/> <!-- (lightsState == 1) -->
+                    <xs:enumeration value="highBeam"/> <!-- (lightsState == 2) -->
                     <xs:enumeration value="signalL"/>
                     <xs:enumeration value="signalR"/>
+                    <xs:enumeration value="signalWarn"/>
                     <xs:enumeration value="fogLights"/>
 
                     <!-- TODO Do the following exist in BeamNG? -->
-                    <!--<xs:enumeration value="lowBeam"/>
-                    <xs:enumeration value="highBeam"/>
-                    <xs:enumeration value="blinkerRight"/>
-                    <xs:enumeration value="blinkerLeft"/>
                     <xs:enumeration value="backupLight"/>
                     <xs:enumeration value="rearFogLamp"/>
                     <xs:enumeration value="frontFogLamp"/>-->
