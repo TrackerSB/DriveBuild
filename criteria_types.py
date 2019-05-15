@@ -213,6 +213,26 @@ class VCDamage(ValidationConstraint):
         return self.scDamage.eval()
 
 
+class VCTime(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, from_tick: int, to_tick: int):
+        # FIXME from_step/to_step inclusive/exclusive?
+        super().__init__(scenario, inner)
+        self.from_tick = from_tick
+        self.to_tick = to_tick
+
+    def eval_cond(self) -> KPValue:
+        from db_types import DBBeamNGpy
+        from warnings import warn
+        bng = self.scenario.bng
+        if type(bng) is DBBeamNGpy:
+            # FIXME from_step/to_step inclusive/exclusive?
+            return KPValue.TRUE if self.from_tick <= bng.current_tick <= self.to_tick else KPValue.FALSE
+        else:
+            warn("The underlying BeamNGpy instance does not provide time information.")
+
+
 # Connectives
 class Connective(Evaluable, ABC):
     pass

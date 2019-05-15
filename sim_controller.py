@@ -133,7 +133,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
 
 def run_test_case(test_case: TestCase):
     from app import app
-    from beamngpy import BeamNGpy
+    from db_types import DBBeamNGpy
     from shutil import rmtree
     import os
     home_path = app.config["BEAMNG_INSTALL_FOLDER"]
@@ -143,7 +143,7 @@ def run_test_case(test_case: TestCase):
     rmtree(os.path.join(user_path, "levels"))
 
     # FIXME Determine port and host automatically. (Is it required to do so?)
-    bng_instance = BeamNGpy('localhost', 64256, home=home_path, user=user_path)
+    bng_instance = DBBeamNGpy('localhost', 64256, home=home_path, user=user_path)
     authors = ", ".join(test_case.authors)
     bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], app.config["BEAMNG_SCENARIO_NAME"], authors=authors)
     test_case.scenario.add_all(bng_scenario)
