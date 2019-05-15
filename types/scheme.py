@@ -13,6 +13,15 @@ class CarModel(Enum):
     ETK800 = "etk800"
 
 
+class CarLight(Enum):
+    LOW_BEAM = "lowBeam",
+    HIGH_BEAM = "highBeam",
+    SIGNAL_L = "signalL",
+    SIGNAL_R = "signalR",
+    SIGNAL_WARN = "signalWarn",
+    FOG_LIGHTS = "fogLights"
+
+
 Position = Tuple[float, float]
 
 

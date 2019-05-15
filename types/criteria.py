@@ -159,6 +159,20 @@ class SCDistance(StateCondition):
         return KPValue.FALSE if norm(array((x, y)) - array((other_x, other_y))) > self.max_distance else KPValue.TRUE
 
 
+class SCLight(StateCondition):
+    from beamngpy import Scenario
+    from types.scheme import CarLight
+
+    def __init__(self, scenario: Scenario, participant: str, light: CarLight):
+        super().__init__(scenario, participant)
+        self.light = light
+
+    def eval(self) -> KPValue:
+        # FIXME Implement light criterion
+        print(self.scenario.bng.poll_sensors(self.get_participant())["electrics"])
+        return KPValue.UNKNOWN
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -274,6 +288,18 @@ class VCTTC(ValidationConstraint):
         # TODO Determine collision to which participant/obstacle
         # FIXME Position is in center of car vs crash when colliding with its bounding box
         return KPValue.UNKNOWN
+
+
+class VCLight(ValidationConstraint):
+    from beamngpy import Scenario
+    from types.scheme import CarLight
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, light: CarLight):
+        super().__init__(scenario, inner)
+        self.scLight = SCLight(scenario, participant, light)
+
+    def eval_cond(self) -> KPValue:
+        return self.scLight.eval()
 
 
 # Connectives
