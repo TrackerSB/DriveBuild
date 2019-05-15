@@ -55,6 +55,7 @@ class StateCondition(Criteria, ABC):
 
     def __init__(self, scenario: Scenario, participant: str) -> None:
         super().__init__(scenario)
+        # TODO Check existence of participant id
         self.participant = participant
 
     def get_participant(self) -> Vehicle:
@@ -97,6 +98,7 @@ class SCLane(StateCondition):
 
     def __init__(self, scenario: Scenario, participant: str, lane: str):
         super().__init__(scenario, participant)
+        # TODO Check existence of lane id
         self.lane = lane
 
     def eval(self) -> KPValue:
