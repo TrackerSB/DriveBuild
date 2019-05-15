@@ -140,6 +140,24 @@ class SCDamage(StateCondition):
         return KPValue.UNKNOWN
 
 
+class SCDistance(StateCondition):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, participant: str, other_participant: str, max_distance: float):
+        super().__init__(scenario, participant)
+        if max_distance < 0:
+            raise ValueError("The maximum allowed distance has to be non negative.")
+        self.other_participant = other_participant
+        self.max_distance = max_distance
+
+    def eval(self) -> KPValue:
+        from numpy import array
+        from numpy.linalg import norm
+        x, y, _ = self.get_participant().state["pos"]
+        other_x, other_y, _ = self.scenario.get_vehicle(self.other_participant)
+        return KPValue.FALSE if norm(array((x, y)) - array((other_x, other_y))) > self.max_distance else KPValue.TRUE
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -231,6 +249,18 @@ class VCTime(ValidationConstraint):
             return KPValue.TRUE if self.from_tick <= bng.current_tick <= self.to_tick else KPValue.FALSE
         else:
             warn("The underlying BeamNGpy instance does not provide time information.")
+
+
+class VCDistance(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, other_participant: str,
+                 max_distance: float):
+        super().__init__(scenario, inner)
+        self.scDistance = SCDistance(scenario, participant, other_participant, max_distance)
+
+    def eval_cond(self) -> KPValue:
+        return self.scDistance.eval()
 
 
 # Connectives
