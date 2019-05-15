@@ -146,6 +146,19 @@ class SCPosition(StateCondition):
         return KPValue.TRUE if norm(array((x, y)) - array((self.x, self.y))) <= self.tolerance else KPValue.FALSE
 
 
+class SCArea(StateCondition):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, participant: str, points: List[Tuple[float, float]]):
+        from shapely.geometry import Polygon
+        super().__init__(scenario, participant)
+        self.polygon = Polygon(points)
+
+    def eval(self) -> KPValue:
+        x, y, _ = self.get_participant().state["pos"]
+        return self.polygon.contains((x, y))
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -173,6 +186,17 @@ class VCPosition(ValidationConstraint):
 
     def eval_cond(self) -> KPValue:
         return self.scPosition.eval()
+
+
+class VCArea(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, points: List[Tuple[float, float]]):
+        super().__init__(scenario, inner)
+        self.scArea = SCArea(scenario, participant, points)
+
+    def eval_cond(self) -> KPValue:
+        return self.scArea.eval()
 
 
 # Connectives
