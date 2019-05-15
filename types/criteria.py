@@ -133,7 +133,7 @@ class SCDamage(StateCondition):
         super().__init__(scenario, participant)
 
     def eval(self) -> KPValue:
-        damage = self.scenario.bng.poll_sensors()["damage"]
+        damage = self.scenario.bng.poll_sensors(self.get_participant())["damage"]
         print(damage)
         # FIXME Determine overall damage
         # TODO Determine whether a car is really "damaged"
