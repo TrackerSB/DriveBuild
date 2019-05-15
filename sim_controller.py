@@ -6,6 +6,11 @@ from db_types import TestCase, Participant
 
 
 def enable_participant_movements(participants: List[Participant]) -> None:
+    """
+    Adds triggers to the scenario that set the next waypoints for the given participants. Must be called after adding
+    the waypoints. Otherwise some IDs of waypoints may be None.
+    :param participants: The participants to add movement changing triggers to
+    """
     from app import app
     from common import add_to_prefab_file
     from db_types import WayPoint
@@ -41,7 +46,7 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     for participant in participants:
         waypoints = [WayPoint(participant.initial_state.position, 0)]
         waypoints.extend(participant.movement)
-        for waypoint in waypoints:
+        for idx, waypoint in enumerate(waypoints[:-1]):
             x_pos = waypoint.position[0]
             y_pos = waypoint.position[1]
             # NOTE Add further tolerance for oversize of bounding box compared to the actual car
@@ -53,20 +58,13 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                 "    TriggerTestType = \"Race Corners\";",
                 "    luaFunction = \""
                 + to_inline_lua([
-                    "local res = require('vehicle/extensions/researchVE')",
+                    "local sh = require('ge/extensions/scenario/scenariohelper')",
+                    "local wps = require('ge/extensions/scenario/waypoints')",
                     "local function onWaypoint(data)",
                     "  dump(data)",
-                    "  local vehicle = be:getObjectByID(data['subjectID'])",
-                    "  dump(vehicle)",
-                    "  print(vehicle:getField('position', '0'))",
-                    "  res.handleSetAiLine({",
-                    "    cling = true,",
-                    "    line = { {",
-                    "      pos = { 10, 20, 0},",
-                    "      speed = 60",
-                    "    } },",
-                    "    type = \\\"SetAiLine\\\"",
-                    "  })",
+                    "  if data['event'] == 'enter' then",
+                    "    sh.setAiRoute('" + participant.id + "', {'" + waypoints[idx + 1].id + "'})",
+                    "  end",
                     "end",
                     "",
                     "return onWaypoint"
@@ -151,10 +149,10 @@ def run_test_case(test_case: TestCase):
     test_case.scenario.add_all(bng_scenario)
     bng_scenario.make(bng_instance)
 
-    enable_participant_movements(test_case.scenario.participants)
     make_lanes_visible()
     # FIXME As long as manually inserting text it can only be called after make
-    # test_case.scenario.add_waypoints_to_scenario(bng_scenario)
+    test_case.scenario.add_waypoints_to_scenario(bng_scenario)
+    enable_participant_movements(test_case.scenario.participants)
 
     bng_instance.open(launch=True)
     try:
