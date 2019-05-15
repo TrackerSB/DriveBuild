@@ -112,6 +112,20 @@ class SCLane(StateCondition):
         return KPValue.UNKNOWN
 
 
+class SCSpeed(StateCondition):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, participant: str, speed_limit: float):
+        super().__init__(scenario, participant)
+        if speed_limit < 0:
+            raise ValueError("Speed limits must be non negative.")
+        self.speed_limit = speed_limit
+
+    def eval(self) -> KPValue:
+        from numpy.linalg import norm
+        return KPValue.FALSE if norm(self.get_participant().state["vel"]) > self.speed_limit else KPValue.TRUE
+
+
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
@@ -161,6 +175,17 @@ class VCLane(ValidationConstraint):
 
     def eval_cond(self) -> KPValue:
         return self.scLane.eval()
+
+
+class VCSpeed(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, speed_limit: float):
+        super().__init__(scenario, inner)
+        self.scSpeed = SCSpeed(scenario, participant, speed_limit)
+
+    def eval_cond(self) -> KPValue:
+        return self.scSpeed.eval()
 
 
 # Connectives
