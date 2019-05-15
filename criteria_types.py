@@ -264,6 +264,18 @@ class VCDistance(ValidationConstraint):
         return self.scDistance.eval()
 
 
+class VCTTC(ValidationConstraint):
+    from beamngpy import Scenario
+
+    def __init__(self, scenario: Scenario, inner: Evaluable):
+        super().__init__(scenario, inner)
+
+    def eval_cond(self) -> KPValue:
+        # TODO Determine collision to which participant/obstacle
+        # FIXME Position is in center of car vs crash when colliding with its bounding box
+        return KPValue.UNKNOWN
+
+
 # Connectives
 class Connective(Evaluable, ABC):
     pass
