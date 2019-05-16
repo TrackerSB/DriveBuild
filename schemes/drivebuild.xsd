@@ -31,17 +31,7 @@
                 <xs:element name="obstacles" minOccurs="0">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="obstacle" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:attribute name="shape" use="required">
-                                        <xs:simpleType>
-                                            <xs:list itemType="minThreePointTuples"/>
-                                        </xs:simpleType>
-                                    </xs:attribute>
-                                    <xs:attribute name="height" type="positiveDecimal" use="required"/>
-                                    <xs:attribute name="id" type="xs:ID"/>
-                                </xs:complexType>
-                            </xs:element>
+                            <xs:element ref="obstacle" maxOccurs="unbounded"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -115,6 +105,45 @@
                 <xs:element name="success" type="criterion" minOccurs="0"/>
                 <xs:element name="failure" type="criterion" minOccurs="0"/>
             </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Obstacle types -->
+    <xs:complexType name="obstacle">
+        <xs:attributeGroup ref="positionAttributes"/>
+        <xs:attribute name="xRot" type="positiveDecimal" default="0"/>
+        <xs:attribute name="yRot" type="positiveDecimal" default="0"/>
+        <xs:attribute name="zRot" type="positiveDecimal" default="0"/>
+        <xs:attribute name="height" type="positiveDecimal" use="required"/>
+        <xs:attribute name="id" type="xs:ID"/>
+    </xs:complexType>
+    <xs:element name="obstacle" type="obstacle" abstract="true"/>
+    <xs:element name="cube" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                    <xs:attribute name="width" type="positiveDecimal" use="required"/>
+                    <xs:attribute name="length" type="positiveDecimal" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cylinder" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                    <xs:attribute name="radius" type="positiveDecimal" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cone" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                    <xs:attribute name="baseRadius" type="positiveDecimal" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
         </xs:complexType>
     </xs:element>
 
@@ -229,13 +258,14 @@
     </xs:element>
 
     <!-- Area criterion -->
-    <xs:simpleType name="minThreePointTuples">
-        <xs:restriction base="xs:string">
-            <xs:pattern value='\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\)){2,}'/>
-        </xs:restriction>
-    </xs:simpleType>
     <xs:attributeGroup name="area">
-        <xs:attribute name="points" type="minThreePointTuples" use="required"/>
+        <xs:attribute name="points" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value='\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\)){2,}'/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:attributeGroup>
     <xs:element name="scArea" substitutionGroup="stateCondition">
         <xs:complexType>
