@@ -386,7 +386,7 @@
 
     <!-- Light criterion -->
     <xs:attributeGroup name="light">
-        <xs:attribute name="state" use="required">
+        <xs:attribute name="turnedOn" use="required">
             <xs:simpleType>
                 <xs:restriction base="xs:string">
                     <!-- NOTE Lights were found in: -->
