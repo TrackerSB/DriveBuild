@@ -231,7 +231,7 @@ class VCTime(ValidationConstraint):
         self.to_tick = to_tick
 
     def eval_cond(self) -> KPValue:
-        from db_types import DBBeamNGpy
+        from types.beamng import DBBeamNGpy
         from warnings import warn
         bng = self.scenario.bng
         if type(bng) is DBBeamNGpy:
