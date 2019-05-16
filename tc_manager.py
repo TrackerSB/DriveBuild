@@ -3,7 +3,7 @@ from typing import Tuple, List
 from lxml.etree import _ElementTree
 from werkzeug.datastructures import FileStorage
 
-from types.scheme import ScenarioMapping
+from dbtypes.scheme import ScenarioMapping
 
 
 def extract_test_cases(zip_file: FileStorage) -> str:

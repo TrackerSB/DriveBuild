@@ -118,7 +118,7 @@
         </xs:complexType>
     </xs:element>
 
-    <!-- Basic types -->
+    <!-- Basic dbtypes -->
     <xs:attributeGroup name="positionAttributes">
         <xs:attribute name="x" type="xs:decimal" use="required"/>
         <xs:attribute name="y" type="xs:decimal" use="required"/>
@@ -147,7 +147,7 @@
         <xs:attribute name="speedLimit" type="xs:nonNegativeInteger"/>
     </xs:attributeGroup>
 
-    <!-- Connective types -->
+    <!-- Connective dbtypes -->
     <xs:complexType name="binaryOp">
         <xs:sequence>
             <xs:element ref="criterion" minOccurs="2" maxOccurs="unbounded"/>
@@ -165,7 +165,7 @@
         </xs:complexType>
     </xs:element>
 
-    <!-- Criterion types -->
+    <!-- Criterion dbtypes -->
     <xs:complexType name="stateCondition">
         <xs:attribute name="participant" use="required">
             <xs:simpleType>

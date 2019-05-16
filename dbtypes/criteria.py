@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 
 from beamngpy import Scenario
 
@@ -100,10 +100,10 @@ class SCLane(StateCondition):
         # FIXME Implement SCLane
         if self.lane == "offroad":
             for road in self.scenario.roads:
-                pass
+                edges = self.scenario.bng.get_road_edges(road)
         else:
             for road in self.scenario.roads:
-                pass
+                edges = self.scenario.bng.get_road_edges(road)
         return KPValue.UNKNOWN
 
 
@@ -149,7 +149,7 @@ class SCDistance(StateCondition):
 
 
 class SCLight(StateCondition):
-    from types.scheme import CarLight
+    from dbtypes.scheme import CarLight
 
     def __init__(self, scenario: Scenario, participant: str, light: CarLight):
         super().__init__(scenario, participant)
@@ -231,7 +231,7 @@ class VCTime(ValidationConstraint):
         self.to_tick = to_tick
 
     def eval_cond(self) -> KPValue:
-        from types.beamng import DBBeamNGpy
+        from dbtypes.beamng import DBBeamNGpy
         from warnings import warn
         bng = self.scenario.bng
         if type(bng) is DBBeamNGpy:
@@ -276,19 +276,18 @@ class Connective(Evaluable, ABC):
 
 
 class BinaryConnective(Connective, ABC):
-    def __init__(self, left: Criteria, right: Criteria) -> None:
-        self.left = left
-        self.right = right
+    def __init__(self, evaluables: List[Evaluable]) -> None:
+        self.evaluables = evaluables
 
 
 class And(BinaryConnective):
     def eval(self) -> KPValue:
-        return self.left.eval() and self.right.eval()
+        return KPValue.TRUE if all(map(lambda e: e.eval(), self.evaluables)) else KPValue.FALSE
 
 
 class Or(BinaryConnective):
     def eval(self) -> KPValue:
-        return self.left.eval() or self.right.eval()
+        return KPValue.TRUE if any(map(lambda e: e.eval(), self.evaluables)) else KPValue.FALSE
 
 
 class Not(Connective):
@@ -304,5 +303,5 @@ class Not(Connective):
 class TestCase:
     from generator import ScenarioBuilder
     scenario: ScenarioBuilder
-    crit_def: Evaluable
+    crit_eval: Callable[[Scenario], Evaluable]
     authors: List[str]

@@ -1,43 +1,12 @@
-import re
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from beamngpy.sensors import Damage, Electrics
 from lxml.etree import _ElementTree, _Element
 
-from common import static_vars
-from types.scheme import Position
-
-
-@static_vars(pattern=re.compile(r"\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\))*"))
-def is_valid_shape_string(pos_str: str) -> bool:
-    """
-    Checks whether the given string is of the form "(x_1,y_1);(x_2,y_2);...;(x_n,y_n)".
-    :return: True only if the given string is of the right form.
-    """
-    return is_valid_shape_string.pattern.match(pos_str)
-
-
-def string_to_shape(shape_string: str) -> Optional[List[Position]]:
-    """
-    Converts strings like "(x_1,y_1);(x_2,y_2);...;(x_n,y_n)" to a list of positions.
-    :return: The list of positions represented by the given string
-    """
-    if is_valid_shape_string(shape_string):
-        positions = list()
-        position_strings = shape_string.split(";")
-        for pos_str in position_strings:
-            vals = pos_str.split(",")
-            x_val = vals[0][1:]
-            y_val = vals[1][:-1]
-            positions.append((int(x_val), int(y_val)))
-        return positions
-    else:
-        return None
-
 
 class ScenarioBuilder:
     from beamngpy import Scenario
-    from types.scheme import Lane, Obstacle, Participant
+    from dbtypes.scheme import Lane, Obstacle, Participant
 
     def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant]):
         if participants is None:
@@ -48,7 +17,7 @@ class ScenarioBuilder:
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
-        from types.beamng import DBRoad
+        from dbtypes.beamng import DBRoad
         for lane in self.lanes:
             if lane.id is None:
                 road = Road('a_asphalt01_a')
@@ -108,8 +77,9 @@ class ScenarioBuilder:
 
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
+    from common import string_to_shape
     from lxml.etree import _Element
-    from types.scheme import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
+    from dbtypes.scheme import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
     from xml_util import xpath
 
     def get_point(node: _Element) -> Tuple[float, float]:
