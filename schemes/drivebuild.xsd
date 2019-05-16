@@ -409,6 +409,24 @@
             </xs:simpleType>
         </xs:attribute>
     </xs:attributeGroup>
+    <xs:element name="scLight">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="stateCondition">
+                    <xs:attributeGroup ref="light"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="vcLight">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="validationConstraint">
+                    <xs:attributeGroup ref="light"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 
     <!-- Waypoint criterion -->
     <xs:attributeGroup name="waypoint">
