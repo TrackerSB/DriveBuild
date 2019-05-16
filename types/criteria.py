@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
 
+from beamngpy import Scenario
+
 
 class KPValue(Enum):
     """
@@ -43,8 +45,6 @@ class Evaluable(ABC):
 
 
 class Criteria(Evaluable, ABC):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario) -> None:
         self.scenario = scenario
 
@@ -52,7 +52,7 @@ class Criteria(Evaluable, ABC):
 # State conditions
 # FIXME Recognize "any" participant
 class StateCondition(Criteria, ABC):
-    from beamngpy import Scenario, Vehicle
+    from beamngpy import Vehicle
 
     def __init__(self, scenario: Scenario, participant: str) -> None:
         super().__init__(scenario)
@@ -64,8 +64,6 @@ class StateCondition(Criteria, ABC):
 
 
 class SCPosition(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str, x: float, y: float, tolerance: float):
         super().__init__(scenario, participant)
         if tolerance < 0:
@@ -82,8 +80,6 @@ class SCPosition(StateCondition):
 
 
 class SCArea(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str, points: List[Tuple[float, float]]):
         from shapely.geometry import Polygon
         super().__init__(scenario, participant)
@@ -95,8 +91,6 @@ class SCArea(StateCondition):
 
 
 class SCLane(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str, lane: str):
         super().__init__(scenario, participant)
         # TODO Check existence of lane id
@@ -114,8 +108,6 @@ class SCLane(StateCondition):
 
 
 class SCSpeed(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str, speed_limit: float):
         super().__init__(scenario, participant)
         if speed_limit < 0:
@@ -128,8 +120,6 @@ class SCSpeed(StateCondition):
 
 
 class SCDamage(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str):
         super().__init__(scenario, participant)
 
@@ -142,8 +132,6 @@ class SCDamage(StateCondition):
 
 
 class SCDistance(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str, other_participant: str, max_distance: float):
         super().__init__(scenario, participant)
         if max_distance < 0:
@@ -161,7 +149,6 @@ class SCDistance(StateCondition):
 
 
 class SCLight(StateCondition):
-    from beamngpy import Scenario
     from types.scheme import CarLight
 
     def __init__(self, scenario: Scenario, participant: str, light: CarLight):
@@ -175,8 +162,6 @@ class SCLight(StateCondition):
 
 
 class SCWaypoint(StateCondition):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, participant: str, waypoint: str):
         super().__init__(scenario, participant)
         # TODO Check whether waypoint id exists
@@ -190,7 +175,6 @@ class SCWaypoint(StateCondition):
 # Validation constraints
 class ValidationConstraint(Criteria, ABC):
     from abc import abstractmethod
-    from beamngpy import Scenario
 
     def __init__(self, scenario: Scenario, inner: Evaluable) -> None:
         super().__init__(scenario)
@@ -205,64 +189,41 @@ class ValidationConstraint(Criteria, ABC):
         pass
 
 
-class VCPosition(ValidationConstraint):
-    from beamngpy import Scenario
-
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, x: float, y: float, tolerance: float):
+class ValidationConstraintSC(ValidationConstraint, ABC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: StateCondition):
         super().__init__(scenario, inner)
-        self.scPosition = SCPosition(scenario, participant, x, y, tolerance)
+        self.sc = sc
 
     def eval_cond(self) -> KPValue:
-        return self.scPosition.eval()
+        return self.sc.eval()
 
 
-class VCArea(ValidationConstraint):
-    from beamngpy import Scenario
-
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, points: List[Tuple[float, float]]):
-        super().__init__(scenario, inner)
-        self.scArea = SCArea(scenario, participant, points)
-
-    def eval_cond(self) -> KPValue:
-        return self.scArea.eval()
+class VCPosition(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCPosition):
+        super().__init__(scenario, inner, sc)
 
 
-class VCLane(ValidationConstraint):
-    from beamngpy import Scenario
-
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, lane: str):
-        super().__init__(scenario, inner)
-        self.scLane = SCLane(scenario, participant, lane)
-
-    def eval_cond(self) -> KPValue:
-        return self.scLane.eval()
+class VCArea(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCArea):
+        super().__init__(scenario, inner, sc)
 
 
-class VCSpeed(ValidationConstraint):
-    from beamngpy import Scenario
-
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, speed_limit: float):
-        super().__init__(scenario, inner)
-        self.scSpeed = SCSpeed(scenario, participant, speed_limit)
-
-    def eval_cond(self) -> KPValue:
-        return self.scSpeed.eval()
+class VCLane(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCLane):
+        super().__init__(scenario, inner, sc)
 
 
-class VCDamage(ValidationConstraint):
-    from beamngpy import Scenario
+class VCSpeed(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCSpeed):
+        super().__init__(scenario, inner, sc)
 
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str):
-        super().__init__(scenario, inner)
-        self.scDamage = SCDamage(scenario, participant)
 
-    def eval_cond(self) -> KPValue:
-        return self.scDamage.eval()
+class VCDamage(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCDamage):
+        super().__init__(scenario, inner, sc)
 
 
 class VCTime(ValidationConstraint):
-    from beamngpy import Scenario
-
     def __init__(self, scenario: Scenario, inner: Evaluable, from_tick: int, to_tick: int):
         # FIXME from_step/to_step inclusive/exclusive?
         super().__init__(scenario, inner)
@@ -280,16 +241,9 @@ class VCTime(ValidationConstraint):
             warn("The underlying BeamNGpy instance does not provide time information.")
 
 
-class VCDistance(ValidationConstraint):
-    from beamngpy import Scenario
-
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, other_participant: str,
-                 max_distance: float):
-        super().__init__(scenario, inner)
-        self.scDistance = SCDistance(scenario, participant, other_participant, max_distance)
-
-    def eval_cond(self) -> KPValue:
-        return self.scDistance.eval()
+class VCDistance(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCDistance):
+        super().__init__(scenario, inner, sc)
 
 
 class VCTTC(ValidationConstraint):
@@ -304,27 +258,16 @@ class VCTTC(ValidationConstraint):
         return KPValue.UNKNOWN
 
 
-class VCLight(ValidationConstraint):
-    from beamngpy import Scenario
-    from types.scheme import CarLight
-
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, light: CarLight):
-        super().__init__(scenario, inner)
-        self.scLight = SCLight(scenario, participant, light)
-
-    def eval_cond(self) -> KPValue:
-        return self.scLight.eval()
+class VCLight(ValidationConstraintSC):
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCLight):
+        super().__init__(scenario, inner, sc)
 
 
-class VCWaypoint(ValidationConstraint):
+class VCWaypoint(ValidationConstraintSC):
     from beamngpy import Scenario
 
-    def __init__(self, scenario: Scenario, inner: Evaluable, participant: str, waypoint: str):
-        super().__init__(scenario, inner)
-        self.scWaypoint = SCWaypoint(scenario, participant, waypoint)
-
-    def eval_cond(self) -> KPValue:
-        return self.scWaypoint.eval()
+    def __init__(self, scenario: Scenario, inner: Evaluable, sc: SCWaypoint):
+        super().__init__(scenario, inner, sc)
 
 
 # Connectives
