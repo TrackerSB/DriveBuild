@@ -394,12 +394,12 @@
                     <!-- [...]/trunk/lua/vehicle/electrics.lua -->
 
                     <!-- Dash/show lights -->
-                    <xs:enumeration value="lowBeam"/> <!-- (lightsState == 1) -->
-                    <xs:enumeration value="highBeam"/> <!-- (lightsState == 2) -->
-                    <xs:enumeration value="signalL"/>
-                    <xs:enumeration value="signalR"/>
-                    <xs:enumeration value="signalWarn"/>
-                    <xs:enumeration value="fogLights"/>
+                    <xs:enumeration value="LOW_BEAM"/> <!-- (lightsState == 1) -->
+                    <xs:enumeration value="HIGH_BEAM"/> <!-- (lightsState == 2) -->
+                    <xs:enumeration value="SIGNAL_L"/>
+                    <xs:enumeration value="SIGNAL_R"/>
+                    <xs:enumeration value="SIGNAL_WARN"/>
+                    <xs:enumeration value="FOG_LIGHTS"/>
 
                     <!-- TODO Do the following exist in BeamNG? -->
                     <xs:enumeration value="backupLight"/>
