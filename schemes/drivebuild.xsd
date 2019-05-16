@@ -156,8 +156,8 @@
 
     <xs:element name="connective" abstract="true"/>
     <xs:element name="and" substitutionGroup="connective" type="binaryOp"/>
-    <xs:element name="or" type="binaryOp"/>
-    <xs:element name="not">
+    <xs:element name="or" substitutionGroup="connective" type="binaryOp"/>
+    <xs:element name="not" substitutionGroup="connective">
         <xs:complexType>
             <xs:all>
                 <xs:element ref="criterion"/>
