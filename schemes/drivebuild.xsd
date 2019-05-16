@@ -193,8 +193,8 @@
         </xs:complexContent>
     </xs:complexType>
     <xs:element name="criterion" type="criterion" abstract="true"/>
-    <xs:element name="stateCondition" type="stateCondition" abstract="true"/>
-    <xs:element name="validationConstraint" type="validationConstraint" abstract="true"/>
+    <xs:element name="stateCondition" substitutionGroup="criterion" type="stateCondition" abstract="true"/>
+    <xs:element name="validationConstraint" substitutionGroup="criterion" type="validationConstraint" abstract="true"/>
 
     <xs:complexType name="criterion">
         <xs:choice>
