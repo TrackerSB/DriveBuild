@@ -402,7 +402,7 @@
                     <xs:enumeration value="FOG_LIGHTS"/>
 
                     <!-- TODO Do the following exist in BeamNG? -->
-                    <xs:enumeration value="backupLight"/>
+                    <!--<xs:enumeration value="backupLight"/>
                     <xs:enumeration value="rearFogLamp"/>
                     <xs:enumeration value="frontFogLamp"/>-->
                 </xs:restriction>
