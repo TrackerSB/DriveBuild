@@ -50,6 +50,7 @@ class Criteria(Evaluable, ABC):
 
 
 # State conditions
+# FIXME Recognize "any" participant
 class StateCondition(Criteria, ABC):
     from beamngpy import Scenario, Vehicle
 
