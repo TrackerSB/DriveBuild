@@ -25,7 +25,7 @@
     <failure>
         <or>
             <scDamage participant="ego"/>
-            <scLane participant="ego" lane="offroad"/>
+            <scLane participant="ego" onLane="offroad"/>
         </or>
     </failure>
 </criteria>

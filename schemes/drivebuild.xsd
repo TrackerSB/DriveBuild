@@ -214,14 +214,14 @@
     </xs:complexType>
     <xs:complexType name="validationConstraint">
         <xs:complexContent>
-            <xs:extension base="stateCondition">
-                <xs:all>
+            <xs:extension base="criterion">
+                <xs:sequence>
                     <xs:element ref="criterion"/>
-                </xs:all>
+                </xs:sequence>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
-    <xs:element name="criterion" type="criterion" abstract="true"/>
+    <xs:element name="criterion" abstract="true"/>
     <xs:element name="stateCondition" substitutionGroup="criterion" type="stateCondition" abstract="true"/>
     <xs:element name="validationConstraint" substitutionGroup="criterion" type="validationConstraint" abstract="true"/>
 
@@ -229,6 +229,7 @@
         <xs:choice>
             <xs:element ref="connective"/>
             <xs:element ref="stateCondition"/>
+            <xs:element ref="validationConstraint"/>
         </xs:choice>
     </xs:complexType>
 
