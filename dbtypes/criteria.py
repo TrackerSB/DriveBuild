@@ -44,6 +44,15 @@ class Evaluable(ABC):
         pass
 
 
+class UnknownEvaluable(Evaluable):
+    """
+    A class that can be used for representing an "empty" evaluable e.g. representing an empty precondition criterion.
+    """
+
+    def eval(self) -> KPValue:
+        return KPValue.UNKNOWN
+
+
 class Criteria(Evaluable, ABC):
     def __init__(self, scenario: Scenario) -> None:
         self.scenario = scenario
@@ -298,10 +307,15 @@ class Not(Connective):
         return self.evaluable.eval()
 
 
+CriteriaFunction = Callable[[Scenario], Evaluable]
+
+
 # Test case type
 @dataclass
 class TestCase:
     from generator import ScenarioBuilder
     scenario: ScenarioBuilder
-    crit_eval: Callable[[Scenario], Evaluable]
+    is_precondition: CriteriaFunction
+    is_success: CriteriaFunction
+    is_failure: CriteriaFunction
     authors: List[str]

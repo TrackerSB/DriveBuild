@@ -28,3 +28,18 @@ def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
 
 def xpath(xml_tree: Union[_Element, _ElementTree], expression: str) -> Union[List[_Element], _ElementTree]:
     return xml_tree.xpath(expression, namespaces=NAMESPACES)
+
+
+def has_tag(node: _Element, namespace: Optional[str], tag_name: str) -> bool:
+    if namespace in NAMESPACES:
+        if namespace is None:
+            prefix = ""
+        else:
+            prefix = "{" + NAMESPACES[namespace] + "}"
+        return node.tag == (prefix + tag_name)
+    else:
+        raise ValueError("There is no namespace " + namespace)
+
+
+def get_tag_name(node: _Element) -> str:
+    return node.tag.split("}")[1] if "}" in node.tag else node.tag
