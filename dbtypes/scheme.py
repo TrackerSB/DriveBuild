@@ -50,10 +50,10 @@ class Obstacle(ABC):
     x: float
     y: float
     height: float
-    id: Optional[str]  # = None  # NOTE Limitation of inheritance from dataclasses
-    x_rot: Optional[float]  # = 0  # NOTE Limitation of inheritance from dataclasses
-    y_rot: Optional[float]  # = 0  # NOTE Limitation of inheritance from dataclasses
-    z_rot: Optional[float]  # = 0  # NOTE Limitation of inheritance from dataclasses
+    # id: Optional[str] = None  # NOTE Limitation of inheritance from dataclasses
+    # x_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
+    # y_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
+    # z_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
 
 
 @dataclass

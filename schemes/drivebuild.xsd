@@ -111,9 +111,9 @@
     <!-- Obstacle types -->
     <xs:complexType name="obstacle">
         <xs:attributeGroup ref="positionAttributes"/>
-        <xs:attribute name="xRot" type="positiveDecimal" default="0"/>
-        <xs:attribute name="yRot" type="positiveDecimal" default="0"/>
-        <xs:attribute name="zRot" type="positiveDecimal" default="0"/>
+        <xs:attribute name="xRot" type="nonNegativeDecimal" default="0"/>
+        <xs:attribute name="yRot" type="nonNegativeDecimal" default="0"/>
+        <xs:attribute name="zRot" type="nonNegativeDecimal" default="0"/>
         <xs:attribute name="height" type="positiveDecimal" use="required"/>
         <xs:attribute name="id" type="xs:ID"/>
     </xs:complexType>
@@ -156,6 +156,12 @@
     <xs:simpleType name="positiveDecimal">
         <xs:restriction base="xs:decimal">
             <xs:minExclusive value="0"/>
+            <xs:fractionDigits value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="nonNegativeDecimal">
+        <xs:restriction base="xs:decimal">
+            <xs:minInclusive value="0"/>
             <xs:fractionDigits value="2"/>
         </xs:restriction>
     </xs:simpleType>
