@@ -20,7 +20,7 @@ class ScenarioBuilder:
         from dbtypes.beamng import DBRoad
         for lane in self.lanes:
             if lane.id is None:
-                road = Road('a_asphalt01_a')
+                road = Road('a_asphalt_01_a')
             else:
                 road = DBRoad('a_asphalt_01_a', lane.id)
             road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
