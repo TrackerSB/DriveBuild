@@ -76,22 +76,20 @@ class ScenarioBuilder:
 
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
-    from common import string_to_shape
     from lxml.etree import _Element
     from dbtypes.scheme import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
     from xml_util import xpath
-
-    def get_point(node: _Element) -> Tuple[float, float]:
-        return float(node.get("x")), float(node.get("y"))
-
-    def node_to_lane(node: _Element) -> LaneNode:
-        return LaneNode(get_point(node), float(node.get("width")))
 
     lanes = list()
     lane_nodes = xpath(env, "db:lanes/db:lane")
     for node in lane_nodes:
         lane_segment_nodes = xpath(node, "db:laneSegment")
-        lane = Lane(list(map(node_to_lane, lane_segment_nodes)), node.get("db:id"))
+        lane = Lane(list(
+            map(
+                lambda n: LaneNode((float(node.get("x")), float(node.get("y"))), float(node.get("width"))),
+                lane_segment_nodes
+            )
+        ), node.get("db:id"))
         lanes.append(lane)
 
     obstacles = list()
