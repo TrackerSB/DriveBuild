@@ -12,8 +12,9 @@
             <initialState x="0" y="0" movementMode="MANUAL" orientation="0"/>
             <ai address="localhost:5001"/>
             <movement>
-                <waypoint x="10" y="0" movementMode="MANUAL" tolerance="1"/>
-                <waypoint x="15" y="5" movementMode="MANUAL" tolerance="1"/>
+                <waypoint x="50" y="0" movementMode="MANUAL" tolerance="1"/>
+                <waypoint x="80" y="20" movementMode="MANUAL" tolerance="1"/>
+                <waypoint x="100" y="20" movementMode="MANUAL" tolerance="1"/>
             </movement>
         </participant>
     </participants>
