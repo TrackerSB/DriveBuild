@@ -131,7 +131,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         speed_limit = initial_state_node.get("speedLimit")
         target_speed = initial_state_node.get("speed")
         initial_state = InitialState(
-            get_point(initial_state_node),
+            (float(initial_state_node.get("x")), float(initial_state_node.get("y"))),
             float(initial_state_node.get("orientation")),
             MovementMode[initial_state_node.get("movementMode")],
             None if speed_limit is None else float(speed_limit),
@@ -143,7 +143,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             speed_limit = wp_node.get("speedLimit")
             target_speed = wp_node.get("speed")
             movements.append(WayPoint(
-                get_point(wp_node),
+                (float(wp_node.get("x")), float(wp_node.get("y"))),
                 float(wp_node.get("tolerance")),
                 wp_node.get("id"),
                 MovementMode[wp_node.get("movementMode")],
