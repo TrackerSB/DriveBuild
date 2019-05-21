@@ -132,6 +132,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
 def run_test_case(test_case: TestCase):
     from app import app
     from dbtypes.beamng import DBBeamNGpy
+    from dbtypes.criteria import KPValue
     from shutil import rmtree
     import os
     home_path = app.config["BEAMNG_INSTALL_FOLDER"]
@@ -157,6 +158,20 @@ def run_test_case(test_case: TestCase):
         bng_instance.load_scenario(bng_scenario)
         bng_instance.start_scenario()
         start_moving_participants(test_case.scenario.participants, bng_scenario)
-        input("Press enter to end...")
+
+        test_case_result = "undetermined"
+        while test_case_result == "undetermined":
+            bng_instance.pause()
+            if test_case.is_precondition(bng_scenario) is KPValue.FALSE:
+                test_case_result = "skipped"
+            elif test_case.is_failure(bng_scenario) is KPValue.TRUE:
+                test_case_result = "failed"
+            elif test_case.is_success(bng_scenario) is KPValue.TRUE:
+                test_case_result = "succeeded"
+            else:
+                # test_case_result = "undetermined"
+                bng_instance.step(test_case.frequency)
+            print("Current state of test: " + test_case_result)
+        print("Test case result: " + test_case_result)
     finally:
         bng_instance.close()

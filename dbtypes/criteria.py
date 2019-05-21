@@ -318,4 +318,5 @@ class TestCase:
     is_precondition: CriteriaFunction
     is_success: CriteriaFunction
     is_failure: CriteriaFunction
+    frequency: int
     authors: List[str]

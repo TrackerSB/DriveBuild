@@ -20,6 +20,7 @@ def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
         environment = mapping.environment
         environment_author = get_author(environment)
         for crit_def in mapping.crit_defs:
+            frequency = int(xpath(crit_def, "db:frequency")[0].text)
             participants_node = xpath(crit_def, "db:participants")[0]
             builder = generate_scenario(environment, participants_node)
             precondition, success, failure = generate_criteria(crit_def)
@@ -27,5 +28,5 @@ def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
             authors = [environment_author]
             if crit_def_author not in authors:
                 authors.append(crit_def_author)
-            test_cases.append(TestCase(builder, precondition, success, failure, authors))
+            test_cases.append(TestCase(builder, precondition, success, failure, frequency, authors))
     return test_cases

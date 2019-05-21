@@ -6,6 +6,7 @@
     <version>1</version>
     <name>Test A</name>
     <environment>environmentA.dbe.xml</environment>
+    <frequency>5</frequency>
 
     <participants>
         <participant id="ego" model="ETK800">
