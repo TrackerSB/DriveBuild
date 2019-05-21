@@ -50,7 +50,6 @@ class ScenarioBuilder:
             wp_prefix = "wp_" + participant.id + "_"
             counter = 0
             for waypoint in participant.movement:
-                # scenario.add_waypoint(...)  # FIXME Such a call does not exist yet
                 if waypoint.id is None:
                     waypoint.id = wp_prefix + str(counter)
                     counter += 1

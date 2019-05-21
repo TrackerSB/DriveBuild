@@ -45,13 +45,12 @@ def enable_participant_movements(participants: List[Participant]) -> None:
         return "\\r\\n".join(lines)
 
     for participant in participants:
-        waypoints = [WayPoint(participant.initial_state.position, 0)]
-        waypoints.extend(participant.movement)
-        for idx, waypoint in enumerate(waypoints[:-1]):
+        for idx, waypoint in enumerate(participant.movement[:-1]):
             x_pos = waypoint.position[0]
             y_pos = waypoint.position[1]
-            # NOTE Add further tolerance for oversize of bounding box compared to the actual car
+            # NOTE Add further tolerance due to oversize of bounding box of the car compared to the actual body
             tolerance = waypoint.tolerance + 0.5
+            remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, participant.movement[idx + 1:])) + "'}"
             add_to_prefab_file([
                 "new BeamNGTrigger() {",
                 "    TriggerType = \"Sphere\";",
@@ -60,11 +59,9 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                 "    luaFunction = \""
                 + to_inline_lua([
                     "local sh = require('ge/extensions/scenario/scenariohelper')",
-                    "local wps = require('ge/extensions/scenario/waypoints')",
                     "local function onWaypoint(data)",
-                    "  dump(data)",
                     "  if data['event'] == 'enter' then",
-                    "    sh.setAiRoute('" + participant.id + "', {'" + waypoints[idx + 1].id + "'})",
+                    "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")",
                     "  end",
                     "end",
                     "",
@@ -120,16 +117,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
         if vehicle is None:
             eprint("Vehicle to add movement to not found. You may wan to add vehicles first.")
         else:
-            # FIXME Recognize MovmentModes
-            # FIXME Recognize speed limits
-            # FIXME Recognize tolerances
-            for waypoint in participant.movement:
-                # vehicle.ai_set_waypoint(waypoint.id)  # FIXME Only approaches to the border of the waypoint
-                vehicle.ai_set_line([{
-                    'pos': (waypoint.position[0], waypoint.position[1], 0),  # FIXME Recognize z-offset of car model
-                    'speed': waypoint.target_speed
-                }])
-                break  # FIXME Wait for reaching the waypoint and only then change it
+            vehicle.ai_set_waypoint(participant.movement[0].id)
 
 
 def run_test_case(test_case: TestCase):
@@ -159,11 +147,7 @@ def run_test_case(test_case: TestCase):
     try:
         bng_instance.load_scenario(bng_scenario)
         bng_instance.start_scenario()
-        bng_scenario.get_vehicle("ego").ai_set_line([{
-            'pos': (15, 25, 0),
-            'speed': 65
-        }])
-        # start_moving_participants(test_case.scenario.participants, bng_scenario)
+        start_moving_participants(test_case.scenario.participants, bng_scenario)
         input("Press enter to end...")
     finally:
         bng_instance.close()
