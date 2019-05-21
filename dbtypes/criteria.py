@@ -98,8 +98,9 @@ class SCArea(StateCondition):
         self.polygon = Polygon(points)
 
     def eval(self) -> KPValue:
+        from shapely.geometry import Point
         x, y, _ = self.get_participant().state["pos"]
-        return self.polygon.contains((x, y))
+        return KPValue.TRUE if self.polygon.contains(Point(x, y)) else KPValue.FALSE
 
 
 class SCLane(StateCondition):
