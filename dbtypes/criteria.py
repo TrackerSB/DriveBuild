@@ -61,6 +61,9 @@ class Criteria(Evaluable, ABC):
 # State conditions
 # FIXME Recognize "any" participant
 class StateCondition(Criteria, ABC):
+    """
+    NOTE: A StateCondition does never call Vehicle::update_vehicle() which has to be called before every evaluation.
+    """
     from beamngpy import Vehicle
 
     def __init__(self, scenario: Scenario, participant: str) -> None:
@@ -315,8 +318,8 @@ CriteriaFunction = Callable[[Scenario], Evaluable]
 class TestCase:
     from generator import ScenarioBuilder
     scenario: ScenarioBuilder
-    is_precondition: CriteriaFunction
-    is_success: CriteriaFunction
-    is_failure: CriteriaFunction
+    precondition_fct: CriteriaFunction
+    success_fct: CriteriaFunction
+    failure_fct: CriteriaFunction
     frequency: int
     authors: List[str]
