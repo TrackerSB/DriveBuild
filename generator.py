@@ -87,7 +87,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         lane_segment_nodes = xpath(node, "db:laneSegment")
         lane = Lane(list(
             map(
-                lambda n: LaneNode((float(node.get("x")), float(node.get("y"))), float(node.get("width"))),
+                lambda n: LaneNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
                 lane_segment_nodes
             )
         ), node.get("db:id"))
