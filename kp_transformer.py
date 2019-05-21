@@ -60,16 +60,18 @@ def generate_criterion(root: _Element) -> CriteriaFunction:
     tag = get_tag_name(root)
     print(tag)
     if tag in ["precondition", "success", "failure"]:
-        evaluation = generate_criterion(root[0])
-    elif tag in sc_options:
-        evaluation = sc_options[tag]
-    elif tag in vc_options:
-        evaluation = vc_options[tag]
-    elif tag in connective_options:
-        evaluation = connective_options[tag]
+        criteria_function = generate_criterion(root[0])
     else:
-        raise ValueError("Element " + tag + " can not be handled.")
-    return evaluation(root)
+        if tag in sc_options:
+            evaluation = sc_options[tag]
+        elif tag in vc_options:
+            evaluation = vc_options[tag]
+        elif tag in connective_options:
+            evaluation = connective_options[tag]
+        else:
+            raise ValueError("Element " + tag + " can not be handled.")
+        criteria_function = evaluation(root)
+    return criteria_function
 
 
 def generate_criteria(crit_def: _ElementTree) -> Tuple[CriteriaFunction, CriteriaFunction, CriteriaFunction]:
