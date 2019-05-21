@@ -56,6 +56,7 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                     "  if data['event'] == 'enter' then"
                 ])
                 if waypoint.mode is MovementMode.MANUAL:
+                    # FIXME Recognize speed (limits)
                     lua_lines.extend([
                         "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
                     ])
