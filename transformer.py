@@ -7,14 +7,14 @@ from dbtypes.scheme import ScenarioMapping
 
 
 def get_author(root: _ElementTree) -> str:
-    from xml_util import xpath
+    from util.xml import xpath
     return xpath(root, "db:author")[0].text
 
 
 def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
     from generator import generate_scenario
     from kp_transformer import generate_criteria
-    from xml_util import xpath
+    from util.xml import xpath
     test_cases = list()
     for mapping in mappings:
         environment = mapping.environment

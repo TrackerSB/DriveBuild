@@ -18,8 +18,8 @@ def extract_test_cases(zip_file: FileStorage) -> str:
 
 def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
         -> List[ScenarioMapping]:
-    from common import eprint
-    from xml_util import xpath
+    from util import eprint
+    from util.xml import xpath
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
             needed_environment = element.text
@@ -37,8 +37,8 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
 
 def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     import os
-    from common import eprint, is_dbe, is_dbc
-    from xml_util import validate
+    from util import eprint, is_dbe, is_dbc
+    from util.xml import validate
     scenario_mapping_stubs = list()
     valid_crit_defs = list()
     for filename in os.listdir(folder):
@@ -55,7 +55,7 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
 
 
 def run_tests(zip_file: FileStorage) -> None:
-    from common import eprint
+    from util import eprint
     from sim_controller import run_test_case
     from transformer import transform
     folder = extract_test_cases(zip_file)

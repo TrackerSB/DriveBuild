@@ -3,8 +3,8 @@ from typing import Dict, Callable, Union, Tuple
 from beamngpy import Scenario
 from lxml.etree import _ElementTree, _Element
 
-from common import string_to_shape
-from dbtypes.criteria import VCPosition, SCPosition, VCArea, Evaluable, ValidationConstraint, \
+from util import string_to_shape
+from dbtypes.criteria import VCPosition, SCPosition, VCArea, ValidationConstraint, \
     SCArea, SCLane, VCLane, SCSpeed, VCSpeed, SCDamage, VCDamage, VCTime, SCDistance, VCDistance, VCTTC, SCLight, \
     VCLight, SCWaypoint, VCWaypoint, Connective, And, Or, Not, CriteriaFunction
 from dbtypes.scheme import CarLight
@@ -56,7 +56,7 @@ connective_options: Dict[str, Callable[[_Element], Callable[[Scenario], Connecti
 
 
 def generate_criterion(root: _Element) -> CriteriaFunction:
-    from xml_util import get_tag_name
+    from util.xml import get_tag_name
     tag = get_tag_name(root)
     print(tag)
     if tag in ["precondition", "success", "failure"]:
@@ -82,7 +82,7 @@ def generate_criteria(crit_def: _ElementTree) -> Tuple[CriteriaFunction, Criteri
     success criteria and the third for fail criteria.
     """
     from dbtypes.criteria import UnknownEvaluable
-    from xml_util import xpath
+    from util.xml import xpath
     root: _Element = crit_def.getroot()
     preconditions_nodes = xpath(root, "db:precondition")
     precondition = generate_criterion(preconditions_nodes[0]) \

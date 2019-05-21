@@ -13,7 +13,7 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     :param participants: The participants to add movement changing triggers to
     """
     from app import app
-    from common import add_to_prefab_file, eprint
+    from util import add_to_prefab_file, eprint
     from dbtypes.scheme import MovementMode
     import os
     lua_file_path = os.path.join(
@@ -97,7 +97,7 @@ def make_lanes_visible() -> None:
     """
     Workaround for making lanes visible.
     """
-    from common import get_prefab_path
+    from util import get_prefab_path
     prefab_file_path = get_prefab_path()
     prefab_file = open(prefab_file_path, "r")
     original_content = prefab_file.readlines()
@@ -121,7 +121,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
     :param scenario: The scenario to add movements of participants to.
     """
     from beamngpy import Vehicle
-    from common import eprint
+    from util import eprint
     for participant in participants:
         vehicle: Vehicle = scenario.get_vehicle(participant.id)
         if vehicle is None:

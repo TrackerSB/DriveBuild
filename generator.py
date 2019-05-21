@@ -45,7 +45,7 @@ class ScenarioBuilder:
                                  rot=(0, 0, initial_state.orientation))
 
     def add_waypoints_to_scenario(self, scenario: Scenario) -> None:
-        from common import add_to_prefab_file
+        from util import add_to_prefab_file
         for participant in self.participants:
             wp_prefix = "wp_" + participant.id + "_"
             counter = 0
@@ -79,7 +79,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from lxml.etree import _Element
     from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone
-    from xml_util import xpath
+    from util.xml import xpath
 
     lanes = list()
     lane_nodes = xpath(env, "db:lanes/db:lane")
