@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from beamngpy.sensors import Damage, Electrics
 from lxml.etree import _ElementTree, _Element
@@ -77,7 +77,8 @@ class ScenarioBuilder:
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
-    from dbtypes.scheme import LaneNode, Lane, Obstacle, Participant, InitialState, MovementMode, CarModel, WayPoint
+    from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
+        Cylinder, Cone
     from xml_util import xpath
 
     lanes = list()
@@ -92,11 +93,35 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         ), node.get("db:id"))
         lanes.append(lane)
 
+    # FIXME Implement generation of obstacles
+    def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, float, Optional[str]]:
+        """
+        Returns the attributes all types of obstacles have in common.
+        :param node: The obstacle node
+        :return: x, y, x_rot, y_rot, z_rot, height, id
+        """
+        return float(node.get("x")), float(node.get("y")), float(node.get("x_rot", 0)), float(node.get("y_rot", 0)), \
+               float(node.get("z_rot", 0)), float(node.get("height")), node.get("id", None)
+
     obstacles = list()
-    obstacle_nodes = xpath(env, "db:obstacles/db:obstacle")
-    for node in obstacle_nodes:
-        points = string_to_shape(node.get("shape"))
-        obstacles.append(Obstacle(points, node.get("height")))
+    cube_nodes = xpath(env, "db:obstacles/db:cube")
+    for node in cube_nodes:
+        x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
+        width = float(node.get("width"))
+        length = float(node.get("length"))
+        obstacles.append(Cube(x, y, height, width, length, id, x_rot, y_rot, z_rot))
+
+    cylinder_nodes = xpath(env, "db:obstacles/db:cylinder")
+    for node in cylinder_nodes:
+        x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
+        radius = float(node.get("radius"))
+        obstacles.append(Cylinder(x, y, height, radius, id, x_rot, y_rot, z_rot))
+
+    cylinder_nodes = xpath(env, "db:obstacles/db:cone")
+    for node in cylinder_nodes:
+        x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
+        base_radius = float(node.get("baseRadius"))
+        obstacles.append(Cone(x, y, height, base_radius, id, x_rot, y_rot, z_rot))
 
     participants = list()
     participant_nodes = xpath(participants_node, "db:participant")
