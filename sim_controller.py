@@ -13,8 +13,8 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     :param participants: The participants to add movement changing triggers to
     """
     from app import app
-    from common import add_to_prefab_file
-    from dbtypes.scheme import WayPoint
+    from common import add_to_prefab_file, eprint
+    from dbtypes.scheme import MovementMode
     import os
     lua_file_path = os.path.join(
         app.config["BEAMNG_USER_PATH"],
@@ -41,33 +41,41 @@ def enable_participant_movements(participants: List[Participant]) -> None:
         "return M"
     ])
 
-    def to_inline_lua(lines: List[str]) -> str:
-        return "\\r\\n".join(lines)
-
     for participant in participants:
         for idx, waypoint in enumerate(participant.movement[:-1]):
             x_pos = waypoint.position[0]
             y_pos = waypoint.position[1]
             # NOTE Add further tolerance due to oversize of bounding box of the car compared to the actual body
             tolerance = waypoint.tolerance + 0.5
+
+            def generate_lua_function() -> str:
+                lua_lines = list()
+                lua_lines.extend([
+                    "local sh = require('ge/extensions/scenario/scenariohelper')",
+                    "local function onWaypoint(data)",
+                    "  if data['event'] == 'enter' then"
+                ])
+                if waypoint.mode is MovementMode.MANUAL:
+                    lua_lines.extend([
+                        "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
+                    ])
+                else:
+                    eprint("Mode " + str(waypoint.mode) + " not supported, yet.")
+                lua_lines.extend([
+                    "  end",
+                    "end",
+                    "",
+                    "return onWaypoint"
+                ])
+                return "\\r\\n".join(lua_lines)
+
             remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, participant.movement[idx + 1:])) + "'}"
             add_to_prefab_file([
                 "new BeamNGTrigger() {",
                 "    TriggerType = \"Sphere\";",
                 "    TriggerMode = \"Overlaps\";",
                 "    TriggerTestType = \"Race Corners\";",
-                "    luaFunction = \""
-                + to_inline_lua([
-                    "local sh = require('ge/extensions/scenario/scenariohelper')",
-                    "local function onWaypoint(data)",
-                    "  if data['event'] == 'enter' then",
-                    "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")",
-                    "  end",
-                    "end",
-                    "",
-                    "return onWaypoint"
-                ])
-                + "\";",
+                "    luaFunction = \"" + generate_lua_function() + "\";",
                 "    tickPeriod = \"100\";",  # FIXME Think about it
                 "    debug = \"0\";",
                 "    ticking = \"0\";",  # FIXME Think about it
@@ -117,6 +125,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
         if vehicle is None:
             eprint("Vehicle to add movement to not found. You may wan to add vehicles first.")
         else:
+            # FIXME The movement from first to second waypoint is not fluent
             vehicle.ai_set_waypoint(participant.movement[0].id)
 
 
