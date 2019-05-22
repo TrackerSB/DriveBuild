@@ -12,18 +12,9 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     the waypoints. Otherwise some IDs of waypoints may be None.
     :param participants: The participants to add movement changing triggers to
     """
-    from app import app
-    from util import add_to_prefab_file, eprint
+    from util import add_to_prefab_file, eprint, get_lua_path
     from dbtypes.scheme import MovementMode
-    import os
-    lua_file_path = os.path.join(
-        app.config["BEAMNG_USER_PATH"],
-        "levels",
-        app.config["BEAMNG_LEVEL_NAME"],
-        "scenarios",
-        app.config["BEAMNG_SCENARIO_NAME"] + ".lua"
-    )
-    lua_file = open(lua_file_path, "w")
+    lua_file = open(get_lua_path(), "w")
     lua_file.writelines([
         "local M = {}\n",
         "\n",

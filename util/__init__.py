@@ -38,14 +38,29 @@ def static_vars(**kwargs):
     return decorate
 
 
-def get_prefab_path() -> str:
+def get_scenario_dir_path() -> str:
     from app import app
     return os.path.join(
         app.config["BEAMNG_USER_PATH"],
         "levels",
         app.config["BEAMNG_LEVEL_NAME"],
-        "scenarios",
+        "scenarios"
+    )
+
+
+def get_prefab_path() -> str:
+    from app import app
+    return os.path.join(
+        get_scenario_dir_path(),
         app.config["BEAMNG_SCENARIO_NAME"] + ".prefab"
+    )
+
+
+def get_lua_path() -> str:
+    from app import app
+    return os.path.join(
+        get_scenario_dir_path(),
+        app.config["BEAMNG_SCENARIO_NAME"] + ".lua"
     )
 
 
