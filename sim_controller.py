@@ -14,6 +14,7 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     """
     from util import add_to_prefab_file, eprint, get_lua_path
     from dbtypes.scheme import MovementMode
+    import os
     lua_file = open(get_lua_path(), "w")
     lua_file.writelines([  # FIXME Is this needed somehow?
         "local M = {}\n",
