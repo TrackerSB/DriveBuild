@@ -119,6 +119,7 @@ def start_moving_participants(participants: List[Participant], scenario: Scenari
             eprint("Vehicle to add movement to not found. You may wan to add vehicles first.")
         else:
             # FIXME The movement from first to second waypoint is not fluent
+            # FIXME Recognize movement mode of first waypoint
             vehicle.ai_set_waypoint(participant.movement[0].id)
 
 
