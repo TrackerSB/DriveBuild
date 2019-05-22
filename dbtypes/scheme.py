@@ -5,9 +5,9 @@ from typing import Tuple, Optional, List
 
 
 class MovementMode(Enum):
-    MANUAL = "manual"
-    AUTONOMOUS = "autonomous"
-    TRAINING = "training"
+    MANUAL = "MANUAL"
+    AUTONOMOUS = "AUTONOMOUS"
+    TRAINING = "TRAINING"
 
 
 class CarModel(Enum):

@@ -6,6 +6,16 @@ from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant
 
 
+def get_movement_mode_file_path(participant: Participant) -> str:
+    """
+    Returns the path of the file for storing the current movement mode of the given participant. The used path separator
+    is '/' to allow to be used in lua files.
+    :param participant: The participant to get the path for.
+    :return: The path of the file for storing the movement mode of the given participant.
+    """
+    return participant.id + "_movementMode"
+
+
 def enable_participant_movements(participants: List[Participant]) -> None:
     """
     Adds triggers to the scenario that set the next waypoints for the given participants. Must be called after adding
@@ -14,7 +24,6 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     """
     from util import add_to_prefab_file, eprint, get_lua_path
     from dbtypes.scheme import MovementMode
-    import os
     lua_file = open(get_lua_path(), "w")
     lua_file.writelines([  # FIXME Is this needed somehow?
         "local M = {}\n",
@@ -34,6 +43,7 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     ])
 
     for participant in participants:
+        current_movement_mode = None
         for idx, waypoint in enumerate(participant.movement[:-1]):
             x_pos = waypoint.position[0]
             y_pos = waypoint.position[1]
@@ -48,14 +58,17 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                     "  if data['event'] == 'enter' then"
                 ])
                 if waypoint.mode is MovementMode.MANUAL:
-                    # FIXME If previous waypoint already had the mode MANUAL do not change the route
                     # FIXME Recognize speed (limits)
-                    lua_lines.extend([
-                        "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
-                    ])
+                    if current_movement_mode is not MovementMode.MANUAL:
+                        lua_lines.extend([
+                            "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
+                        ])
                 else:
                     eprint("Mode " + str(waypoint.mode) + " not supported, yet.")
                 lua_lines.extend([
+                    "    local modeFile = io.open('" + get_movement_mode_file_path(participant) + "', 'w')",
+                    "    modeFile:write('" + waypoint.mode.value + "')",
+                    "    modeFile:close()",
                     "  end",
                     "end",
                     "",
@@ -83,6 +96,8 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                 "    canSaveDynamicFields = \"1\";",  # FIXME Think about it
                 "};"
             ])
+
+            current_movement_mode = waypoint.mode
 
 
 def make_lanes_visible() -> None:
