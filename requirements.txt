@@ -1,3 +1,4 @@
+thrift
 shapely
 numpy
 beamngpy
