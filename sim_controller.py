@@ -135,6 +135,13 @@ def make_lanes_visible() -> None:
     prefab_file.close()
 
 
+def control_avs(vehicles: List[Vehicle]) -> None:
+    # TODO Check which AVs are in AUTONOMOUS or TRAINING mode
+    # TODO Request AIs for request ids to get data for
+    request_id = ""
+    for vehicle in vehicles:
+        # vehicle.poll_sensors()
+        pass
 
 
 def run_test_case(test_case: TestCase):
@@ -166,14 +173,15 @@ def run_test_case(test_case: TestCase):
         bng_instance.load_scenario(bng_scenario)
         bng_instance.start_scenario()
 
+        vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
+
         precondition = test_case.precondition_fct(bng_scenario)
         failure = test_case.failure_fct(bng_scenario)
         success = test_case.success_fct(bng_scenario)
         test_case_result = "undetermined"
         while test_case_result == "undetermined":
             bng_instance.pause()
-            for participant in test_case.scenario.participants:
-                vehicle = bng_scenario.get_vehicle(participant.id)
+            for vehicle in vehicles:
                 vehicle.update_vehicle()
             if precondition.eval() is KPValue.FALSE:
                 test_case_result = "skipped"
@@ -183,6 +191,7 @@ def run_test_case(test_case: TestCase):
                 test_case_result = "succeeded"
             else:
                 # test_case_result = "undetermined"
+                control_avs(vehicles)
                 bng_instance.step(test_case.frequency)
         print("Test case result: " + test_case_result)
     finally:
