@@ -70,7 +70,9 @@
                                         </xs:element>
                                         <xs:element name="ai" minOccurs="0">
                                             <xs:complexType>
-                                                <xs:attribute name="address" type="xs:string" use="required"/>
+                                                <xs:sequence>
+                                                    <xs:element ref="aiData" maxOccurs="unbounded"/>
+                                                </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
                                         <xs:element name="movement" minOccurs="0">
@@ -144,6 +146,79 @@
                 <xs:extension base="obstacle">
                     <xs:attribute name="baseRadius" type="positiveDecimal" use="required"/>
                 </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Request data/sensors -->
+    <xs:complexType name="aiData">
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>
+    <xs:element name="aiData" abstract="true" type="aiData"/>
+    <xs:element name="position" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="damage" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="steeringAngle" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="speed" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="lidar" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData">
+                    <xs:attribute name="radius" type="positiveDecimal" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="camera" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData">
+                    <xs:attribute name="width" type="xs:positiveInteger" use="required"/>
+                    <xs:attribute name="height" type="xs:positiveInteger" use="required"/>
+                    <!-- FIXME Add resolution? -->
+                    <xs:attribute name="direction" use="required">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="FRONT"/>
+                                <xs:enumeration value="RIGHT"/>
+                                <xs:enumeration value="BACK"/>
+                                <xs:enumeration value="LEFT"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="light" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData"/>
             </xs:complexContent>
         </xs:complexType>
     </xs:element>

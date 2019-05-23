@@ -1,6 +1,5 @@
 from typing import List, Tuple, Optional
 
-from beamngpy.sensors import Damage, Electrics
 from lxml.etree import _ElementTree, _Element
 
 
@@ -32,13 +31,12 @@ class ScenarioBuilder:
             pass  # FIXME Not implemented yet
 
     def add_participants_to_scenario(self, scenario: Scenario) -> None:
-        from beamngpy import Vehicle
+        from dbtypes.beamng import DBVehicle
         for participant in self.participants:
             # FIXME Adjust color
-            vehicle = Vehicle(participant.id, model=participant.model, color="White", licence=participant.id)
-            # FIXME Always add all possibly needed sensors?
-            vehicle.attach_sensor("damage", Damage())
-            vehicle.attach_sensor("electrics", Electrics())
+            vehicle = DBVehicle(participant.id, model=participant.model, color="White", licence=participant.id)
+            for request in participant.ai_requests:
+                vehicle.apply_request(request)
             initial_state = participant.initial_state
             scenario.add_vehicle(vehicle,
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
@@ -137,6 +135,9 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             None if speed_limit is None else float(speed_limit),
             None if target_speed is None else float(target_speed)
         )
+        request_nodes = xpath(node, "db:aiData/*")
+        for req_node in request_nodes:
+            print(req_node.tag)
         movements = list()
         waypoint_nodes = xpath(node, "db:movement/db:waypoint")
         for wp_node in waypoint_nodes:
@@ -150,5 +151,5 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 None if speed_limit is None else float(speed_limit),
                 None if target_speed is None else float(target_speed)
             ))
-        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, movements))
+        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, movements, []))
     return ScenarioBuilder(lanes, obstacles, participants)

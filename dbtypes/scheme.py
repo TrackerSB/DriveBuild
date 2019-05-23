@@ -86,10 +86,12 @@ class Cone(Obstacle):
 
 @dataclass
 class Participant:
+    from requests import AiRequest
     id: str
     initial_state: InitialState
     model: CarModel
     movement: List[WayPoint]
+    ai_requests: List[AiRequest]
 
 
 @dataclass

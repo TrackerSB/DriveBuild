@@ -64,18 +64,46 @@ class StateCondition(Criteria, ABC):
     """
     NOTE: A StateCondition does never call Vehicle::update_vehicle() which has to be called before every evaluation.
     """
+    from abc import abstractmethod
+    from requests import AiRequest
+    from util import static_vars
     from beamngpy import Vehicle
+    from typing import Any, Dict
 
     def __init__(self, scenario: Scenario, participant: str) -> None:
         super().__init__(scenario)
         # TODO Check existence of participant id
         self.participant = participant
+        self.requests = self._create_requests()
+        for request in self.requests:
+            request.add_sensor_to(self._get_vehicle())
 
-    def get_participant(self) -> Vehicle:
+    def _get_vehicle(self) -> Vehicle:
         return self.scenario.get_vehicle(self.participant)
+
+    def _poll_request_data(self) -> List[Any]:
+        request_data = []
+        for request in self.requests:
+            request_data.append(request.poll_sensor_of(self._get_vehicle()))
+        return request_data
+
+    @static_vars(prefix="criterion_")
+    def _generate_rid(self) -> str:
+        counter = 0
+        while True:  # Pseudo "do-while"-loop
+            rid = StateCondition._generate_rid.prefix + str(counter)
+            if rid not in self._get_vehicle().sensors:
+                break
+        return rid
+
+    @abstractmethod
+    def _create_requests(self) -> List[AiRequest]:
+        pass
 
 
 class SCPosition(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str, x: float, y: float, tolerance: float):
         super().__init__(scenario, participant)
         if tolerance < 0:
@@ -84,32 +112,49 @@ class SCPosition(StateCondition):
         self.y = y
         self.tolerance = tolerance
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import PositionRequest
+        return [PositionRequest(self._generate_rid())]
+
     def eval(self) -> KPValue:
         from numpy import array
         from numpy.linalg import norm
-        x, y, _ = self.get_participant().state["pos"]
+        x, y = self._poll_request_data()[0]
         return KPValue.TRUE if norm(array((x, y)) - array((self.x, self.y))) <= self.tolerance else KPValue.FALSE
 
 
 class SCArea(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str, points: List[Tuple[float, float]]):
         from shapely.geometry import Polygon
         super().__init__(scenario, participant)
         self.polygon = Polygon(points)
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import PositionRequest
+        return [PositionRequest(self._generate_rid())]
+
     def eval(self) -> KPValue:
         from shapely.geometry import Point
-        x, y, _ = self.get_participant().state["pos"]
+        x, y = self._poll_request_data()[0]
         return KPValue.TRUE if self.polygon.contains(Point(x, y)) else KPValue.FALSE
 
 
 class SCLane(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str, lane: str):
         super().__init__(scenario, participant)
         # TODO Check existence of lane id
         self.lane = lane
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import PositionRequest
+        return [PositionRequest(self._generate_rid())]
+
     def eval(self) -> KPValue:
+        x, y = self._poll_request_data()[0]
         # FIXME Implement SCLane
         if self.lane == "offroad":
             for road in self.scenario.roads:
@@ -121,23 +166,34 @@ class SCLane(StateCondition):
 
 
 class SCSpeed(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str, speed_limit: float):
         super().__init__(scenario, participant)
         if speed_limit < 0:
             raise ValueError("Speed limits must be non negative.")
         self.speed_limit = speed_limit
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import SpeedRequest
+        return [SpeedRequest(self._generate_rid)]
+
     def eval(self) -> KPValue:
-        from numpy.linalg import norm
-        return KPValue.FALSE if norm(self.get_participant().state["vel"]) > self.speed_limit else KPValue.TRUE
+        return KPValue.FALSE if self._poll_request_data()[0] > self.speed_limit else KPValue.TRUE
 
 
 class SCDamage(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str):
         super().__init__(scenario, participant)
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import DamageRequest
+        return [DamageRequest(self._generate_rid)]
+
     def eval(self) -> KPValue:
-        damage = self.scenario.bng.poll_sensors(self.get_participant())["damage"]
+        damage = self._poll_request_data()[0]
         print(damage)
         # FIXME Determine overall damage
         # TODO Determine whether a car is really "damaged"
@@ -145,6 +201,8 @@ class SCDamage(StateCondition):
 
 
 class SCDistance(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str, other_participant: str, max_distance: float):
         super().__init__(scenario, participant)
         if max_distance < 0:
@@ -153,32 +211,47 @@ class SCDistance(StateCondition):
         self.other_participant = other_participant
         self.max_distance = max_distance
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import PositionRequest
+        return [PositionRequest(self._generate_rid)]
+
     def eval(self) -> KPValue:
         from numpy import array
         from numpy.linalg import norm
-        x, y, _ = self.get_participant().state["pos"]
-        other_x, other_y, _ = self.scenario.get_vehicle(self.other_participant)
-        return KPValue.FALSE if norm(array((x, y)) - array((other_x, other_y))) > self.max_distance else KPValue.TRUE
+        x1, y1 = self._poll_request_data()[0]
+        # FIXME This circumvents the request mechanism...
+        x2, y2, _ = self.scenario.get_vehicle(self.other_participant)["pos"]
+        return KPValue.FALSE if norm(array((x1, y1)) - array((x2, y2))) > self.max_distance else KPValue.TRUE
 
 
 class SCLight(StateCondition):
     from dbtypes.scheme import CarLight
+    from requests import AiRequest
 
     def __init__(self, scenario: Scenario, participant: str, light: CarLight):
         super().__init__(scenario, participant)
         self.light = light
 
+    def _create_requests(self) -> List[AiRequest]:
+        from requests import LightRequest
+        return [LightRequest(self._generate_rid())]
+
     def eval(self) -> KPValue:
         # FIXME Implement light criterion
-        print(self.scenario.bng.poll_sensors(self.get_participant())["electrics"])
+        print(self._poll_request_data()[0])
         return KPValue.UNKNOWN
 
 
 class SCWaypoint(StateCondition):
+    from requests import AiRequest
+
     def __init__(self, scenario: Scenario, participant: str, waypoint: str):
         super().__init__(scenario, participant)
         # TODO Check whether waypoint id exists
         self.waypoint = waypoint
+
+    def _create_requests(self) -> List[AiRequest]:
+        return []
 
     def eval(self) -> KPValue:
         # FIXME Implement waypoint criterion
