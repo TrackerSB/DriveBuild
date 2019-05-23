@@ -42,5 +42,10 @@ def page_not_found(error):
     return render_template('error500.html', error=error), 500
 
 
+def start_ai_exchange_service() -> None:
+    pass  # TODO Implement starting AIExchangeService
+
+
 if __name__ == '__main__':
     app.run()
+    start_ai_exchange_service()
