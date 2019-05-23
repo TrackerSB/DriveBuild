@@ -147,7 +147,7 @@ def run_test_case(test_case: TestCase):
     user_path = app.config["BEAMNG_USER_PATH"]
 
     # Make sure there is no inference with previous tests while keeping the cache
-    rmtree(os.path.join(user_path, "levels"))
+    rmtree(os.path.join(user_path, "levels"), ignore_errors=True)
 
     # FIXME Determine port and host automatically. (Is it required to do so?)
     bng_instance = DBBeamNGpy('localhost', 64256, home=home_path, user=user_path)
