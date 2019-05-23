@@ -58,7 +58,6 @@ connective_options: Dict[str, Callable[[_Element], Callable[[Scenario], Connecti
 def generate_criterion(root: _Element) -> CriteriaFunction:
     from util.xml import get_tag_name
     tag = get_tag_name(root)
-    print(tag)
     if tag in ["precondition", "success", "failure"]:
         criteria_function = generate_criterion(root[0])
     else:
