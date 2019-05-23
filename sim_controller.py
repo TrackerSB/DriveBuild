@@ -1,6 +1,6 @@
 from typing import List
 
-from beamngpy import Scenario
+from beamngpy import Scenario, Vehicle
 
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant
@@ -24,27 +24,52 @@ def enable_participant_movements(participants: List[Participant]) -> None:
     """
     from util import add_to_prefab_file, eprint, get_lua_path
     from dbtypes.scheme import MovementMode
+    from typing import Optional
+
+    def generate_lua_av_command(participant: Participant, idx: int, next_mode: MovementMode,
+                                current_mode: Optional[MovementMode] = None) -> List[str]:
+        """
+        NOTE When using this function the lua file where you include this command has to include the following line:
+        local sh = require('ge/extensions/scenario/scenariohelper')
+        """
+        lua_av_command = []
+        if next_mode is MovementMode.MANUAL:
+            # FIXME Recognize speed (limits)
+            if current_mode is not MovementMode.MANUAL:
+                remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, participant.movement[idx + 1:])) + "'}"
+                lua_av_command.extend([
+                    "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
+                ])
+        else:
+            eprint("Mode " + str(next_mode) + " not supported, yet.")
+        lua_av_command.extend([
+            "    local modeFile = io.open('" + get_movement_mode_file_path(participant) + "', 'w')",
+            "    modeFile:write('" + next_mode.value + "')",
+            "    modeFile:close()"
+        ])
+        return lua_av_command
+
     lua_file = open(get_lua_path(), "w")
     lua_file.writelines([  # FIXME Is this needed somehow?
         "local M = {}\n",
+        "local sh = require('ge/extensions/scenario/scenariohelper')",
         "\n",
         "local function onRaceStart()\n",
-        "  log('I', 'Test','onRaceStart called ')\n",
-        "end\n",
-        "\n",
-        "local function onBeamNGTrigger(data)\n",
-        "  log('I', 'Test','onBeamNGTrigger called ')\n",
-        "  dump(data)\n",
+        "  print('onRaceStart called')\n"
+    ])
+    for participant in participants:
+        for idx, waypoint in enumerate(participant.movement[0:1]):
+            lua_file.writelines(generate_lua_av_command(participant, idx, waypoint.mode))
+    lua_file.writelines([
         "end\n",
         "\n",
         "M.onRaceStart = onRaceStart\n",
-        "M.onBeamNGTrigger = onBeamNGTrigger\n",
         "return M"
     ])
 
     for participant in participants:
         current_movement_mode = None
-        for idx, waypoint in enumerate(participant.movement[:-1]):
+        for idx, waypoint in enumerate(participant.movement[1:-1]):
             x_pos = waypoint.position[0]
             y_pos = waypoint.position[1]
             # NOTE Add further tolerance due to oversize of bounding box of the car compared to the actual body
@@ -57,18 +82,8 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                     "local function onWaypoint(data)",
                     "  if data['event'] == 'enter' then"
                 ])
-                if waypoint.mode is MovementMode.MANUAL:
-                    # FIXME Recognize speed (limits)
-                    if current_movement_mode is not MovementMode.MANUAL:
-                        lua_lines.extend([
-                            "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
-                        ])
-                else:
-                    eprint("Mode " + str(waypoint.mode) + " not supported, yet.")
+                lua_lines.extend(generate_lua_av_command(participant, idx, waypoint.mode, current_movement_mode))
                 lua_lines.extend([
-                    "    local modeFile = io.open('" + get_movement_mode_file_path(participant) + "', 'w')",
-                    "    modeFile:write('" + waypoint.mode.value + "')",
-                    "    modeFile:close()",
                     "  end",
                     "end",
                     "",
@@ -76,7 +91,6 @@ def enable_participant_movements(participants: List[Participant]) -> None:
                 ])
                 return "\\r\\n".join(lua_lines)
 
-            remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, participant.movement[idx + 1:])) + "'}"
             add_to_prefab_file([
                 "new BeamNGTrigger() {",
                 "    TriggerType = \"Sphere\";",
@@ -121,22 +135,6 @@ def make_lanes_visible() -> None:
     prefab_file.close()
 
 
-def start_moving_participants(participants: List[Participant], scenario: Scenario) -> None:
-    """
-    Makes cars move. Must be called after starting the scenario.
-    :param participants: The participants whose movements have to be added.
-    :param scenario: The scenario to add movements of participants to.
-    """
-    from beamngpy import Vehicle
-    from util import eprint
-    for participant in participants:
-        vehicle: Vehicle = scenario.get_vehicle(participant.id)
-        if vehicle is None:
-            eprint("Vehicle to add movement to not found. You may wan to add vehicles first.")
-        else:
-            # FIXME The movement from first to second waypoint is not fluent
-            # FIXME Recognize movement mode of first waypoint
-            vehicle.ai_set_waypoint(participant.movement[0].id)
 
 
 def run_test_case(test_case: TestCase):
@@ -167,7 +165,6 @@ def run_test_case(test_case: TestCase):
     try:
         bng_instance.load_scenario(bng_scenario)
         bng_instance.start_scenario()
-        start_moving_participants(test_case.scenario.participants, bng_scenario)
 
         precondition = test_case.precondition_fct(bng_scenario)
         failure = test_case.failure_fct(bng_scenario)
