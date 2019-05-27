@@ -202,8 +202,6 @@ def run_test_case(test_case: TestCase):
         test_case_result = "undetermined"
         while test_case_result == "undetermined":
             bng_instance.pause()
-            for vehicle in vehicles:
-                vehicle.update_vehicle()
             if precondition.eval() is KPValue.FALSE:
                 test_case_result = "skipped"
             elif failure.eval() is KPValue.TRUE:
