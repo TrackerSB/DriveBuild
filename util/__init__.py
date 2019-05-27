@@ -64,6 +64,14 @@ def get_lua_path() -> str:
     )
 
 
+def get_json_path() -> str:
+    from app import app
+    return os.path.join(
+        get_scenario_dir_path(),
+        app.config["BEAMNG_SCENARIO_NAME"] + ".json"
+    )
+
+
 def add_to_prefab_file(new_content: List[str]) -> None:
     """
     Workaround for adding content to a scenario prefab if there is no explicit method for it.
@@ -78,6 +86,23 @@ def add_to_prefab_file(new_content: List[str]) -> None:
     prefab_file = open(prefab_file_path, "w")
     prefab_file.writelines(original_content)
     prefab_file.close()
+
+
+def add_to_json_file(new_content: List[str]) -> None:
+    """
+    Workaround for adding content to a scenario json if there is no explicit method for it.
+    :param new_content: The lines of content to add.
+    """
+    json_file_path = get_json_path()
+    json_file = open(json_file_path, "r")
+    original_content = json_file.readlines()
+    json_file.close()
+    original_content[-3] = original_content[-3] + ",\n"  # Make sure previous line has a comma
+    for line in new_content:
+        original_content.insert(-2, line + "\n")
+    json_file = open(json_file_path, "w")
+    json_file.writelines(original_content)
+    json_file.close()
 
 
 @static_vars(pattern=re.compile(r"\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\))*"))

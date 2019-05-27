@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 from beamngpy import Scenario, Vehicle
 
@@ -144,6 +144,17 @@ def control_avs(vehicles: List[Vehicle]) -> None:
         pass
 
 
+def add_lap_config(waypoint_ids: Set[str]) -> None:
+    """
+    Adds a dummy lapConfig attribute to the scenario json to avoid nil value exceptions.
+    """
+    from util import add_to_json_file
+    if not waypoint_ids == set():
+        add_to_json_file([
+            "        \"lapConfig\": [\"" + ("\", \"".join(waypoint_ids)) + "\"]"
+        ])
+
+
 def run_test_case(test_case: TestCase):
     from app import app
     from dbtypes.beamng import DBBeamNGpy
@@ -163,10 +174,17 @@ def run_test_case(test_case: TestCase):
     test_case.scenario.add_all(bng_scenario)
     bng_scenario.make(bng_instance)
 
+    # Make manual changes to the scenario files
     make_lanes_visible()
     # FIXME As long as manually inserting text it can only be called after make
     test_case.scenario.add_waypoints_to_scenario(bng_scenario)
     enable_participant_movements(test_case.scenario.participants)
+    waypoints = set()
+    for wps in [p.movement for p in test_case.scenario.participants]:
+        for wp in wps:
+            if wp.id is not None:  # FIXME Not all waypoints are added
+                waypoints.add(wp.id)
+    add_lap_config(waypoints)
 
     bng_instance.open(launch=True)
     try:
