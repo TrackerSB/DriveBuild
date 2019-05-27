@@ -193,6 +193,7 @@ def run_test_case(test_case: TestCase):
         bng_instance.set_deterministic()
         bng_instance.hide_hud()
         bng_instance.start_scenario()
+        bng_instance.pause()
 
         vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
 
@@ -201,7 +202,6 @@ def run_test_case(test_case: TestCase):
         success = test_case.success_fct(bng_scenario)
         test_case_result = "undetermined"
         while test_case_result == "undetermined":
-            bng_instance.pause()
             if precondition.eval() is KPValue.FALSE:
                 test_case_result = "skipped"
             elif failure.eval() is KPValue.TRUE:
