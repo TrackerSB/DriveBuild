@@ -1,5 +1,4 @@
 from abc import ABC
-from dataclasses import dataclass
 from enum import Enum
 
 
@@ -53,7 +52,8 @@ class SteeringAngleRequest(AiRequest):
 
     def poll_sensor_of(self, vehicle: Vehicle) -> float:
         vehicle.update_vehicle()
-        return vehicle.state["steering"]  # FIXME Does this key exist?
+        # FIXME Implement getting steering angle
+        return None
 
 
 class SpeedRequest(AiRequest):
@@ -96,7 +96,7 @@ class CameraRequest(AiRequest):
     from beamngpy import Vehicle
     from typing import Any
 
-    def __init__(self, rid: str, width: float, height: float, direction: CameraDirection):
+    def __init__(self, rid: str, width: int, height: int, direction: CameraDirection):
         super().__init__(rid)
         self.width = width
         self.height = height
@@ -115,7 +115,7 @@ class CameraRequest(AiRequest):
                                      annotation=False))
 
     def poll_sensor_of(self, vehicle: Vehicle) -> Any:
-        return vehicle.poll_sensors(self.rid)  # FIXME What is returned?
+        return vehicle.poll_sensors(self.rid)  # FIXME What is returned? # FIXME This call just blocks
 
 
 class LightRequest(AiRequest):
