@@ -46,7 +46,8 @@
                 <xs:element name="version" type="positiveDecimal"/>
                 <xs:element name="name" type="xs:string"/>
                 <xs:element name="environment" type="xs:string"/>
-                <xs:element name="frequency" type="xs:positiveInteger"/>
+                <xs:element name="stepsPerSecond" type="xs:positiveInteger"/>
+                <xs:element name="aiFrequency" type="xs:positiveInteger"/>
 
                 <xs:element name="participants">
                     <xs:complexType>

@@ -189,6 +189,9 @@ def run_test_case(test_case: TestCase):
     bng_instance.open(launch=True)
     try:
         bng_instance.load_scenario(bng_scenario)
+        bng_instance.set_steps_per_second(test_case.stepsPerSecond)
+        bng_instance.set_deterministic()
+        bng_instance.hide_hud()
         bng_instance.start_scenario()
 
         vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
@@ -210,7 +213,7 @@ def run_test_case(test_case: TestCase):
             else:
                 # test_case_result = "undetermined"
                 control_avs(vehicles)
-                bng_instance.step(test_case.frequency)
+                bng_instance.step(test_case.aiFrequency)
         print("Test case result: " + test_case_result)
     finally:
         bng_instance.close()

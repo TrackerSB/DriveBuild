@@ -395,5 +395,6 @@ class TestCase:
     precondition_fct: CriteriaFunction
     success_fct: CriteriaFunction
     failure_fct: CriteriaFunction
-    frequency: int
+    stepsPerSecond: int
+    aiFrequency: int
     authors: List[str]
