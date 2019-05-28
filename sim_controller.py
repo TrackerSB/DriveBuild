@@ -1,7 +1,8 @@
 from typing import List, Set
 
-from beamngpy import Scenario, Vehicle
+from beamngpy import Scenario
 
+from dbtypes.beamng import DBVehicle
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant
 
@@ -135,13 +136,25 @@ def make_lanes_visible() -> None:
     prefab_file.close()
 
 
-def control_avs(vehicles: List[Vehicle]) -> None:
+def control_avs(vehicles: List[DBVehicle]) -> None:
+    from beamngpy import socket
     # TODO Check which AVs are in AUTONOMOUS or TRAINING mode
     # TODO Request AIs for request ids to get data for
-    request_id = ""
+    rids = [
+        "position",
+        "speed",
+        "steeringAngle",
+        "frontCamera",
+        "lidar"
+    ]
     for vehicle in vehicles:
-        # vehicle.poll_sensors()
-        pass
+        for rid in rids:
+            print(rid)
+            try:
+                print(str(vehicle.poll_request(rid)))
+            except socket.timeout:
+                print("timeout when receiving requested data.")
+            print()
 
 
 def add_lap_config(waypoint_ids: Set[str]) -> None:
@@ -210,6 +223,8 @@ def run_test_case(test_case: TestCase):
                 test_case_result = "succeeded"
             else:
                 # test_case_result = "undetermined"
+                for vehicle in vehicles:
+                    bng_instance.poll_sensors(vehicle)  # Update sensor cache before controlling AVs
                 control_avs(vehicles)
                 bng_instance.step(test_case.aiFrequency)
         print("Test case result: " + test_case_result)

@@ -16,7 +16,7 @@
                 <position id="position"/>
                 <speed id="speed"/>
                 <steeringAngle id="steeringAngle"/>
-                <camera id="frontCamera" width="40" height="20" direction="FRONT"/>
+                <camera id="frontCamera" width="800" height="600" fov="60" direction="FRONT"/>
                 <lidar id="lidar" radius="200"/>
             </ai>
             <movement>

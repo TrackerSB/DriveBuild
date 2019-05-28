@@ -15,7 +15,12 @@ class AiRequest(ABC):
         pass
 
     @abstractmethod
-    def poll_sensor_of(self, vehicle: Vehicle) -> Any:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Any:
+        """
+        This method returns the data the request represents. NOTE It does not call poll_sensors or similar!
+        :param vehicle: The vehicle to read the cached sensor data from.
+        :return: The data to be retrieved by this request.
+        """
         pass
 
 
@@ -26,8 +31,7 @@ class PositionRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> Tuple[float, float]:
-        vehicle.update_vehicle()
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[float, float]:
         x, y, _ = vehicle.state["pos"]
         return x, y
 
@@ -39,7 +43,7 @@ class DamageRequest(AiRequest):
         from beamngpy.sensors import Damage
         vehicle.attach_sensor(self.rid, Damage())  # FIXME Is Electrics sensor needed?
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> bool:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> bool:
         print("Damage: " + str(vehicle.poll_sensors(self.rid)))  # FIXME Implement DamageSensor
         return False
 
@@ -50,8 +54,7 @@ class SteeringAngleRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> float:
-        vehicle.update_vehicle()
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> float:
         # FIXME Implement getting steering angle
         return None
 
@@ -65,24 +68,26 @@ class SpeedRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> float:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> float:
         from numpy.linalg import norm
-        vehicle.update_vehicle()
         return norm(vehicle.state["vel"])
 
 
 class LidarRequest(AiRequest):
     from beamngpy import Vehicle
-    from typing import Any
+    from numpy import ndarray
     # FIXME Which parameters to allow?
+
+    def __init__(self, rid: str, max_dist: int) -> None:
+        super().__init__(rid)
+        self.max_dist = max_dist
 
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         from beamngpy.sensors import Lidar
-        vehicle.attach_sensor(self.rid, Lidar())
+        vehicle.attach_sensor(self.rid, Lidar(max_dist=self.max_dist))
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> Any:
-        # FIXME Which return type?
-        return vehicle.poll_sensors(self.rid)
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> ndarray:
+        return vehicle.sensor_cache[self.rid]["points"]
 
 
 class CameraDirection(Enum):
@@ -90,32 +95,79 @@ class CameraDirection(Enum):
     RIGHT = "RIGHT"
     BACK = "BACK"
     LEFT = "LEFT"
+    DASH = "DASH"
 
 
 class CameraRequest(AiRequest):
     from beamngpy import Vehicle
-    from typing import Any
+    from typing import Tuple
+    from PIL.Image import Image
 
-    def __init__(self, rid: str, width: int, height: int, direction: CameraDirection):
+    def __init__(self, rid: str, width: int, height: int, fov: int, direction: CameraDirection):
         super().__init__(rid)
         self.width = width
         self.height = height
+        self.fov = fov
         self.direction = direction
 
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         from beamngpy.sensors import Camera
-        # TODO Provide annotated data?
-        x_pos = y_pos = z_pos = 0
-        x_rot = y_rot = z_rot = 0
-        fov = 0  # FIXME What does this do?
-        if self.direction is CameraDirection.FRONT:  # FIXME Implement attachment
-            pass
+        from cmath import pi
+        from util import eprint
+        # NOTE rotation range: -pi to pi
+        # NOTE Reference point is the point of the model
+        # NOTE First rotate camera, then shift based on rotated axis of the camera
+        # NOTE x-axis points rightwards, y-axis points forwards, z-axis points upwards
+        # FIXME These values are specialized for etk800
+        if self.direction is CameraDirection.FRONT:
+            x_pos = -0.3
+            y_pos = 2.1
+            z_pos = 0.3
+            x_rot = 0
+            y_rot = pi
+            z_rot = 0
+        elif self.direction is CameraDirection.RIGHT:
+            x_pos = 0
+            y_pos = 0.5
+            z_pos = 0.3
+            x_rot = pi
+            y_rot = 0
+            z_rot = 0
+        elif self.direction is CameraDirection.BACK:
+            x_pos = 0
+            y_pos = 2.6
+            z_pos = 0.3
+            x_rot = 0
+            y_rot = -pi
+            z_rot = 0
+        elif self.direction is CameraDirection.LEFT:
+            x_pos = 0
+            y_pos = 1.2
+            z_pos = 0.3
+            x_rot = -pi
+            y_rot = 0
+            z_rot = 0
+        elif self.direction is CameraDirection.DASH:
+            x_pos = 0
+            y_pos = 0.4
+            z_pos = 1
+            x_rot = 0
+            y_rot = pi
+            z_rot = 0
+        else:
+            eprint("The camera direction " + str(self.direction.value) + " is not implemented.")
+            return
         vehicle.attach_sensor(self.rid,
-                              Camera((x_pos, y_pos, z_pos), (x_rot, y_rot, z_rot), fov, (self.width, self.height),
-                                     annotation=False))
+                              Camera((x_pos, y_pos, z_pos), (x_rot, y_rot, z_rot), self.fov, (self.width, self.height),
+                                     colour=True, depth=True, annotation=False))
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> Any:
-        return vehicle.poll_sensors(self.rid)  # FIXME What is returned? # FIXME This call just blocks
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[Image, Image, Image]:
+        """
+        Returns the colored, annotated and the depth image.
+        """
+        data = vehicle.sensor_cache[self.rid]
+        data["colour"].show()
+        return data["colour"], data["annotation"], data["depth"]
 
 
 class LightRequest(AiRequest):
@@ -126,6 +178,6 @@ class LightRequest(AiRequest):
         from beamngpy.sensors import Electrics
         vehicle.attach_sensor(self.rid, Electrics())
 
-    def poll_sensor_of(self, vehicle: Vehicle) -> CarLight:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> CarLight:
         # FIXME How to get lights?
         return None

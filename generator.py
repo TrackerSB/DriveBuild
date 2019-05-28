@@ -77,7 +77,10 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from lxml.etree import _Element
     from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone
-    from util.xml import xpath
+    from util.xml import xpath, get_tag_name
+    from util import eprint
+    from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
+        LidarRequest
 
     lanes = list()
     lane_nodes = xpath(env, "db:lanes/db:lane")
@@ -135,9 +138,28 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             None if speed_limit is None else float(speed_limit),
             None if target_speed is None else float(target_speed)
         )
-        request_nodes = xpath(node, "db:aiData/*")
+        ai_requests = list()
+        request_nodes = xpath(node, "db:ai/*")
         for req_node in request_nodes:
-            print(req_node.tag)
+            tag = get_tag_name(req_node)
+            rid = req_node.get("id")
+            if tag == "position":
+                ai_requests.append(PositionRequest(rid))
+            elif tag == "speed":
+                ai_requests.append(SpeedRequest(rid))
+            elif tag == "steeringAngle":
+                ai_requests.append(SteeringAngleRequest(rid))
+            elif tag == "camera":
+                width = int(req_node.get("width"))
+                height = int(req_node.get("height"))
+                fov = int(req_node.get("fov"))
+                direction = CameraDirection[req_node.get("direction")]
+                ai_requests.append(CameraRequest(rid, width, height, fov, direction))
+            elif tag == "lidar":
+                radius = int(req_node.get("radius"))
+                ai_requests.append(LidarRequest(rid, radius))
+            else:
+                eprint("The tag " + tag + " is not supported, yet.")
         movements = list()
         waypoint_nodes = xpath(node, "db:movement/db:waypoint")
         for wp_node in waypoint_nodes:
@@ -151,5 +173,5 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 None if speed_limit is None else float(speed_limit),
                 None if target_speed is None else float(target_speed)
             ))
-        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, movements, []))
+        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, movements, ai_requests))
     return ScenarioBuilder(lanes, obstacles, participants)

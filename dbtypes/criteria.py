@@ -84,7 +84,7 @@ class StateCondition(Criteria, ABC):
     def _poll_request_data(self) -> List[Any]:
         request_data = []
         for request in self.requests:
-            request_data.append(request.poll_sensor_of(self._get_vehicle()))
+            request_data.append(request.read_sensor_cache_of(self._get_vehicle()))
         return request_data
 
     @static_vars(prefix="criterion_")

@@ -35,6 +35,6 @@ class DBVehicle(Vehicle):
         """
         from util import eprint
         if rid in self.requests:
-            return self.requests[rid].poll_sensor_of(self)
+            return self.requests[rid].read_sensor_cache_of(self)
         else:
             eprint("The vehicle " + self.vid + " has no request called " + rid + " attached.")

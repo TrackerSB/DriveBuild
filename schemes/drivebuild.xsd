@@ -201,6 +201,7 @@
                 <xs:extension base="aiData">
                     <xs:attribute name="width" type="xs:positiveInteger" use="required"/>
                     <xs:attribute name="height" type="xs:positiveInteger" use="required"/>
+                    <xs:attribute name="fov" type="xs:positiveInteger" use="required"/>
                     <!-- FIXME Add resolution? -->
                     <xs:attribute name="direction" use="required">
                         <xs:simpleType>
@@ -209,6 +210,7 @@
                                 <xs:enumeration value="RIGHT"/>
                                 <xs:enumeration value="BACK"/>
                                 <xs:enumeration value="LEFT"/>
+                                <xs:enumeration value="DASH"/>
                             </xs:restriction>
                         </xs:simpleType>
                     </xs:attribute>
