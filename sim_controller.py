@@ -50,7 +50,6 @@ def _generate_lua_file(participants: List[Participant]) -> None:
         "local sh = require('ge/extensions/scenario/scenariohelper')",
         "\n",
         "local function onRaceStart()\n",
-        "  print('onRaceStart called')\n"
     ])
     for participant in participants:
         for idx, waypoint in enumerate(participant.movement[0:1]):
