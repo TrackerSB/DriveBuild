@@ -166,7 +166,6 @@ class CameraRequest(AiRequest):
         Returns the colored, annotated and the depth image.
         """
         data = vehicle.sensor_cache[self.rid]
-        data["colour"].show()
         return data["colour"], data["annotation"], data["depth"]
 
 
