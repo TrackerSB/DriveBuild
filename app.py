@@ -41,6 +41,12 @@ def page_not_found(error):
     return render_template('error500.html', error=error), 500
 
 
+@app.errorhandler(501)
+def page_not_implemented(error):
+    from flask import render_template
+    return render_template("error501.html", error=error), 501
+
+
 def start_ai_exchange_service() -> None:
     pass  # TODO Implement starting AIExchangeService
 
