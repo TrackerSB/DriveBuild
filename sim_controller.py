@@ -36,7 +36,6 @@ def _generate_lua_av_command(participant: Participant, idx: int, next_mode: Move
     NOTE When using this function the lua file where you include this command has to include the following line:
     local sh = require('ge/extensions/scenario/scenariohelper')
     """
-    from util import eprint
     lua_av_command = []
     if next_mode is MovementMode.MANUAL:
         # FIXME Recognize speed (limits)
