@@ -7,14 +7,27 @@ from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
 
 
-def _get_movement_mode_file_path(participant: Participant) -> str:
+def _get_movement_mode_file_path(pid: str, in_lua: bool) -> str:
     """
     Returns the path of the file for storing the current movement mode of the given participant. The used path separator
     is '/' to allow to be used in lua files.
-    :param participant: The participant to get the path for.
+    :param pid: The participant id to get the path for.
+    :param in_lua: Whether the resulting path should be appropriate for lua or python (True=Lua, False=Python).
     :return: The path of the file for storing the movement mode of the given participant.
     """
-    return participant.id + "_movementMode"
+    from app import app
+    import os
+    return os.path.join("" if in_lua else app.config["BEAMNG_USER_PATH"], pid + "_movementMode")
+
+
+def _get_current_movement_mode(pid: str) -> Optional[MovementMode]:
+    import os
+    mode_file_path = _get_movement_mode_file_path(pid, False)
+    if os.path.exists(mode_file_path):
+        mode_file = open(mode_file_path, "r")
+        return MovementMode[mode_file.readline()]
+    else:
+        return None
 
 
 def _generate_lua_av_command(participant: Participant, idx: int, next_mode: MovementMode,
@@ -33,9 +46,11 @@ def _generate_lua_av_command(participant: Participant, idx: int, next_mode: Move
                 "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
             ])
     else:
-        eprint("Mode " + str(next_mode) + " not supported, yet.")
+        lua_av_command.extend([
+            "    sh.setAiMode('" + participant.id + "', 'MANUAL')"  # Disable previous calls to sh.setAiRoute
+        ])
     lua_av_command.extend([
-        "    local modeFile = io.open('" + _get_movement_mode_file_path(participant) + "', 'w')",
+        "    local modeFile = io.open('" + _get_movement_mode_file_path(participant.id, True) + "', 'w')",
         "    modeFile:write('" + next_mode.value + "')",
         "    modeFile:close()"
     ])
@@ -144,6 +159,15 @@ def _make_lanes_visible() -> None:
 
 def _control_avs(vehicles: List[DBVehicle]) -> None:
     from beamngpy import socket
+    from util import eprint
+    from communicator import sim_request_ai_for
+    for vehicle in vehicles:
+        mode = _get_current_movement_mode(vehicle.vid)
+        if mode is MovementMode.AUTONOMOUS:
+            sim_request_ai_for(vehicle.vid)
+        elif mode is MovementMode.TRAINING:
+            eprint("TRAINING not implemented, yet.")
+
     # TODO Check which AVs are in AUTONOMOUS or TRAINING mode
     # TODO Request AIs for request ids to get data for
     rids = [

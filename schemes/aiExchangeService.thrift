@@ -77,7 +77,7 @@ enum SimCommand {
 
 # The AIExchangeService
 service AIExchangeService {
-    void register_ai(1:string host_url, 2:string vehicle_id),
+    void register_ai(1:string vehicle_id),
     void wait_for_simulator_request(),
     Data request_data(1:Request request),
     void control_av(1:AVCommand command),
