@@ -54,7 +54,7 @@ def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[],
     This stub is designed for GET requests.
     """
     from flask import request
-    missing_params = filter(lambda p: p not in request.args, min_params)
+    missing_params = list(filter(lambda p: p not in request.args, min_params))
     if missing_params:
         return Response(response="The request misses one of the parameters [\"" + "\", ".join(missing_params) + "\"]",
                         status=400)
@@ -72,7 +72,7 @@ def register():
         ai_register(request.args["vid"])
         return Response(response="AI successfully registered", status=200)  # FIXME Make more detailed
 
-    _ai_request_stub(["vid"], do)
+    return _ai_request_stub(["vid"], do)
 
 
 @app.route("/ai/waitForSimulatorRequest", methods=["GET"])
@@ -84,7 +84,7 @@ def wait_for_simulator_request():
         ai_wait_for_simulator_request(request.args["vid"])
         return Response(response="The simulator wants to be requested.", status=204)
 
-    _ai_request_stub(["vid"], do)
+    return _ai_request_stub(["vid"], do)
 
 
 @app.route("/ai/requestData", methods=["GET"])
