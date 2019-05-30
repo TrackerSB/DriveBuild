@@ -2,8 +2,6 @@ from typing import Callable, List
 
 from flask import Flask, Response
 
-from util import static_vars
-
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
 
