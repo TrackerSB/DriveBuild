@@ -1,0 +1,92 @@
+syntax = "proto3";
+option py_generic_services = false;
+
+message Request {
+    message Data {
+        string id = 1;
+        message Position {
+        }
+        message Speed {
+        }
+        message SteeringAngle {
+        }
+        message Lidar {
+        }
+        message Camera {
+        }
+        message Damage {
+        }
+        oneof data {
+            Position position = 2;
+            Speed speed = 3;
+            SteeringAngle angle = 4;
+            Lidar lidar = 5;
+            Camera camera = 6;
+            Damage damage = 7;
+        }
+    }
+    repeated Data requests = 1;
+}
+
+message Response {
+    message Data {
+        message Position {
+            double x = 1;
+            double y = 2;
+        }
+        message Speed {
+            double speed = 1;
+        }
+        message SteeringAngle {
+            double angle = 1;
+        }
+        message Lidar {
+            repeated double points = 1;
+        }
+        message Camera {
+            // FIXME Which data provided?
+        }
+        message Damage {
+            bool is_damaged = 1;
+        }
+        oneof data {
+            Position position = 1;
+            Speed speed = 2;
+            SteeringAngle angle = 3;
+            Lidar lidar = 4;
+            Camera camera = 5;
+            Damage damage = 6;
+        }
+    }
+    map<string, Data> data = 1;
+}
+
+message Control {
+    message AvCommand {
+        double accelerate = 1; // TODO Negative accelerate is brake?
+        double steer = 2; // FIXME positive left, negative right? // FIXME deg or rad?
+    }
+
+    enum SimCommand {
+        RESUME = 0;
+        FAIL = 1;
+        CANCEL = 2;
+    }
+    oneof command {
+        AvCommand avCommand = 1;
+        SimCommand simCommand = 2;
+    }
+}
+
+message VehicleID {
+    string vid = 1;
+}
+
+message Void {
+}
+
+service AIExchangeService {
+    rpc wait_for_simulator_request (VehicleID) returns (Void);
+    rpc request_data (Request) returns (Response);
+    rpc control (Control) returns (Void);
+}

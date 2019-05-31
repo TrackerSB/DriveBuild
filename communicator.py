@@ -5,7 +5,16 @@ The communicator contains two types of methods:
 """
 from typing import Dict
 
+from google.protobuf import service_reflection
+from google.protobuf.service import Service
+
 from dbtypes import AIStatus
+from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE
+
+AIExchangeService = service_reflection.GeneratedServiceType('AIExchangeService', (Service,), dict(
+    DESCRIPTOR=_AIEXCHANGESERVICE,
+    __module__='aiExchangeMessages_pb2'
+))
 
 _registered_ais: Dict[str, AIStatus] = {}
 

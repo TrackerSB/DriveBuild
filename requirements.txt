@@ -1,5 +1,6 @@
+google
 PIL
-thrift
+protobuf
 shapely
 numpy
 beamngpy
