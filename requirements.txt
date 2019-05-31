@@ -1,5 +1,3 @@
-google
-PIL
 protobuf
 shapely
 numpy
