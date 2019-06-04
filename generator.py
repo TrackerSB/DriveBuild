@@ -27,8 +27,26 @@ class ScenarioBuilder:
             scenario.add_road(road)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
+        from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder
+        from dbtypes.scheme import Cone, Cube, Cylinder
+        from util import eprint
         for obstacle in self.obstacles:
-            pass  # FIXME Not implemented yet
+            obstacle_type = type(obstacle)
+            pos = (obstacle.x, obstacle.y, 0)
+            rot = (obstacle.x_rot, obstacle.y_rot, obstacle.z_rot)
+            height = obstacle.height
+            name = obstacle.oid
+            if obstacle_type is Cube:
+                mesh = ProceduralCube(pos, rot, (obstacle.length, obstacle.width, height), name=name)
+            elif obstacle_type is Cylinder:
+                mesh = ProceduralCylinder(pos, rot, obstacle.radius, height=height, name=name)
+            elif obstacle_type is Cone:
+                mesh = ProceduralCone(pos, rot, obstacle.base_radius, height, name=name)
+            else:
+                eprint("Obstacles of type " + str(obstacle_type) + " are not supported by the generation, yet.")
+                mesh = None
+            if mesh:
+                scenario.add_procedural_mesh(mesh)
 
     def add_participants_to_scenario(self, scenario: Scenario) -> None:
         from dbtypes.beamng import DBVehicle

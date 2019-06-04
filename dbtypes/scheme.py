@@ -50,7 +50,7 @@ class Obstacle(ABC):
     x: float
     y: float
     height: float
-    # id: Optional[str] = None  # NOTE Limitation of inheritance from dataclasses
+    # oid: Optional[str] = None  # NOTE Limitation of inheritance from dataclasses
     # x_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
     # y_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
     # z_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
@@ -60,7 +60,7 @@ class Obstacle(ABC):
 class Cube(Obstacle):
     width: float
     length: float
-    id: Optional[str] = None
+    oid: Optional[str] = None
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
@@ -69,7 +69,7 @@ class Cube(Obstacle):
 @dataclass
 class Cylinder(Obstacle):
     radius: float
-    id: Optional[str] = None
+    oid: Optional[str] = None
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
@@ -78,10 +78,13 @@ class Cylinder(Obstacle):
 @dataclass
 class Cone(Obstacle):
     base_radius: float
-    id: Optional[str] = None
+    oid: Optional[str] = None
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+
+
+# FIXME Add Bump?
 
 
 @dataclass
