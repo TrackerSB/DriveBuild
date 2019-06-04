@@ -226,7 +226,7 @@ def run_test_case(test_case: TestCase):
         for wp in wps:
             if wp.id is not None:  # FIXME Not all waypoints are added
                 waypoints.add(wp.id)
-    _add_lap_config(waypoints)
+    # _add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
 
     bng_instance.open(launch=True)
     try:
