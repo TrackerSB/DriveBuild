@@ -32,9 +32,9 @@ class ScenarioBuilder:
         from util import eprint
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
-            pos = (obstacle.x, obstacle.y, 0)
-            rot = (obstacle.x_rot, obstacle.y_rot, obstacle.z_rot)
             height = obstacle.height
+            pos = (obstacle.x, obstacle.y, height / 2.0)
+            rot = (obstacle.x_rot, obstacle.y_rot, obstacle.z_rot)
             name = obstacle.oid
             if obstacle_type is Cube:
                 mesh = ProceduralCube(pos, rot, (obstacle.length, obstacle.width, height), name=name)
