@@ -487,6 +487,7 @@
 
     <!-- TTC criterion -->
     <xs:attributeGroup name="ttc">
+        <!-- FIXME participant missing? -->
         <xs:attribute name="to" type="xs:IDREF" use="required"/>
         <xs:attribute name="max" type="positiveDecimal" use="required"/>
     </xs:attributeGroup>
