@@ -1,6 +1,6 @@
 protobuf
 shapely
 numpy
-beamngpy
+beamngpy>=1.10
 lxml
 flask
