@@ -20,8 +20,8 @@
                 <lidar id="lidar" radius="200"/>
             </ai>
             <movement>
-                <waypoint x="50" y="0" movementMode="MANUAL" tolerance="1"/>
-                <waypoint x="80" y="20" movementMode="AUTONOMOUS" tolerance="1"/>
+                <waypoint x="50" y="0" movementMode="AUTONOMOUS" tolerance="1"/>
+                <waypoint x="80" y="20" movementMode="MANUAL" tolerance="1"/>
                 <waypoint x="100" y="20" movementMode="MANUAL" tolerance="1"/>
             </movement>
         </participant>
