@@ -84,7 +84,16 @@ class Cone(Obstacle):
     z_rot: Optional[float] = 0
 
 
-# FIXME Add Bump?
+@dataclass
+class Bump(Obstacle):
+    width: float
+    length: float
+    upper_length: float
+    upper_width: float
+    oid: Optional[str] = None
+    x_rot: Optional[float] = 0
+    y_rot: Optional[float] = 0
+    z_rot: Optional[float] = 0
 
 
 @dataclass

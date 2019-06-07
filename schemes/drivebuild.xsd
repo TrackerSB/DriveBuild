@@ -150,6 +150,18 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+    <xs:element name="bump" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                    <xs:attribute name="width" type="positiveDecimal" use="required"/>
+                    <xs:attribute name="length" type="positiveDecimal" use="required"/>
+                    <xs:attribute name="upperLength" type="positiveDecimal" use="required"/> <!-- FIXME Negative heights? -->
+                    <xs:attribute name="upperWidth" type="positiveDecimal" use="required"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 
     <!-- Request data/sensors -->
     <xs:complexType name="aiData">

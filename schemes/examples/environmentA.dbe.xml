@@ -17,5 +17,6 @@
         <cube x="105" y="25" width="1" length="10" height="8"/>
         <cylinder x="60" y="-10" radius="5" height="7"/>
         <cone x="40" y="10" height="10" baseRadius="6"/>
+        <bump x="20" y="-8" width="1.5" length="5" height="0.1" upperLength="4.5" upperWidth="1"/>
     </obstacles>
 </environment>

@@ -27,8 +27,8 @@ class ScenarioBuilder:
             scenario.add_road(road)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
-        from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder
-        from dbtypes.scheme import Cone, Cube, Cylinder
+        from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
+        from dbtypes.scheme import Cone, Cube, Cylinder, Bump
         from util import eprint
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
@@ -42,6 +42,9 @@ class ScenarioBuilder:
                 mesh = ProceduralCylinder(pos, rot, obstacle.radius, height=height, name=name)
             elif obstacle_type is Cone:
                 mesh = ProceduralCone(pos, rot, obstacle.base_radius, height, name=name)
+            elif obstacle_type is Bump:
+                mesh = ProceduralBump(pos, rot, obstacle.width, obstacle.length, height, obstacle.upper_length,
+                                      obstacle.upper_width)
             else:
                 eprint("Obstacles of type " + str(obstacle_type) + " are not supported by the generation, yet.")
                 mesh = None
@@ -94,7 +97,7 @@ class ScenarioBuilder:
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
     from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
-        Cylinder, Cone
+        Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
     from util import eprint
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
@@ -141,6 +144,15 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
         base_radius = float(node.get("baseRadius"))
         obstacles.append(Cone(x, y, height, base_radius, oid, x_rot, y_rot, z_rot))
+
+    bump_nodes = xpath(env, "db:obstacles/db:bump")
+    for node in bump_nodes:
+        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
+        length = float(node.get("length"))
+        width = float(node.get("width"))
+        upper_length = float(node.get("upperLength"))
+        upper_width = float(node.get("upperWidth"))
+        obstacles.append(Bump(x, y, height, width, length, upper_length, upper_width, oid, x_rot, y_rot, z_rot))
 
     participants = list()
     participant_nodes = xpath(participants_node, "db:participant")
