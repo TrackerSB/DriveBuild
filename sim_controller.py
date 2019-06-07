@@ -25,7 +25,9 @@ def _get_current_movement_mode(pid: str) -> Optional[MovementMode]:
     mode_file_path = _get_movement_mode_file_path(pid, False)
     if os.path.exists(mode_file_path):
         mode_file = open(mode_file_path, "r")
-        return MovementMode[mode_file.readline()]
+        mode = MovementMode[mode_file.readline()]
+        mode_file.close()
+        return mode
     else:
         return None
 
@@ -35,6 +37,7 @@ def _generate_lua_av_command(participant: Participant, idx: int, next_mode: Move
     """
     NOTE When using this function the lua file where you include this command has to include the following line:
     local sh = require('ge/extensions/scenario/scenariohelper')
+    NOTE Pass -1 as idx when passing mode of the initial state of the participant
     """
     lua_av_command = []
     if next_mode is MovementMode.MANUAL:
@@ -66,21 +69,22 @@ def _generate_lua_file(participants: List[Participant]) -> None:
         "local function onRaceStart()\n",
     ])
     for participant in participants:
-        for idx, waypoint in enumerate(participant.movement[0:1]):
-            lua_file.writelines(_generate_lua_av_command(participant, idx, waypoint.mode))
+        lua_file.writelines(
+            map(lambda l: l + "\r\n", _generate_lua_av_command(participant, -1, participant.initial_state.mode)))
     lua_file.writelines([
         "end\n",
         "\n",
         "M.onRaceStart = onRaceStart\n",
         "return M"
     ])
+    lua_file.close()
 
 
 def _add_lua_triggers(participants: List[Participant]) -> None:
     from util import add_to_prefab_file
     for participant in participants:
-        current_movement_mode = None
-        for idx, waypoint in enumerate(participant.movement[1:-1]):
+        current_movement_mode = participant.initial_state.mode
+        for idx, waypoint in enumerate(participant.movement[0:-1]):
             x_pos = waypoint.position[0]
             y_pos = waypoint.position[1]
             # NOTE Add further tolerance due to oversize of bounding box of the car compared to the actual body
