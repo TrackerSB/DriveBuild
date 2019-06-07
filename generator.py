@@ -125,27 +125,27 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     obstacles = list()
     cube_nodes = xpath(env, "db:obstacles/db:cube")
     for node in cube_nodes:
-        x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
         width = float(node.get("width"))
         length = float(node.get("length"))
-        obstacles.append(Cube(x, y, height, width, length, id, x_rot, y_rot, z_rot))
+        obstacles.append(Cube(x, y, height, width, length, oid, x_rot, y_rot, z_rot))
 
     cylinder_nodes = xpath(env, "db:obstacles/db:cylinder")
     for node in cylinder_nodes:
-        x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
         radius = float(node.get("radius"))
-        obstacles.append(Cylinder(x, y, height, radius, id, x_rot, y_rot, z_rot))
+        obstacles.append(Cylinder(x, y, height, radius, oid, x_rot, y_rot, z_rot))
 
     cone_nodes = xpath(env, "db:obstacles/db:cone")
     for node in cone_nodes:
-        x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
         base_radius = float(node.get("baseRadius"))
-        obstacles.append(Cone(x, y, height, base_radius, id, x_rot, y_rot, z_rot))
+        obstacles.append(Cone(x, y, height, base_radius, oid, x_rot, y_rot, z_rot))
 
     participants = list()
     participant_nodes = xpath(participants_node, "db:participant")
     for node in participant_nodes:
-        id = node.get("id")
+        pid = node.get("id")
         initial_state_node = xpath(node, "db:initialState")[0]
         speed_limit = initial_state_node.get("speedLimit")
         target_speed = initial_state_node.get("speed")
@@ -191,5 +191,5 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 None if speed_limit is None else float(speed_limit),
                 None if target_speed is None else float(target_speed)
             ))
-        participants.append(Participant(id, initial_state, CarModel[node.get("model")].value, movements, ai_requests))
+        participants.append(Participant(pid, initial_state, CarModel[node.get("model")].value, movements, ai_requests))
     return ScenarioBuilder(lanes, obstacles, participants)
