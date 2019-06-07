@@ -136,8 +136,8 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         radius = float(node.get("radius"))
         obstacles.append(Cylinder(x, y, height, radius, id, x_rot, y_rot, z_rot))
 
-    cylinder_nodes = xpath(env, "db:obstacles/db:cone")
-    for node in cylinder_nodes:
+    cone_nodes = xpath(env, "db:obstacles/db:cone")
+    for node in cone_nodes:
         x, y, x_rot, y_rot, z_rot, height, id = get_obstacle_common(node)
         base_radius = float(node.get("baseRadius"))
         obstacles.append(Cone(x, y, height, base_radius, id, x_rot, y_rot, z_rot))
