@@ -11,7 +11,7 @@
 
     <participants>
         <participant id="ego" model="ETK800">
-            <initialState x="0" y="0" movementMode="MANUAL" orientation="0"/>
+            <initialState x="5" y="0" movementMode="MANUAL" orientation="90"/>
             <ai>
                 <position id="position"/>
                 <speed id="speed"/>
