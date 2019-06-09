@@ -182,7 +182,7 @@ class SCSpeed(StateCondition):
         return [SpeedRequest(self._generate_rid)]
 
     def eval(self) -> KPValue:
-        return KPValue.FALSE if self._poll_request_data()[0] > self.speed_limit else KPValue.TRUE
+        return KPValue.TRUE if self._poll_request_data()[0] > self.speed_limit else KPValue.FALSE
 
 
 class SCDamage(StateCondition):
