@@ -84,10 +84,9 @@ def generate_criteria(crit_def: _ElementTree) -> Tuple[CriteriaFunction, Criteri
     from util.xml import xpath
     root: _Element = crit_def.getroot()
     preconditions_nodes = xpath(root, "db:precondition")
-    precondition = generate_criterion(preconditions_nodes[0]) \
-        if preconditions_nodes is None else (lambda _: UnknownEvaluable())
+    precondition = generate_criterion(preconditions_nodes[0]) if preconditions_nodes else (lambda _: UnknownEvaluable())
     success_nodes = xpath(root, "db:success")
     success = generate_criterion(success_nodes[0]) if success_nodes else (lambda _: UnknownEvaluable())
     failure_nodes = xpath(root, "db:failure")
-    failure = generate_criterion(failure_nodes[0]) if failure_nodes is None else (lambda _: UnknownEvaluable())
+    failure = generate_criterion(failure_nodes[0]) if failure_nodes else (lambda _: UnknownEvaluable())
     return precondition, success, failure
