@@ -41,6 +41,9 @@ class Evaluable(ABC):
     from abc import abstractmethod
     @abstractmethod
     def eval(self) -> KPValue:
+        """
+        Evaluates to KPValue.TRUE only if the condition got triggered.
+        """
         pass
 
 
