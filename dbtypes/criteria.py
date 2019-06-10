@@ -71,7 +71,7 @@ class StateCondition(Criteria, ABC):
     from requests import AiRequest
     from util import static_vars
     from beamngpy import Vehicle
-    from typing import Any, Dict
+    from typing import Any
 
     def __init__(self, scenario: Scenario, participant: str) -> None:
         super().__init__(scenario)
