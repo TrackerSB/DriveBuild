@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=_b('\220\001\000'),
-  serialized_pb=_b('\n0code/drivebuild/schemes/aiExchangeMessages.proto\"\"\n\x0b\x44\x61taRequest\x12\x13\n\x0brequest_ids\x18\x01 \x03(\t\"\xe7\x04\n\x0c\x44\x61taResponse\x12%\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32\x17.DataResponse.DataEntry\x1a\xee\x03\n\x04\x44\x61ta\x12/\n\x08position\x18\x01 \x01(\x0b\x32\x1b.DataResponse.Data.PositionH\x00\x12)\n\x05speed\x18\x02 \x01(\x0b\x32\x18.DataResponse.Data.SpeedH\x00\x12\x31\n\x05\x61ngle\x18\x03 \x01(\x0b\x32 .DataResponse.Data.SteeringAngleH\x00\x12)\n\x05lidar\x18\x04 \x01(\x0b\x32\x18.DataResponse.Data.LidarH\x00\x12+\n\x06\x63\x61mera\x18\x05 \x01(\x0b\x32\x19.DataResponse.Data.CameraH\x00\x12+\n\x06\x64\x61mage\x18\x06 \x01(\x0b\x32\x19.DataResponse.Data.DamageH\x00\x1a \n\x08Position\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x1a\x16\n\x05Speed\x12\r\n\x05speed\x18\x01 \x01(\x01\x1a\x1e\n\rSteeringAngle\x12\r\n\x05\x61ngle\x18\x01 \x01(\x01\x1a\x17\n\x05Lidar\x12\x0e\n\x06points\x18\x01 \x03(\x01\x1a\x39\n\x06\x43\x61mera\x12\r\n\x05\x63olor\x18\x01 \x01(\x0c\x12\x11\n\tannotated\x18\x02 \x01(\x0c\x12\r\n\x05\x64\x65pth\x18\x03 \x01(\x0c\x1a\x1c\n\x06\x44\x61mage\x12\x12\n\nis_damaged\x18\x01 \x01(\x08\x42\x06\n\x04\x64\x61ta\x1a?\n\tDataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.DataResponse.Data:\x02\x38\x01\"\xd7\x01\n\x07\x43ontrol\x12\'\n\tavCommand\x18\x01 \x01(\x0b\x32\x12.Control.AvCommandH\x00\x12)\n\nsimCommand\x18\x02 \x01(\x0e\x32\x13.Control.SimCommandH\x00\x1a=\n\tAvCommand\x12\x12\n\naccelerate\x18\x01 \x01(\x01\x12\r\n\x05steer\x18\x02 \x01(\x01\x12\r\n\x05\x62rake\x18\x03 \x01(\x01\".\n\nSimCommand\x12\n\n\x06RESUME\x10\x00\x12\x08\n\x04\x46\x41IL\x10\x01\x12\n\n\x06\x43\x41NCEL\x10\x02\x42\t\n\x07\x63ommand\"\x18\n\tVehicleID\x12\x0b\n\x03vid\x18\x01 \x01(\t\"\x7f\n\x10SimStateResponse\x12)\n\x05state\x18\x01 \x01(\x0e\x32\x1a.SimStateResponse.SimState\"@\n\x08SimState\x12\x0b\n\x07RUNNING\x10\x00\x12\x0c\n\x08\x46INISHED\x10\x01\x12\x0c\n\x08\x43\x41NCELED\x10\x02\x12\x0b\n\x07\x45RRORED\x10\x03\"\x06\n\x04Void2\x99\x01\n\x11\x41IExchangeService\x12;\n\x1await_for_simulator_request\x12\n.VehicleID\x1a\x11.SimStateResponse\x12+\n\x0crequest_data\x12\x0c.DataRequest\x1a\r.DataResponse\x12\x1a\n\x07\x63ontrol\x12\x08.Control\x1a\x05.VoidB\x03\x90\x01\x00\x62\x06proto3')
+  serialized_pb=_b('\n0code/drivebuild/schemes/aiExchangeMessages.proto\";\n\x0b\x44\x61taRequest\x12\x17\n\x03vid\x18\x01 \x01(\x0b\x32\n.VehicleID\x12\x13\n\x0brequest_ids\x18\x02 \x03(\t\"\xe7\x04\n\x0c\x44\x61taResponse\x12%\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32\x17.DataResponse.DataEntry\x1a\xee\x03\n\x04\x44\x61ta\x12/\n\x08position\x18\x01 \x01(\x0b\x32\x1b.DataResponse.Data.PositionH\x00\x12)\n\x05speed\x18\x02 \x01(\x0b\x32\x18.DataResponse.Data.SpeedH\x00\x12\x31\n\x05\x61ngle\x18\x03 \x01(\x0b\x32 .DataResponse.Data.SteeringAngleH\x00\x12)\n\x05lidar\x18\x04 \x01(\x0b\x32\x18.DataResponse.Data.LidarH\x00\x12+\n\x06\x63\x61mera\x18\x05 \x01(\x0b\x32\x19.DataResponse.Data.CameraH\x00\x12+\n\x06\x64\x61mage\x18\x06 \x01(\x0b\x32\x19.DataResponse.Data.DamageH\x00\x1a \n\x08Position\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x1a\x16\n\x05Speed\x12\r\n\x05speed\x18\x01 \x01(\x01\x1a\x1e\n\rSteeringAngle\x12\r\n\x05\x61ngle\x18\x01 \x01(\x01\x1a\x17\n\x05Lidar\x12\x0e\n\x06points\x18\x01 \x03(\x01\x1a\x39\n\x06\x43\x61mera\x12\r\n\x05\x63olor\x18\x01 \x01(\x0c\x12\x11\n\tannotated\x18\x02 \x01(\x0c\x12\r\n\x05\x64\x65pth\x18\x03 \x01(\x0c\x1a\x1c\n\x06\x44\x61mage\x12\x12\n\nis_damaged\x18\x01 \x01(\x08\x42\x06\n\x04\x64\x61ta\x1a?\n\tDataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12!\n\x05value\x18\x02 \x01(\x0b\x32\x12.DataResponse.Data:\x02\x38\x01\"\xf0\x01\n\x07\x43ontrol\x12\x17\n\x03vid\x18\x01 \x01(\x0b\x32\n.VehicleID\x12\'\n\tavCommand\x18\x02 \x01(\x0b\x32\x12.Control.AvCommandH\x00\x12)\n\nsimCommand\x18\x03 \x01(\x0e\x32\x13.Control.SimCommandH\x00\x1a=\n\tAvCommand\x12\x12\n\naccelerate\x18\x01 \x01(\x01\x12\r\n\x05steer\x18\x02 \x01(\x01\x12\r\n\x05\x62rake\x18\x03 \x01(\x01\".\n\nSimCommand\x12\n\n\x06RESUME\x10\x00\x12\x08\n\x04\x46\x41IL\x10\x01\x12\n\n\x06\x43\x41NCEL\x10\x02\x42\t\n\x07\x63ommand\"\x18\n\tVehicleID\x12\x0b\n\x03vid\x18\x01 \x01(\t\"\x7f\n\x10SimStateResponse\x12)\n\x05state\x18\x01 \x01(\x0e\x32\x1a.SimStateResponse.SimState\"@\n\x08SimState\x12\x0b\n\x07RUNNING\x10\x00\x12\x0c\n\x08\x46INISHED\x10\x01\x12\x0c\n\x08\x43\x41NCELED\x10\x02\x12\x0b\n\x07\x45RRORED\x10\x03\"\x06\n\x04Void2\x99\x01\n\x11\x41IExchangeService\x12;\n\x1await_for_simulator_request\x12\n.VehicleID\x1a\x11.SimStateResponse\x12+\n\x0crequest_data\x12\x0c.DataRequest\x1a\r.DataResponse\x12\x1a\n\x07\x63ontrol\x12\x08.Control\x1a\x05.VoidB\x03\x90\x01\x00\x62\x06proto3')
 )
 
 
@@ -45,8 +45,8 @@ _CONTROL_SIMCOMMAND = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=865,
-  serialized_end=911,
+  serialized_start=915,
+  serialized_end=961,
 )
 _sym_db.RegisterEnumDescriptor(_CONTROL_SIMCOMMAND)
 
@@ -75,8 +75,8 @@ _SIMSTATERESPONSE_SIMSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1013,
-  serialized_end=1077,
+  serialized_start=1063,
+  serialized_end=1127,
 )
 _sym_db.RegisterEnumDescriptor(_SIMSTATERESPONSE_SIMSTATE)
 
@@ -89,8 +89,15 @@ _DATAREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='request_ids', full_name='DataRequest.request_ids', index=0,
-      number=1, type=9, cpp_type=9, label=3,
+      name='vid', full_name='DataRequest.vid', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='request_ids', full_name='DataRequest.request_ids', index=1,
+      number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -108,7 +115,7 @@ _DATAREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=52,
-  serialized_end=86,
+  serialized_end=111,
 )
 
 
@@ -145,8 +152,8 @@ _DATARESPONSE_DATA_POSITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=429,
-  serialized_end=461,
+  serialized_start=454,
+  serialized_end=486,
 )
 
 _DATARESPONSE_DATA_SPEED = _descriptor.Descriptor(
@@ -175,8 +182,8 @@ _DATARESPONSE_DATA_SPEED = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=463,
-  serialized_end=485,
+  serialized_start=488,
+  serialized_end=510,
 )
 
 _DATARESPONSE_DATA_STEERINGANGLE = _descriptor.Descriptor(
@@ -205,8 +212,8 @@ _DATARESPONSE_DATA_STEERINGANGLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=487,
-  serialized_end=517,
+  serialized_start=512,
+  serialized_end=542,
 )
 
 _DATARESPONSE_DATA_LIDAR = _descriptor.Descriptor(
@@ -235,8 +242,8 @@ _DATARESPONSE_DATA_LIDAR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=519,
-  serialized_end=542,
+  serialized_start=544,
+  serialized_end=567,
 )
 
 _DATARESPONSE_DATA_CAMERA = _descriptor.Descriptor(
@@ -279,8 +286,8 @@ _DATARESPONSE_DATA_CAMERA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=544,
-  serialized_end=601,
+  serialized_start=569,
+  serialized_end=626,
 )
 
 _DATARESPONSE_DATA_DAMAGE = _descriptor.Descriptor(
@@ -309,8 +316,8 @@ _DATARESPONSE_DATA_DAMAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=603,
-  serialized_end=631,
+  serialized_start=628,
+  serialized_end=656,
 )
 
 _DATARESPONSE_DATA = _descriptor.Descriptor(
@@ -377,8 +384,8 @@ _DATARESPONSE_DATA = _descriptor.Descriptor(
       name='data', full_name='DataResponse.Data.data',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=145,
-  serialized_end=639,
+  serialized_start=170,
+  serialized_end=664,
 )
 
 _DATARESPONSE_DATAENTRY = _descriptor.Descriptor(
@@ -414,8 +421,8 @@ _DATARESPONSE_DATAENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=641,
-  serialized_end=704,
+  serialized_start=666,
+  serialized_end=729,
 )
 
 _DATARESPONSE = _descriptor.Descriptor(
@@ -444,8 +451,8 @@ _DATARESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=89,
-  serialized_end=704,
+  serialized_start=114,
+  serialized_end=729,
 )
 
 
@@ -489,8 +496,8 @@ _CONTROL_AVCOMMAND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=802,
-  serialized_end=863,
+  serialized_start=852,
+  serialized_end=913,
 )
 
 _CONTROL = _descriptor.Descriptor(
@@ -501,15 +508,22 @@ _CONTROL = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='avCommand', full_name='Control.avCommand', index=0,
+      name='vid', full_name='Control.vid', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='simCommand', full_name='Control.simCommand', index=1,
-      number=2, type=14, cpp_type=8, label=1,
+      name='avCommand', full_name='Control.avCommand', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='simCommand', full_name='Control.simCommand', index=2,
+      number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -530,8 +544,8 @@ _CONTROL = _descriptor.Descriptor(
       name='command', full_name='Control.command',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=707,
-  serialized_end=922,
+  serialized_start=732,
+  serialized_end=972,
 )
 
 
@@ -561,8 +575,8 @@ _VEHICLEID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=924,
-  serialized_end=948,
+  serialized_start=974,
+  serialized_end=998,
 )
 
 
@@ -593,8 +607,8 @@ _SIMSTATERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=950,
-  serialized_end=1077,
+  serialized_start=1000,
+  serialized_end=1127,
 )
 
 
@@ -617,10 +631,11 @@ _VOID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1079,
-  serialized_end=1085,
+  serialized_start=1129,
+  serialized_end=1135,
 )
 
+_DATAREQUEST.fields_by_name['vid'].message_type = _VEHICLEID
 _DATARESPONSE_DATA_POSITION.containing_type = _DATARESPONSE_DATA
 _DATARESPONSE_DATA_SPEED.containing_type = _DATARESPONSE_DATA
 _DATARESPONSE_DATA_STEERINGANGLE.containing_type = _DATARESPONSE_DATA
@@ -656,6 +671,7 @@ _DATARESPONSE_DATAENTRY.fields_by_name['value'].message_type = _DATARESPONSE_DAT
 _DATARESPONSE_DATAENTRY.containing_type = _DATARESPONSE
 _DATARESPONSE.fields_by_name['data'].message_type = _DATARESPONSE_DATAENTRY
 _CONTROL_AVCOMMAND.containing_type = _CONTROL
+_CONTROL.fields_by_name['vid'].message_type = _VEHICLEID
 _CONTROL.fields_by_name['avCommand'].message_type = _CONTROL_AVCOMMAND
 _CONTROL.fields_by_name['simCommand'].enum_type = _CONTROL_SIMCOMMAND
 _CONTROL_SIMCOMMAND.containing_type = _CONTROL
@@ -799,8 +815,8 @@ _AIEXCHANGESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1088,
-  serialized_end=1241,
+  serialized_start=1138,
+  serialized_end=1291,
   methods=[
   _descriptor.MethodDescriptor(
     name='wait_for_simulator_request',
