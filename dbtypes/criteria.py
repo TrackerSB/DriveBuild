@@ -179,7 +179,7 @@ class SCSpeed(StateCondition):
 
     def _create_requests(self) -> List[AiRequest]:
         from requests import SpeedRequest
-        return [SpeedRequest(self._generate_rid)]
+        return [SpeedRequest(self._generate_rid())]
 
     def eval(self) -> KPValue:
         return KPValue.TRUE if self._poll_request_data()[0] > self.speed_limit else KPValue.FALSE
@@ -193,7 +193,7 @@ class SCDamage(StateCondition):
 
     def _create_requests(self) -> List[AiRequest]:
         from requests import DamageRequest
-        return [DamageRequest(self._generate_rid)]
+        return [DamageRequest(self._generate_rid())]
 
     def eval(self) -> KPValue:
         damage = self._poll_request_data()[0]
@@ -216,7 +216,7 @@ class SCDistance(StateCondition):
 
     def _create_requests(self) -> List[AiRequest]:
         from requests import PositionRequest
-        return [PositionRequest(self._generate_rid)]
+        return [PositionRequest(self._generate_rid())]
 
     def eval(self) -> KPValue:
         from numpy import array
