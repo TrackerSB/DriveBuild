@@ -97,6 +97,8 @@ class StateCondition(Criteria, ABC):
             rid = StateCondition._generate_rid.prefix + str(counter)
             if rid not in self._get_vehicle().sensors:
                 break
+            else:
+                counter += 1
         return rid
 
     @abstractmethod
