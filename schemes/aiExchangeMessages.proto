@@ -1,34 +1,11 @@
 syntax = "proto3";
 option py_generic_services = false;
 
-message Request {
-    message Data {
-        string id = 1;
-        message Position {
-        }
-        message Speed {
-        }
-        message SteeringAngle {
-        }
-        message Lidar {
-        }
-        message Camera {
-        }
-        message Damage {
-        }
-        oneof data {
-            Position position = 2;
-            Speed speed = 3;
-            SteeringAngle angle = 4;
-            Lidar lidar = 5;
-            Camera camera = 6;
-            Damage damage = 7;
-        }
-    }
-    repeated Data requests = 1;
+message DataRequest {
+    repeated string request_ids = 1;
 }
 
-message Response {
+message DataResponse {
     message Data {
         message Position {
             double x = 1;
@@ -44,7 +21,9 @@ message Response {
             repeated double points = 1;
         }
         message Camera {
-            // FIXME Which data provided?
+            bytes color = 1;
+            bytes annotated = 2;
+            bytes depth = 3;
         }
         message Damage {
             bool is_damaged = 1;
@@ -63,8 +42,9 @@ message Response {
 
 message Control {
     message AvCommand {
-        double accelerate = 1; // TODO Negative accelerate is brake?
+        double accelerate = 1; // FIXME Range?
         double steer = 2; // FIXME positive left, negative right? // FIXME deg or rad?
+        double brake = 3; // FIXME Range?
     }
 
     enum SimCommand {
@@ -82,11 +62,21 @@ message VehicleID {
     string vid = 1;
 }
 
+message SimStateResponse {
+    enum SimState {
+        RUNNING = 0;
+        FINISHED = 1;
+        CANCELED = 2;
+        ERRORED = 3;
+    }
+    SimState state = 1;
+}
+
 message Void {
 }
 
 service AIExchangeService {
-    rpc wait_for_simulator_request (VehicleID) returns (Void);
-    rpc request_data (Request) returns (Response);
+    rpc wait_for_simulator_request (VehicleID) returns (SimStateResponse);
+    rpc request_data (DataRequest) returns (DataResponse);
     rpc control (Control) returns (Void);
 }
