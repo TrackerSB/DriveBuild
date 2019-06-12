@@ -41,11 +41,11 @@ class DamageRequest(AiRequest):
 
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         from beamngpy.sensors import Damage
-        vehicle.attach_sensor(self.rid, Damage())  # FIXME Is Electrics sensor needed?
+        vehicle.attach_sensor(self.rid, Damage())
 
     def read_sensor_cache_of(self, vehicle: Vehicle) -> bool:
-        print("Damage: " + str(vehicle.poll_sensors(self.rid)))  # FIXME Implement DamageSensor
-        return False
+        # FIXME Any more precise way of checking damage?
+        return vehicle.sensor_cache[self.rid]["damage"] > 0
 
 
 class SteeringAngleRequest(AiRequest):

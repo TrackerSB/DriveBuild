@@ -198,11 +198,7 @@ class SCDamage(StateCondition):
         return [DamageRequest(self._generate_rid())]
 
     def eval(self) -> KPValue:
-        damage = self._poll_request_data()[0]
-        print(damage)
-        # FIXME Determine overall damage
-        # TODO Determine whether a car is really "damaged"
-        return KPValue.UNKNOWN
+        return KPValue.TRUE if self._poll_request_data()[0] else KPValue.FALSE
 
 
 class SCDistance(StateCondition):
