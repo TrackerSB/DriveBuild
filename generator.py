@@ -15,13 +15,9 @@ class ScenarioBuilder:
         self.participants = participants
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
-        from beamngpy import Road
         from dbtypes.beamng import DBRoad
         for lane in self.lanes:
-            if lane.id is None:
-                road = Road('a_asphalt_01_a')
-            else:
-                road = DBRoad('a_asphalt_01_a', lane.id)
+            road = DBRoad(lane.lid, 'a_asphalt_01_a')
             road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
             road.nodes.extend(road_nodes)
             scenario.add_road(road)
@@ -99,11 +95,22 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
-    from util import eprint
+    from util import eprint, static_vars
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
         LidarRequest
 
     lanes = list()
+
+    @static_vars(prefix="lane_", counter=0)
+    def _generate_lane_id() -> str:
+        while True:  # Pseudo "do-while"-loop
+            lid = _generate_lane_id.prefix + str(_generate_lane_id.counter)
+            if lid in map(lambda l: l.lid, lanes):
+                _generate_lane_id.counter += 1
+            else:
+                break
+        return lid
+
     lane_nodes = xpath(env, "db:lanes/db:lane")
     for node in lane_nodes:
         lane_segment_nodes = xpath(node, "db:laneSegment")
@@ -112,7 +119,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 lambda n: LaneNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
                 lane_segment_nodes
             )
-        ), node.get("db:id"))
+        ), node.get("db:id", _generate_lane_id()))
         lanes.append(lane)
 
     # FIXME Implement generation of obstacles

@@ -115,7 +115,7 @@ class LaneNode:
 @dataclass
 class Lane:
     nodes: List[LaneNode]
-    id: Optional[str] = None
+    lid: Optional[str] = None
 
 
 @dataclass

@@ -2,9 +2,9 @@ from beamngpy import Road, BeamNGpy, Vehicle
 
 
 class DBRoad(Road):
-    def __init__(self, id: str, material, **options):
+    def __init__(self, rid: str, material: str, **options):
         super().__init__(material, **options)
-        self.id = id
+        self.rid = rid
 
 
 class DBBeamNGpy(BeamNGpy):
