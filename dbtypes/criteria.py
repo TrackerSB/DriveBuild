@@ -90,15 +90,14 @@ class StateCondition(Criteria, ABC):
             request_data.append(request.read_sensor_cache_of(self._get_vehicle()))
         return request_data
 
-    @static_vars(prefix="criterion_")
+    @static_vars(prefix="criterion_", counter=0)
     def _generate_rid(self) -> str:
-        counter = 0
         while True:  # Pseudo "do-while"-loop
-            rid = StateCondition._generate_rid.prefix + str(counter)
-            if rid not in self._get_vehicle().sensors:
-                break
+            rid = StateCondition._generate_rid.prefix + str(StateCondition._generate_rid.counter)
+            if rid in self._get_vehicle().sensors:
+                StateCondition._generate_rid.counter += 1
             else:
-                counter += 1
+                break
         return rid
 
     @abstractmethod
