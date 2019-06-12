@@ -3,7 +3,7 @@ from beamngpy import Road, BeamNGpy, Vehicle
 
 class DBRoad(Road):
     def __init__(self, rid: str, material: str, **options):
-        super().__init__(material, **options)
+        super().__init__(material, one_way=True, **options)
         self.rid = rid
 
 
