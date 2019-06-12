@@ -373,12 +373,12 @@ class BinaryConnective(Connective, ABC):
 
 class And(BinaryConnective):
     def eval(self) -> KPValue:
-        return KPValue.TRUE if all(map(lambda e: e.eval(), self.evaluables)) else KPValue.FALSE
+        return KPValue.TRUE if all(map(lambda e: e.eval() is KPValue.TRUE, self.evaluables)) else KPValue.FALSE
 
 
 class Or(BinaryConnective):
     def eval(self) -> KPValue:
-        return KPValue.TRUE if any(map(lambda e: e.eval(), self.evaluables)) else KPValue.FALSE
+        return KPValue.TRUE if any(map(lambda e: e.eval() is KPValue.TRUE, self.evaluables)) else KPValue.FALSE
 
 
 class Not(Connective):
@@ -386,7 +386,7 @@ class Not(Connective):
         self.evaluable = evaluable
 
     def eval(self) -> KPValue:
-        return self.evaluable.eval()
+        return not self.evaluable.eval()  # FIXME How to force usage of custom not?
 
 
 CriteriaFunction = Callable[[Scenario], Evaluable]
