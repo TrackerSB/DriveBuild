@@ -5,6 +5,7 @@ from beamngpy import Scenario
 from dbtypes.beamng import DBVehicle
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
+from util import static_vars
 
 
 def _get_movement_mode_file_path(pid: str, in_lua: bool) -> str:
@@ -201,6 +202,16 @@ def _add_lap_config(waypoint_ids: Set[str]) -> None:
         ])
 
 
+def _is_port_available(port: int) -> bool:
+    from socket import socket, AF_INET, SOCK_STREAM
+    sock = socket(AF_INET, SOCK_STREAM)
+    result = sock.connect_ex(('127.0.0.1', port))
+    is_open = (result != 0)
+    sock.close()
+    return is_open
+
+
+@static_vars(port=64256)
 def run_test_case(test_case: TestCase):
     from app import app
     from dbtypes.beamng import DBBeamNGpy
@@ -214,7 +225,9 @@ def run_test_case(test_case: TestCase):
     rmtree(os.path.join(user_path, "levels"), ignore_errors=True)
 
     # FIXME Determine port and host automatically. (Is it required to do so?)
-    bng_instance = DBBeamNGpy('localhost', 64256, home=home_path, user=user_path)
+    while not _is_port_available(run_test_case.port):
+        run_test_case.port += 1
+    bng_instance = DBBeamNGpy('localhost', run_test_case.port, home=home_path, user=user_path)
     authors = ", ".join(test_case.authors)
     bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], app.config["BEAMNG_SCENARIO_NAME"], authors=authors)
     test_case.scenario.add_all(bng_scenario)
