@@ -248,6 +248,8 @@ def run_test_case(test_case: TestCase):
         success = test_case.success_fct(bng_scenario)
         test_case_result = "undetermined"
         while test_case_result == "undetermined":
+            for vehicle in vehicles:
+                bng_instance.poll_sensors(vehicle)
             if precondition.eval() is KPValue.FALSE:
                 test_case_result = "skipped"
             elif failure.eval() is KPValue.TRUE:
@@ -256,8 +258,6 @@ def run_test_case(test_case: TestCase):
                 test_case_result = "succeeded"
             else:
                 # test_case_result = "undetermined"
-                for vehicle in vehicles:
-                    bng_instance.poll_sensors(vehicle)  # Update sensor cache before controlling AVs
                 _control_avs(vehicles)
                 bng_instance.step(test_case.aiFrequency)
         print("Test case result: " + test_case_result)
