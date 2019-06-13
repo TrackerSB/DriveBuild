@@ -2,7 +2,6 @@ syntax = "proto3";
 option py_generic_services = false;
 
 message DataRequest {
-    VehicleID vid = 1;
     repeated string request_ids = 2;
 }
 
@@ -53,7 +52,6 @@ message Control {
         FAIL = 1;
         CANCEL = 2;
     }
-    VehicleID vid = 1;
     oneof command {
         AvCommand avCommand = 2;
         SimCommand simCommand = 3;
