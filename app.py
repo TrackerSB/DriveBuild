@@ -2,8 +2,6 @@ from typing import Callable, List
 
 from flask import Flask, Response
 
-from aiExchangeMessages_pb2 import VehicleID
-
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
 
@@ -64,12 +62,6 @@ def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[],
         return on_parameter_available()
 
 
-def _parse_vid_from_request(request) -> VehicleID:
-    vid = VehicleID()
-    vid.ParseFromString(request.args["vid"].encode())
-    return vid
-
-
 # FIXME Currently only one simulator instance at a time allowed
 @app.route("/ai/register", methods=["GET"])
 def register():
@@ -89,18 +81,31 @@ def wait_for_simulator_request():
     from communicator import ai_wait_for_simulator_request
 
     def do() -> Response:
-        from aiExchangeMessages_pb2 import SimStateResponse
-        ai_wait_for_simulator_request(_parse_vid_from_request(request).vid)
+        from aiExchangeMessages_pb2 import SimStateResponse, VehicleID
+        vid = VehicleID()
+        vid.ParseFromString(request.args["vid"].encode())
+        sid = SimulationID()
+        sid.ParseFromString(request.args[""])
+        ai_wait_for_simulator_request(vid.vid)
         response = SimStateResponse()
         response.state = SimStateResponse.SimState.RUNNING
         return Response(response=response.SerializeToString(), status=200)
 
-    return _ai_request_stub(["vid"], do)
+    return _ai_request_stub(["vid", "sid"], do)
 
 
 @app.route("/ai/requestData", methods=["GET"])
 def request_data():
-    pass
+    from flask import request
+
+    def do() -> Response:
+        from aiExchangeMessages_pb2 import VehicleID, DataRequest
+        vid = VehicleID()
+        vid.ParseFromString(request.args["vid"].encode())
+        data_request = DataRequest()
+        data_request.ParseFromString(request.args["request"].encode())
+
+    return _ai_request_stub(["vid", "sid", "request"], do)
 
 
 if __name__ == "__main__":

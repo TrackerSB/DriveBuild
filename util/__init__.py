@@ -1,4 +1,3 @@
-import os
 import re
 from typing import List, Optional
 
@@ -36,73 +35,6 @@ def static_vars(**kwargs):
         return func
 
     return decorate
-
-
-def get_scenario_dir_path() -> str:
-    from app import app
-    return os.path.join(
-        app.config["BEAMNG_USER_PATH"],
-        "levels",
-        app.config["BEAMNG_LEVEL_NAME"],
-        "scenarios"
-    )
-
-
-def get_prefab_path() -> str:
-    from app import app
-    return os.path.join(
-        get_scenario_dir_path(),
-        app.config["BEAMNG_SCENARIO_NAME"] + ".prefab"
-    )
-
-
-def get_lua_path() -> str:
-    from app import app
-    return os.path.join(
-        get_scenario_dir_path(),
-        app.config["BEAMNG_SCENARIO_NAME"] + ".lua"
-    )
-
-
-def get_json_path() -> str:
-    from app import app
-    return os.path.join(
-        get_scenario_dir_path(),
-        app.config["BEAMNG_SCENARIO_NAME"] + ".json"
-    )
-
-
-def add_to_prefab_file(new_content: List[str]) -> None:
-    """
-    Workaround for adding content to a scenario prefab if there is no explicit method for it.
-    :param new_content: The lines of content to add.
-    """
-    prefab_file_path = get_prefab_path()
-    prefab_file = open(prefab_file_path, "r")
-    original_content = prefab_file.readlines()
-    prefab_file.close()
-    for line in new_content:
-        original_content.insert(-2, line + "\n")
-    prefab_file = open(prefab_file_path, "w")
-    prefab_file.writelines(original_content)
-    prefab_file.close()
-
-
-def add_to_json_file(new_content: List[str]) -> None:
-    """
-    Workaround for adding content to a scenario json if there is no explicit method for it.
-    :param new_content: The lines of content to add.
-    """
-    json_file_path = get_json_path()
-    json_file = open(json_file_path, "r")
-    original_content = json_file.readlines()
-    json_file.close()
-    original_content[-3] = original_content[-3] + ",\n"  # Make sure previous line has a comma
-    for line in new_content:
-        original_content.insert(-2, line + "\n")
-    json_file = open(json_file_path, "w")
-    json_file.writelines(original_content)
-    json_file.close()
 
 
 @static_vars(pattern=re.compile(r"\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\))*"))

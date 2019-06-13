@@ -2,6 +2,7 @@ syntax = "proto3";
 option py_generic_services = false;
 
 message DataRequest {
+    AiID aid = 1;
     repeated string request_ids = 2;
 }
 
@@ -37,7 +38,8 @@ message DataResponse {
             Damage damage = 6;
         }
     }
-    map<string, Data> data = 1;
+    AiID aid = 1;
+    map<string, Data> data = 2;
 }
 
 message Control {
@@ -52,6 +54,7 @@ message Control {
         FAIL = 1;
         CANCEL = 2;
     }
+    AiID aid = 1;
     oneof command {
         AvCommand avCommand = 2;
         SimCommand simCommand = 3;
@@ -60,6 +63,15 @@ message Control {
 
 message VehicleID {
     string vid = 1;
+}
+
+message SimulationID {
+    string sid = 1;
+}
+
+message AiID {
+    SimulationID sid = 1;
+    VehicleID vid = 2;
 }
 
 message SimStateResponse {
@@ -76,7 +88,7 @@ message Void {
 }
 
 service AIExchangeService {
-    rpc wait_for_simulator_request (VehicleID) returns (SimStateResponse);
+    rpc wait_for_simulator_request (AiID) returns (SimStateResponse);
     rpc request_data (DataRequest) returns (DataResponse);
     rpc control (Control) returns (Void);
 }

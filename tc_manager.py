@@ -56,7 +56,7 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
 
 def run_tests(zip_file: FileStorage) -> None:
     from util import eprint
-    from sim_controller import run_test_case
+    from sim_controller import Simulation
     from transformer import transform
     folder = extract_test_cases(zip_file)
     mapping_stubs, valid_crit_defs = get_valid(folder)
@@ -65,6 +65,6 @@ def run_tests(zip_file: FileStorage) -> None:
     if mapping:
         test_cases = transform(mapping)
         for test_case in test_cases:
-            run_test_case(test_case)
+            Simulation.run_test_case(test_case)
     else:
         eprint("Some criteria definitions have no valid environment.")
