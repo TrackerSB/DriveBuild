@@ -201,6 +201,31 @@ def _add_lap_config(waypoint_ids: Set[str]) -> None:
             "        \"lapConfig\": [\"" + ("\", \"".join(waypoint_ids)) + "\"]"
         ])
 
+def _add_waypoints_to_scenario(self, participants: List[Participant]) -> None:
+    """
+    This method is only needed until generator.py::add_waypoints_to_scenario can be implemented.
+    NOTE: This method has to be called after scenario.make()
+    """
+    for participant in participants:
+        wp_prefix = "wp_" + participant.id + "_"
+        counter = 0
+        for waypoint in participant.movement:
+            if waypoint.id is None:
+                waypoint.id = wp_prefix + str(counter)
+                counter += 1
+            tolerance = str(waypoint.tolerance)
+            self._add_to_prefab_file([
+                "new BeamNGWaypoint(" + waypoint.id + "){",
+                "   drawDebug = \"0\";",
+                "   directionalWaypoint = \"0\";",  # FIXME Should I use directional waypoints?
+                "   position = \"" + str(waypoint.position[0]) + " " + str(waypoint.position[1]) + " 0\";",
+                "   scale = \"" + tolerance + " " + tolerance + " " + tolerance + "\";",
+                "   rotationMatrix = \"1 0 0 0 1 0 0 0 1\";",
+                "   mode = \"Ignore\";",  # FIXME Which mode is suitable?
+                "   canSave = \"1\";",  # FIXME Think about it
+                "   canSaveDynamicFields = \"1\";",  # FIXME Think about it
+                "};"
+            ])
 
 def _is_port_available(port: int) -> bool:
     from socket import socket, AF_INET, SOCK_STREAM
@@ -235,7 +260,7 @@ def run_test_case(test_case: TestCase):
 
     # Make manual changes to the scenario files
     _make_lanes_visible()
-    # FIXME As long as manually inserting text it can only be called after make
+    _add_waypoints_to_scenario(test_case.scenario.participants)
     test_case.scenario.add_waypoints_to_scenario(bng_scenario)
     _enable_participant_movements(test_case.scenario.participants)
     waypoints = set()

@@ -60,34 +60,18 @@ class ScenarioBuilder:
                                  rot=(0, 0, -initial_state.orientation))
 
     def add_waypoints_to_scenario(self, scenario: Scenario) -> None:
-        from util import add_to_prefab_file
-        for participant in self.participants:
-            wp_prefix = "wp_" + participant.id + "_"
-            counter = 0
-            for waypoint in participant.movement:
-                if waypoint.id is None:
-                    waypoint.id = wp_prefix + str(counter)
-                    counter += 1
-                tolerance = str(waypoint.tolerance)
-                add_to_prefab_file([
-                    "new BeamNGWaypoint(" + waypoint.id + "){",
-                    "   drawDebug = \"0\";",
-                    "   directionalWaypoint = \"0\";",  # FIXME Should I use directional waypoints?
-                    "   position = \"" + str(waypoint.position[0]) + " " + str(waypoint.position[1]) + " 0\";",
-                    "   scale = \"" + tolerance + " " + tolerance + " " + tolerance + "\";",
-                    "   rotationMatrix = \"1 0 0 0 1 0 0 0 1\";",
-                    "   mode = \"Ignore\";",  # FIXME Which mode is suitable?
-                    "   canSave = \"1\";",  # FIXME Think about it
-                    "   canSaveDynamicFields = \"1\";",  # FIXME Think about it
-                    "};"
-                ])
+        """
+        As long as manually inserting text the temporary method sim_controller.py::add_waypoints_to_scenario has to be
+        used.
+        used.
+        """
+        pass
 
     def add_all(self, scenario: Scenario) -> None:
         self.add_lanes_to_scenario(scenario)
         self.add_obstacles_to_scenario(scenario)
         self.add_participants_to_scenario(scenario)
-        # FIXME As long as manually inserting text it can only be called after make
-        # self.add_waypoints_to_scenario(scenario)
+        self.add_waypoints_to_scenario(scenario)
 
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
