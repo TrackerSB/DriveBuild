@@ -14,7 +14,7 @@ from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE
 AIExchangeService = service_reflection.GeneratedServiceType('AIExchangeService', (Service,), dict(
     DESCRIPTOR=_AIEXCHANGESERVICE,
     __module__='aiExchangeMessages_pb2'
-))
+))  # FIXME Think about how to correctly implement that
 
 _registered_ais: Dict[str, AIStatus] = {}
 
