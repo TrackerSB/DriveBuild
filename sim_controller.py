@@ -331,8 +331,6 @@ class Simulation:
         # Make manual changes to the scenario files
         sim._make_lanes_visible()
         sim._add_waypoints_to_scenario(test_case.scenario.participants)
-        # FIXME As long as manually inserting text it can only be called after make
-        test_case.scenario.add_waypoints_to_scenario(bng_scenario)
         sim._enable_participant_movements(test_case.scenario.participants)
         waypoints = set()
         for wps in [p.movement for p in test_case.scenario.participants]:
