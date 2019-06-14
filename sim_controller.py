@@ -9,6 +9,8 @@ from util import static_vars
 
 
 class Simulation:
+    running_simulations = []
+
     def __init__(self, sid: str):
         self.sid = sid
 
@@ -313,6 +315,7 @@ class Simulation:
 
         # FIXME Generate sids automatically
         sim = Simulation("fancySid")
+        Simulation.running_simulations.append(sim)
         while not Simulation._is_port_available(Simulation.run_test_case.port):
             Simulation.run_test_case.port += 1
         bng_instance = DBBeamNGpy('localhost', Simulation.run_test_case.port, home=home_path, user=user_path)
@@ -367,3 +370,4 @@ class Simulation:
             print("Test case result: " + test_case_result)
         finally:
             bng_instance.close()
+            Simulation.running_simulations.remove(sim)
