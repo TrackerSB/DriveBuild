@@ -81,7 +81,7 @@ def wait_for_simulator_request():
     from communicator import ai_wait_for_simulator_request
 
     def do() -> Response:
-        from aiExchangeMessages_pb2 import SimStateResponse, VehicleID
+        from aiExchangeMessages_pb2 import SimStateResponse, VehicleID, SimulationID
         vid = VehicleID()
         vid.ParseFromString(request.args["vid"].encode())
         sid = SimulationID()
