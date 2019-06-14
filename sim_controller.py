@@ -2,7 +2,7 @@ from typing import List, Set, Optional
 
 from beamngpy import Scenario
 
-from aiExchangeMessages_pb2 import DataResponse
+from aiExchangeMessages_pb2 import DataResponse, DataRequest
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
 from util import static_vars
@@ -237,22 +237,42 @@ class Simulation:
             elif mode is MovementMode.TRAINING:
                 eprint("TRAINING not implemented, yet.")
 
-    def request_data(self, vid: str, rid: str) -> DataResponse.Data:
-        from requests import PositionRequest
+    def attach_request_data(self, data: DataResponse.Data, vid: str, rid: str) -> None:
+        from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
+            DamageRequest, LightRequest
+        from PIL import Image
+        from io import BytesIO
         found_vehicles = list(filter(lambda v: v.vid == vid, self.vehicles))
         if found_vehicles:
             vehicle = found_vehicles[0]
             sensor_data = vehicle.poll_request(rid)
             request_type = type(vehicle.requests[rid])
-            print(request_type)
             if request_type is PositionRequest:
-                response = DataResponse.Data.Position()
-                response.x = sensor_data[0]
-                response.y = sensor_data[1]
+                data.position.x = sensor_data[0]
+                data.position.y = sensor_data[1]
+            elif request_type is SpeedRequest:
+                data.speed.speed = sensor_data
+            elif request_type is SteeringAngleRequest:
+                data.angle.angle = sensor_data
+            elif request_type is LidarRequest:
+                data.lidar.points.extend(sensor_data)
+            elif request_type is CameraRequest:
+                def _convert(image: Image) -> bytes:
+                    bytes_arr = BytesIO()
+                    image.save(bytes_arr, format="PNG")
+                    return bytes_arr.getvalue()
+
+                data.camera.color = _convert(sensor_data[0])
+                data.camera.annotated = _convert(sensor_data[1])
+                data.camera.depth = _convert(sensor_data[2])
+            elif request_type is DamageRequest:
+                data.damage.is_damaged = sensor_data
+            # elif request_type is LightRequest:
+            # response = DataResponse.Data.Light()
+            # FIXME Add DataResponse.Data.Light
             else:
                 raise NotImplementedError(
                     "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
-            return response
         else:
             raise ValueError("There is no vehicle with ID " + vid + " in the simulation " + self.sid + ".")
 

@@ -3,13 +3,13 @@ The communicator contains two types of methods:
 1. Methods to be called by AIs using micro services (Starting with "ai_")
 2. Methods to be called on the server side (Starting with "sim_")
 """
-from typing import Dict, List
+from typing import Dict
 
 from google.protobuf import service_reflection
 from google.protobuf.service import Service
 
-from dbtypes import AIStatus
 from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE, DataResponse, DataRequest, AiID
+from dbtypes import AIStatus
 
 AIExchangeService = service_reflection.GeneratedServiceType('AIExchangeService', (Service,), dict(
     DESCRIPTOR=_AIEXCHANGESERVICE,
@@ -27,10 +27,12 @@ def ai_wait_for_simulator_request(aid: AiID) -> None:
     print("ai_wait_for_simulator_request: terminated")
 
 
-def ai_request_data(request: DataRequest) -> Dict[str, DataResponse.Data]:
+def ai_request_data(request: DataRequest) -> DataResponse:
     from sim_controller import Simulation
     print("ai_request_data: called")
-    data = {}
+    data_response = DataResponse()
+    data_response.aid.vid.vid = request.aid.vid.vid
+    data_response.aid.sid.sid = request.aid.sid.sid
     sims = list(filter(lambda s: s.sid == request.aid.sid.sid, Simulation.running_simulations))
     if sims:
         sim = sims[0]
@@ -38,9 +40,9 @@ def ai_request_data(request: DataRequest) -> Dict[str, DataResponse.Data]:
         raise ValueError("There is no simulation with ID " + request.aid.sid.sid + " running.")
     for rid in request.request_ids:
         # FIXME Distinguish and convert to request types
-        data[rid] = sim.request_data(request.aid.vid.vid, request.aid.sid.sid)
+        sim.attach_request_data(data_response.data[rid], request.aid.vid.vid, rid)
     print("ai_request_data: terminated")
-    return data
+    return data_response
 
 
 def sim_request_ai_for(aid: AiID) -> None:

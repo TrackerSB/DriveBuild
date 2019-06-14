@@ -84,11 +84,12 @@ def request_data():
     from flask import request
 
     def do() -> Response:
-        from aiExchangeMessages_pb2 import VehicleID, DataRequest
-        vid = VehicleID()
-        vid.ParseFromString(request.args["vid"].encode())
+        from aiExchangeMessages_pb2 import VehicleID, DataRequest, DataResponse
+        from communicator import ai_request_data
         data_request = DataRequest()
         data_request.ParseFromString(request.args["request"].encode())
+        data_response = ai_request_data(data_request)
+        return Response(response=data_response.SerializeToString(), status=200, mimetype="text/plain")
 
     return _ai_request_stub(["request"], do)
 
