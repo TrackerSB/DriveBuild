@@ -49,7 +49,7 @@ def page_not_implemented(error):
     return render_template("error501.html", error=error), 501
 
 
-def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[], Response]):
+def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[], Response]) -> Response:
     """
     This stub is designed for GET requests.
     """
