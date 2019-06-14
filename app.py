@@ -62,19 +62,6 @@ def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[],
         return on_parameter_available()
 
 
-# FIXME Currently only one simulator instance at a time allowed
-@app.route("/ai/register", methods=["GET"])
-def register():
-    from flask import request
-    from communicator import ai_register
-
-    def do() -> Response:
-        ai_register(_parse_vid_from_request(request).vid)
-        return Response(response="AI successfully registered", status=200)  # FIXME Make more detailed
-
-    return _ai_request_stub(["vid"], do)
-
-
 @app.route("/ai/waitForSimulatorRequest", methods=["GET"])
 def wait_for_simulator_request():
     from flask import request

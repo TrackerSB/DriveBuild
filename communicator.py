@@ -19,13 +19,6 @@ AIExchangeService = service_reflection.GeneratedServiceType('AIExchangeService',
 _registered_ais: Dict[str, AIStatus] = {}
 
 
-def ai_register(vid: str) -> bool:  # FIXME Is this one actually needed
-    to_be_registered = vid not in _registered_ais
-    if to_be_registered:
-        _registered_ais[vid] = AIStatus.READY
-    return to_be_registered
-
-
 def ai_wait_for_simulator_request(aid: AiID) -> None:
     print("ai_wait_for_simulator_request: called")
     _registered_ais[aid.vid.vid] = AIStatus.WAITING
