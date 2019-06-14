@@ -57,7 +57,7 @@ def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[],
     missing_params = list(filter(lambda p: p not in request.args, min_params))
     if missing_params:
         return Response(response="The request misses one of the parameters [\"" + "\", ".join(missing_params) + "\"]",
-                        status=400)
+                        status=400, mimetype="text/plain")
     else:
         return on_parameter_available()
 
