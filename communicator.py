@@ -9,7 +9,7 @@ from google.protobuf import service_reflection
 from google.protobuf.service import Service
 
 from dbtypes import AIStatus
-from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE, VehicleID, DataResponse, DataRequest, AiID
+from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE, DataResponse, DataRequest, AiID
 
 AIExchangeService = service_reflection.GeneratedServiceType('AIExchangeService', (Service,), dict(
     DESCRIPTOR=_AIEXCHANGESERVICE,
@@ -27,11 +27,17 @@ def ai_wait_for_simulator_request(aid: AiID) -> None:
     print("ai_wait_for_simulator_request: terminated")
 
 
-def ai_request_data(request: DataRequest) -> Dict[str, DataResponse.Data]:
+def ai_request_data(aid: AiID, request: DataRequest) -> Dict[str, DataResponse.Data]:
+    from sim_controller import Simulation
     print("ai_request_data: called")
     data = {}
+    sims = list(filter(lambda s: s.sid == aid.sid.sid, Simulation.running_simulations))
+    if sims:
+        sim = sims[0]
+    else:
+        raise ValueError("There is no simulation with ID " + aid.sid.sid + " running.")
     for rid in request.request_ids:
-        pass  # FIXME Implement it
+        data[rid] = sim.request_data(aid.vid.vid, aid.sid.sid)  # FIXME Distinguish and convert to request types
     print("ai_request_data: terminated")
     return data
 

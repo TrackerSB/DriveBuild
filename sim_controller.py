@@ -2,7 +2,7 @@ from typing import List, Set, Optional
 
 from beamngpy import Scenario
 
-from dbtypes.beamng import DBVehicle
+from aiExchangeMessages_pb2 import DataResponse
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
 from util import static_vars
@@ -13,6 +13,7 @@ class Simulation:
 
     def __init__(self, sid: str):
         self.sid = sid
+        self.vehicles = []
 
     def _get_movement_mode_file_path(self, pid: str, in_lua: bool) -> str:
         """
@@ -222,12 +223,11 @@ class Simulation:
         prefab_file.writelines(new_content)
         prefab_file.close()
 
-    def _control_avs(self, vehicles: List[DBVehicle]) -> None:
-        from beamngpy import socket
+    def _control_avs(self) -> None:
         from util import eprint
         from communicator import sim_request_ai_for
-        from aiExchangeMessages_pb2 import VehicleID, SimulationID, AiID
-        for vehicle in vehicles:
+        from aiExchangeMessages_pb2 import AiID
+        for vehicle in self.vehicles:
             mode = self._get_current_movement_mode(vehicle.vid)
             if mode is MovementMode.AUTONOMOUS:
                 aid = AiID()
@@ -237,23 +237,24 @@ class Simulation:
             elif mode is MovementMode.TRAINING:
                 eprint("TRAINING not implemented, yet.")
 
-        # TODO Check which AVs are in AUTONOMOUS or TRAINING mode
-        # TODO Request AIs for request ids to get data for
-        rids = [
-            "position",
-            "speed",
-            "steeringAngle",
-            "frontCamera",
-            "lidar"
-        ]
-        for vehicle in vehicles:
-            for rid in rids:
-                print(rid)
-                try:
-                    print(str(vehicle.poll_request(rid)))
-                except socket.timeout:
-                    print("timeout when receiving requested data.")
-                print()
+    def request_data(self, vid: str, rid: str) -> DataResponse.Data:
+        from requests import PositionRequest
+        found_vehicles = list(filter(lambda v: v.vid == vid, self.vehicles))
+        if found_vehicles:
+            vehicle = found_vehicles[0]
+            sensor_data = vehicle.poll_request(rid)
+            request_type = type(vehicle.requests[rid])
+            print(request_type)
+            if request_type is PositionRequest:
+                response = DataResponse.Data.Position()
+                response.x = sensor_data[0]
+                response.y = sensor_data[1]
+            else:
+                raise NotImplementedError(
+                    "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
+            return response
+        else:
+            raise ValueError("There is no vehicle with ID " + vid + " in the simulation " + self.sid + ".")
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
@@ -321,7 +322,10 @@ class Simulation:
         bng_instance = DBBeamNGpy('localhost', Simulation.run_test_case.port, home=home_path, user=user_path)
         authors = ", ".join(test_case.authors)
         bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], sim.sid, authors=authors)
+
         test_case.scenario.add_all(bng_scenario)
+        vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
+        sim.vehicles = vehicles
         bng_scenario.make(bng_instance)
 
         # Make manual changes to the scenario files
@@ -346,8 +350,6 @@ class Simulation:
             bng_instance.start_scenario()
             bng_instance.pause()
 
-            vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
-
             precondition = test_case.precondition_fct(bng_scenario)
             failure = test_case.failure_fct(bng_scenario)
             success = test_case.success_fct(bng_scenario)
@@ -355,7 +357,7 @@ class Simulation:
             input("Press \"Enter\" for starting the simulation...")
             while test_case_result == "undetermined":
                 # input("Press \"Enter\" for running another runtime verification cycle...")
-                for vehicle in vehicles:
+                for vehicle in sim.vehicles:
                     bng_instance.poll_sensors(vehicle)
                 if precondition.eval() is KPValue.FALSE:
                     test_case_result = "skipped"
@@ -365,7 +367,7 @@ class Simulation:
                     test_case_result = "succeeded"
                 else:
                     # test_case_result = "undetermined"
-                    sim._control_avs(vehicles)
+                    sim._control_avs()
                     bng_instance.step(test_case.aiFrequency)
             print("Test case result: " + test_case_result)
         finally:

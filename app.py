@@ -68,17 +68,15 @@ def wait_for_simulator_request():
     from communicator import ai_wait_for_simulator_request
 
     def do() -> Response:
-        from aiExchangeMessages_pb2 import SimStateResponse, VehicleID, SimulationID
-        vid = VehicleID()
-        vid.ParseFromString(request.args["vid"].encode())
-        sid = SimulationID()
-        sid.ParseFromString(request.args[""])
-        ai_wait_for_simulator_request(vid.vid)
+        from aiExchangeMessages_pb2 import SimStateResponse, AiID
+        aid = AiID()
+        aid.ParseFromString(request.args["aid"].encode())
+        ai_wait_for_simulator_request(aid)
         response = SimStateResponse()
         response.state = SimStateResponse.SimState.RUNNING
-        return Response(response=response.SerializeToString(), status=200)
+        return Response(response=response.SerializeToString(), status=200, mimetype="text/plain")
 
-    return _ai_request_stub(["vid", "sid"], do)
+    return _ai_request_stub(["aid"], do)
 
 
 @app.route("/ai/requestData", methods=["GET"])
