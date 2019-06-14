@@ -55,8 +55,10 @@ class SteeringAngleRequest(AiRequest):
         pass
 
     def read_sensor_cache_of(self, vehicle: Vehicle) -> float:
-        # FIXME Implement getting steering angle
-        return None
+        from numpy import arctan2, rad2deg
+        # FIXME What´s the up vector?
+        direction = vehicle.state["dir"]
+        return rad2deg(arctan2(direction[1], direction[0]))
 
 
 class SpeedRequest(AiRequest):
