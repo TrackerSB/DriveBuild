@@ -27,17 +27,18 @@ def ai_wait_for_simulator_request(aid: AiID) -> None:
     print("ai_wait_for_simulator_request: terminated")
 
 
-def ai_request_data(aid: AiID, request: DataRequest) -> Dict[str, DataResponse.Data]:
+def ai_request_data(request: DataRequest) -> Dict[str, DataResponse.Data]:
     from sim_controller import Simulation
     print("ai_request_data: called")
     data = {}
-    sims = list(filter(lambda s: s.sid == aid.sid.sid, Simulation.running_simulations))
+    sims = list(filter(lambda s: s.sid == request.aid.sid.sid, Simulation.running_simulations))
     if sims:
         sim = sims[0]
     else:
-        raise ValueError("There is no simulation with ID " + aid.sid.sid + " running.")
+        raise ValueError("There is no simulation with ID " + request.aid.sid.sid + " running.")
     for rid in request.request_ids:
-        data[rid] = sim.request_data(aid.vid.vid, aid.sid.sid)  # FIXME Distinguish and convert to request types
+        # FIXME Distinguish and convert to request types
+        data[rid] = sim.request_data(request.aid.vid.vid, request.aid.sid.sid)
     print("ai_request_data: terminated")
     return data
 

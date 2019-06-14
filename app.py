@@ -90,7 +90,7 @@ def request_data():
         data_request = DataRequest()
         data_request.ParseFromString(request.args["request"].encode())
 
-    return _ai_request_stub(["aid", "request"], do)
+    return _ai_request_stub(["request"], do)
 
 
 if __name__ == "__main__":
