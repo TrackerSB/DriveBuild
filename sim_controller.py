@@ -377,9 +377,7 @@ class Simulation:
             failure = test_case.failure_fct(bng_scenario)
             success = test_case.success_fct(bng_scenario)
             test_case_result = "undetermined"
-            input("Press \"Enter\" for starting the simulation...")
             while test_case_result == "undetermined":
-                # input("Press \"Enter\" for running another runtime verification cycle...")
                 for vehicle in sim.vehicles:
                     bng_instance.poll_sensors(vehicle)
                 if precondition.eval() is KPValue.FALSE:
