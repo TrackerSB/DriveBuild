@@ -45,7 +45,7 @@ message DataResponse {
 message Control {
     message AvCommand {
         double accelerate = 1; // FIXME Range?
-        double steer = 2; // FIXME positive left, negative right? // FIXME deg or rad?
+        double steer = 2; // FIXME positive left, negative right? // In deg
         double brake = 3; // FIXME Range?
     }
 
