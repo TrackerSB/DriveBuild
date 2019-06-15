@@ -2,7 +2,7 @@ from typing import List, Set, Optional
 
 from beamngpy import Scenario
 
-from aiExchangeMessages_pb2 import DataResponse
+from aiExchangeMessages_pb2 import DataResponse, Control
 from dbtypes.beamng import DBVehicle
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
@@ -280,6 +280,26 @@ class Simulation:
             raise NotImplementedError(
                 "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
 
+    def control_av(self, vid: str, accelerate: float, steer: float, brake: float) -> None:
+        """
+        :param vid: The vehicle to control.
+        :param accelerate: The throttle of the car (Range 0.0 to 1.0)
+        :param steer: The steering angle (Range -1.0 to 1.0) # FIXME Negative/Positive left/right?
+        :param brake: The brake intensity (Range 0.0 to 1.0)
+        """
+        # FIXME Check ranges
+        vehicle = self._get_vehicle(vid)
+        vehicle.control(throttle=accelerate, steering=steer, brake=brake, parkingbrake=0)
+
+    def control_sim(self, command: Control.SimCommand) -> None:
+        if command is Control.SimCommand.RESUME:
+            pass
+        elif command is Control.SimCommand.FAIL:
+            pass  # FIXME Implement
+        elif command is Control.SimCommand.CANCEL:
+            pass  # FIXME Implement
+        else:
+            raise NotImplementedError("Handling of the SimCommand " + str(command) + " is not implemented, yet.")
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """

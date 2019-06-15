@@ -8,7 +8,7 @@ from typing import Dict
 from google.protobuf import service_reflection
 from google.protobuf.service import Service
 
-from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE, DataResponse, DataRequest, AiID
+from aiExchangeMessages_pb2 import _AIEXCHANGESERVICE, DataResponse, DataRequest, AiID, Control, Void
 from dbtypes import AIStatus
 from sim_controller import Simulation
 
@@ -46,6 +46,19 @@ def ai_request_data(request: DataRequest) -> DataResponse:
         sim.attach_request_data(data_response.data[rid], request.aid.vid.vid, rid)
     print("ai_request_data: terminated")
     return data_response
+
+
+def ai_control(control: Control) -> Void:
+    sim = _get_simulation(control.aid.sid.sid)
+    command_type = control.WhichOneof("command")
+    if command_type == "simCommand":
+        sim.control_sim(control.simCommand)
+    elif command_type == "avCommand":
+        command = control.avCommand
+        sim.control_av(control.aid.vid.vid, command.accelerate, command.steer, command.brake)
+    else:
+        raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
+    return Void()
 
 
 def sim_request_ai_for(aid: AiID) -> None:

@@ -73,7 +73,7 @@ def wait_for_simulator_request():
         ai_wait_for_simulator_request(aid)
         response = SimStateResponse()
         response.state = SimStateResponse.SimState.RUNNING
-        return Response(response=response.SerializeToString(), status=200, mimetype="text/plain")
+        return Response(response=response.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
     return _ai_request_stub(["aid"], do)
 
@@ -90,6 +90,21 @@ def request_data():
         return Response(response=data_response.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
     return _ai_request_stub(["request"], do)
+
+
+@app.route("/ai/control", methods=["GET"])
+def control():
+    def do() -> Response:
+        from aiExchangeMessages_pb2 import Control
+        from flask import request
+        from communicator import ai_control
+        control_msg = Control()
+        print(repr(request.args["control"]))
+        control_msg.ParseFromString(request.args["control"].encode())
+        void = ai_control(control_msg)
+        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+
+    return _ai_request_stub(["control"], do)
 
 
 if __name__ == "__main__":
