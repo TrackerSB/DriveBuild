@@ -289,7 +289,7 @@ class Simulation:
         """
         # FIXME Check ranges
         vehicle = self._get_vehicle(vid)
-        vehicle.control(throttle=accelerate, steering=steer, brake=brake, parkingbrake=0)
+        vehicle.control(throttle=accelerate, steering=steer, brake=brake, parkingbrake=0)  # FIXME Seems to be ignored
 
     def control_sim(self, command: Control.SimCommand) -> None:
         if command is Control.SimCommand.RESUME:
