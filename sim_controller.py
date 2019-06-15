@@ -247,7 +247,7 @@ class Simulation:
 
     def attach_request_data(self, data: DataResponse.Data, vid: str, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
-            DamageRequest, LightRequest
+            DamageRequest
         from PIL import Image
         from io import BytesIO
         vehicle = self._get_vehicle(vid)
