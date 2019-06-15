@@ -87,7 +87,7 @@ def request_data():
         data_request = DataRequest()
         data_request.ParseFromString(request.args["request"].encode())
         data_response = ai_request_data(data_request)
-        return Response(response=data_response.SerializeToString(), status=200, mimetype="text/plain")
+        return Response(response=data_response.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
     return _ai_request_stub(["request"], do)
 
