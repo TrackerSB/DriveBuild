@@ -64,10 +64,9 @@ def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[],
 
 @app.route("/ai/waitForSimulatorRequest", methods=["GET"])
 def wait_for_simulator_request():
-    from flask import request
-    from communicator import ai_wait_for_simulator_request
-
     def do() -> Response:
+        from flask import request
+        from communicator import ai_wait_for_simulator_request
         from aiExchangeMessages_pb2 import SimStateResponse, AiID
         aid = AiID()
         aid.ParseFromString(request.args["aid"].encode())
@@ -81,10 +80,9 @@ def wait_for_simulator_request():
 
 @app.route("/ai/requestData", methods=["GET"])
 def request_data():
-    from flask import request
-
     def do() -> Response:
-        from aiExchangeMessages_pb2 import VehicleID, DataRequest, DataResponse
+        from flask import request
+        from aiExchangeMessages_pb2 import DataRequest
         from communicator import ai_request_data
         data_request = DataRequest()
         data_request.ParseFromString(request.args["request"].encode())
