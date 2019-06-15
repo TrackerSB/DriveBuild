@@ -49,7 +49,7 @@ def page_not_implemented(error):
     return render_template("error501.html", error=error), 501
 
 
-def _ai_request_stub(min_params: List[str], on_parameter_available: Callable[[], Response]) -> Response:
+def _ai_get_request_stub(min_params: List[str], on_parameter_available: Callable[[], Response]) -> Response:
     """
     This stub is designed for GET requests.
     """
@@ -75,7 +75,7 @@ def wait_for_simulator_request():
         response.state = SimStateResponse.SimState.RUNNING
         return Response(response=response.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
-    return _ai_request_stub(["aid"], do)
+    return _ai_get_request_stub(["aid"], do)
 
 
 @app.route("/ai/requestData", methods=["GET"])
@@ -89,22 +89,18 @@ def request_data():
         data_response = ai_request_data(data_request)
         return Response(response=data_response.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
-    return _ai_request_stub(["request"], do)
+    return _ai_get_request_stub(["request"], do)
 
 
-@app.route("/ai/control", methods=["GET"])
+@app.route("/ai/control", methods=["POST"])
 def control():
-    def do() -> Response:
-        from aiExchangeMessages_pb2 import Control
-        from flask import request
-        from communicator import ai_control
-        control_msg = Control()
-        print(repr(request.args["control"]))
-        control_msg.ParseFromString(request.args["control"].encode())
-        void = ai_control(control_msg)
-        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
-
-    return _ai_request_stub(["control"], do)
+    from aiExchangeMessages_pb2 import Control
+    from flask import request
+    from communicator import ai_control
+    control_msg = Control()
+    control_msg.ParseFromString(request.data)
+    void = ai_control(control_msg)
+    return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
 
 if __name__ == "__main__":
