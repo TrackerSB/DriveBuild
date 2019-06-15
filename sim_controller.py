@@ -3,6 +3,7 @@ from typing import List, Set, Optional
 from beamngpy import Scenario
 
 from aiExchangeMessages_pb2 import DataResponse
+from dbtypes.beamng import DBVehicle
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
 from util import static_vars
@@ -237,7 +238,7 @@ class Simulation:
             elif mode is MovementMode.TRAINING:
                 eprint("TRAINING not implemented, yet.")
 
-    def _get_vehicle(self, vid: str):
+    def _get_vehicle(self, vid: str) -> DBVehicle:
         found_vehicles = list(filter(lambda v: v.vid == vid, self.vehicles))
         if found_vehicles:
             return found_vehicles[0]
