@@ -7,7 +7,7 @@
     <name>Test A</name>
     <environment>environmentA.dbe.xml</environment>
     <stepsPerSecond>60</stepsPerSecond>
-    <aiFrequency>6</aiFrequency>
+    <aiFrequency>1</aiFrequency>
 
     <participants>
         <participant id="ego" model="ETK800">
