@@ -2,7 +2,7 @@ from typing import List, Set, Optional
 
 from beamngpy import Scenario
 
-from aiExchangeMessages_pb2 import DataResponse, DataRequest
+from aiExchangeMessages_pb2 import DataResponse
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
 from util import static_vars
