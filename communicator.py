@@ -39,7 +39,6 @@ def ai_request_data(request: DataRequest) -> DataResponse:
     else:
         raise ValueError("There is no simulation with ID " + request.aid.sid.sid + " running.")
     for rid in request.request_ids:
-        # FIXME Distinguish and convert to request types
         sim.attach_request_data(data_response.data[rid], request.aid.vid.vid, rid)
     print("ai_request_data: terminated")
     return data_response
