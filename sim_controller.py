@@ -224,7 +224,7 @@ class Simulation:
         prefab_file.writelines(new_content)
         prefab_file.close()
 
-    def _control_avs(self) -> None:
+    def _request_control_avs(self) -> None:
         from util import eprint
         from communicator import sim_request_ai_for
         from aiExchangeMessages_pb2 import AiID
@@ -390,7 +390,7 @@ class Simulation:
                     test_case_result = "succeeded"
                 else:
                     # test_case_result = "undetermined"
-                    sim._control_avs()
+                    sim._request_control_avs()
                     bng_instance.step(test_case.aiFrequency)
             print("Test case result: " + test_case_result)
         finally:
