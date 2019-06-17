@@ -56,7 +56,7 @@ class Simulation:
                 ])
         else:
             lua_av_command.extend([
-                "    sh.setAiMode('" + participant.id + "', 'MANUAL')"  # Disable previous calls to sh.setAiRoute
+                "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
             ])
         lua_av_command.extend([
             "    local modeFile = io.open('" + self._get_movement_mode_file_path(participant.id, True) + "', 'w')",
