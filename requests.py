@@ -57,7 +57,7 @@ class SteeringAngleRequest(AiRequest):
     def read_sensor_cache_of(self, vehicle: Vehicle) -> float:
         from numpy import arctan2, rad2deg
         # FIXME What´s the up vector?
-        direction = vehicle.state["dir"]
+        direction = vehicle.state["dir"]  # FIXME This value is likely not what a user expects
         return rad2deg(arctan2(direction[1], direction[0]))
 
 
