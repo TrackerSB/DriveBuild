@@ -21,11 +21,9 @@ _registered_ais: Dict[str, AIStatus] = {}
 
 
 def ai_wait_for_simulator_request(aid: AiID) -> None:
-    print("ai_wait_for_simulator_request: called")
     _registered_ais[aid.vid.vid] = AIStatus.WAITING
     while _registered_ais[aid.vid.vid] is AIStatus.WAITING:
         pass
-    print("ai_wait_for_simulator_request: terminated")
 
 
 def _get_simulation(sid: str) -> Simulation:
@@ -37,14 +35,12 @@ def _get_simulation(sid: str) -> Simulation:
 
 
 def ai_request_data(request: DataRequest) -> DataResponse:
-    print("ai_request_data: called")
     data_response = DataResponse()
     data_response.aid.vid.vid = request.aid.vid.vid
     data_response.aid.sid.sid = request.aid.sid.sid
     sim = _get_simulation(request.aid.sid.sid)
     for rid in request.request_ids:
         sim.attach_request_data(data_response.data[rid], request.aid.vid.vid, rid)
-    print("ai_request_data: terminated")
     return data_response
 
 
@@ -62,11 +58,8 @@ def ai_control(control: Control) -> Void:
 
 
 def sim_request_ai_for(aid: AiID) -> None:
-    print("sim_request_ai_for: called")
     while aid.vid.vid not in _registered_ais or _registered_ais[aid.vid.vid] is not AIStatus.WAITING:
         pass
-    print("sim_request_ai_for: request ai")
     _registered_ais[aid.vid.vid] = AIStatus.REQUESTED
     while _registered_ais[aid.vid.vid] is AIStatus.REQUESTED:
         pass
-    print("sim_request_ai_for: terminated")
