@@ -3,11 +3,11 @@ from typing import Dict, Callable, Union, Tuple
 from beamngpy import Scenario
 from lxml.etree import _ElementTree, _Element
 
-from util import string_to_shape
 from dbtypes.criteria import VCPosition, SCPosition, VCArea, ValidationConstraint, \
     SCArea, SCLane, VCLane, SCSpeed, VCSpeed, SCDamage, VCDamage, VCTime, SCDistance, VCDistance, VCTTC, SCLight, \
     VCLight, SCWaypoint, VCWaypoint, Connective, And, Or, Not, CriteriaFunction
 from dbtypes.scheme import CarLight
+from util import string_to_shape
 
 AnyStateCondition = Union[SCPosition, SCArea, SCLane, SCSpeed, SCDamage, SCDistance, SCLight, SCWaypoint]
 sc_options: Dict[str, Callable[[_Element], Callable[[Scenario], AnyStateCondition]]] = {
