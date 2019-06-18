@@ -1,3 +1,7 @@
+dill
+werkzeug
+redis
+celery==3.1.25
 protobuf
 shapely
 numpy

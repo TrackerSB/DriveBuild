@@ -1,16 +1,18 @@
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Tuple
 
 from beamngpy import Scenario
+from celery.result import AsyncResult
 
 from aiExchangeMessages_pb2 import DataResponse, Control
 from dbtypes.beamng import DBVehicle
 from dbtypes.criteria import TestCase
 from dbtypes.scheme import Participant, MovementMode
+from run_celery import celery
 from util import static_vars
 
 
 class Simulation:
-    running_simulations = []
+    running_simulations: List[str] = []
 
     def __init__(self, sid: str):
         self.sid = sid
@@ -347,26 +349,29 @@ class Simulation:
 
     @staticmethod
     @static_vars(port=64256)
-    def run_test_case(test_case: TestCase):
+    @celery.task()
+    def _start_simulation(sid: str, pickled_test_case: bytes) -> None:
         from app import app
         from dbtypes.beamng import DBBeamNGpy
         from dbtypes.criteria import KPValue
         from shutil import rmtree
         import os
+        import dill as pickle
         home_path = app.config["BEAMNG_INSTALL_FOLDER"]
         user_path = app.config["BEAMNG_USER_PATH"]
 
         # Make sure there is no inference with previous tests while keeping the cache
         rmtree(os.path.join(user_path, "levels"), ignore_errors=True)
 
-        # FIXME Generate sids automatically
-        sim = Simulation("fancySid")
-        Simulation.running_simulations.append(sim)
-        while not Simulation._is_port_available(Simulation.run_test_case.port):
-            Simulation.run_test_case.port += 1
-        bng_instance = DBBeamNGpy('localhost', Simulation.run_test_case.port, home=home_path, user=user_path)
+        # Setup simulation
+        test_case = pickle.loads(pickled_test_case)
+        sim = Simulation(sid)
+        while not Simulation._is_port_available(Simulation._start_simulation.port):
+            Simulation._start_simulation.port += 1
+
+        bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
         authors = ", ".join(test_case.authors)
-        bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], sim.sid, authors=authors)
+        bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], sid, authors=authors)
 
         test_case.scenario.add_all(bng_scenario)
         vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
@@ -413,4 +418,12 @@ class Simulation:
             print("Test case result: " + test_case_result)
         finally:
             bng_instance.close()
-            Simulation.running_simulations.remove(sim)
+            Simulation.running_simulations.remove(sid)
+
+    @staticmethod
+    def run_test_case(test_case: TestCase) -> Tuple[str, AsyncResult]:
+        import dill as pickle
+        # FIXME Generate sids automatically
+        sid = "fancySid"
+        Simulation.running_simulations.append(sid)
+        return sid, Simulation._start_simulation.delay(sid, pickle.dumps(test_case))

@@ -1,9 +1,15 @@
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
+from celery.result import AsyncResult
 from flask import Flask, Response
+from redis import StrictRedis
 
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
+# app.app_context().push()  # FIXME Do I need this?
+redis_server = StrictRedis(host=app.config["REDIS_HOST"], port=app.config["REDIS_PORT"])
+
+all_tasks: List[Tuple[str, AsyncResult]] = []
 
 
 def allowed_file(filename):
@@ -26,7 +32,7 @@ def test_launcher():
             flash("No selected file")
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            run_tests(file)
+            all_tasks.extend(run_tests(file))
             return render_template("testMonitor.html")
     return render_template("test_launcher.html")
 
@@ -101,6 +107,16 @@ def control():
     control_msg.ParseFromString(request.data)
     void = ai_control(control_msg)
     return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+
+
+@app.route("/stats/status", methods=["GET"])
+def status():
+    from flask import render_template
+    if all_tasks:
+        status_text = "<br />".join(["Simulation: " + task[0] + ": " + task[1].state for task in all_tasks])
+    else:
+        status_text = "There were no test executions so far"
+    return render_template("status.html", status_text=status_text), 200
 
 
 if __name__ == "__main__":

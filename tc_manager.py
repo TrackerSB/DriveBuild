@@ -1,5 +1,6 @@
-from typing import Tuple, List
+from typing import Tuple, List, Any
 
+from celery.result import AsyncResult
 from lxml.etree import _ElementTree
 from werkzeug.datastructures import FileStorage
 
@@ -54,17 +55,19 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     return scenario_mapping_stubs, valid_crit_defs
 
 
-def run_tests(zip_file: FileStorage) -> None:
+def run_tests(zip_file: FileStorage) -> List[Tuple[str, AsyncResult]]:  # FIXME Type of tasks?
     from util import eprint
     from sim_controller import Simulation
     from transformer import transform
     folder = extract_test_cases(zip_file)
     mapping_stubs, valid_crit_defs = get_valid(folder)
 
+    simulations = []
     mapping = associate_criteria(mapping_stubs, valid_crit_defs)
     if mapping:
         test_cases = transform(mapping)
         for test_case in test_cases:
-            Simulation.run_test_case(test_case)
+            simulations.append(Simulation.run_test_case(test_case))
     else:
         eprint("Some criteria definitions have no valid environment.")
+    return simulations
