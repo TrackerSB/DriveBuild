@@ -1,6 +1,6 @@
 dill
 werkzeug
-redis
+redis==2.10.6
 celery==3.1.25
 protobuf
 shapely
@@ -8,3 +8,4 @@ numpy
 beamngpy>=1.10
 lxml
 flask
+dataclasses
