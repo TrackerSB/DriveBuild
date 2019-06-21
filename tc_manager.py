@@ -1,15 +1,19 @@
-from typing import Tuple, List, Any
+from typing import Tuple, List, Dict
 
+from beamngpy import Scenario
 from celery.result import AsyncResult
 from lxml.etree import _ElementTree
-from werkzeug.datastructures import FileStorage
 
 from dbtypes.scheme import ScenarioMapping
+from sim_controller import Simulation
 
 
-def extract_test_cases(zip_file: FileStorage) -> str:
+def extract_test_cases(zip_content: bytes) -> str:
     import zipfile
-    from tempfile import mkdtemp
+    from tempfile import mkdtemp, mkstemp
+    _, zip_file_name = mkstemp(suffix=".zip")
+    zip_file = open(zip_file_name, "w+b")
+    zip_file.write(zip_content)
     zip_ref = zipfile.ZipFile(zip_file, 'r')
     temp_dir = mkdtemp(prefix="drivebuild_")
     zip_ref.extractall(temp_dir)
@@ -55,19 +59,20 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     return scenario_mapping_stubs, valid_crit_defs
 
 
-def run_tests(zip_file: FileStorage) -> List[Tuple[str, AsyncResult]]:  # FIXME Type of tasks?
+def run_tests(zip_file_content: bytes) -> Dict[Simulation, Tuple[Scenario, AsyncResult]]:
     from util import eprint
-    from sim_controller import Simulation
+    from sim_controller import run_test_case
     from transformer import transform
-    folder = extract_test_cases(zip_file)
+    folder = extract_test_cases(zip_file_content)
     mapping_stubs, valid_crit_defs = get_valid(folder)
 
-    simulations = []
+    simulations = {}
     mapping = associate_criteria(mapping_stubs, valid_crit_defs)
     if mapping:
         test_cases = transform(mapping)
         for test_case in test_cases:
-            simulations.append(Simulation.run_test_case(test_case))
+            sim, bng_scenario, task = run_test_case(test_case)
+            simulations[sim] = bng_scenario, task
     else:
         eprint("Some criteria definitions have no valid environment.")
     return simulations

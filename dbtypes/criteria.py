@@ -79,7 +79,10 @@ class StateCondition(Criteria, ABC):
         self.participant = participant
         self.requests = self._create_requests()
         for request in self.requests:
-            request.add_sensor_to(self._get_vehicle())
+            vehicle = self._get_vehicle()
+            request.add_sensor_to(vehicle)
+            # Make sure vehicle sensor_cache is not empty
+            scenario.bng.poll_sensors(vehicle)
 
     def _get_vehicle(self) -> Vehicle:
         return self.scenario.get_vehicle(self.participant)

@@ -4,19 +4,23 @@ from beamngpy import Scenario
 from celery.result import AsyncResult
 
 from aiExchangeMessages_pb2 import DataResponse, Control
-from dbtypes.beamng import DBVehicle
-from dbtypes.criteria import TestCase
+from dbtypes.beamng import DBVehicle, DBBeamNGpy
+from dbtypes.criteria import TestCase, KPValue
 from dbtypes.scheme import Participant, MovementMode
 from run_celery import celery
 from util import static_vars
 
 
 class Simulation:
-    running_simulations: List[str] = []
 
-    def __init__(self, sid: str):
-        self.sid = sid
-        self.vehicles = []
+    def __init__(self, sid: str, pickled_test_case: bytes):
+        from aiExchangeMessages_pb2 import SimulationID
+        sid_obj = SimulationID()
+        sid_obj.sid = sid
+        self.sid = sid_obj
+        self.serialized_sid = sid_obj.SerializeToString()
+        self.pickled_test_case = pickled_test_case
+        # NOTE Neither BeamNGpy nor Scenario can be serialized
 
     def _get_movement_mode_file_path(self, pid: str, in_lua: bool) -> str:
         """
@@ -28,7 +32,8 @@ class Simulation:
         """
         from app import app
         import os
-        return os.path.join("" if in_lua else app.config["BEAMNG_USER_PATH"], self.sid + "_" + pid + "_movementMode")
+        return os.path.join("" if in_lua else app.config["BEAMNG_USER_PATH"],
+                            self.sid.sid + "_" + pid + "_movementMode")
 
     def _get_current_movement_mode(self, pid: str) -> Optional[MovementMode]:
         import os
@@ -71,7 +76,7 @@ class Simulation:
         import os
         return os.path.join(
             Simulation._get_scenario_dir_path(),
-            self.sid + ".lua"
+            self.sid.sid + ".lua"
         )
 
     @staticmethod
@@ -89,14 +94,14 @@ class Simulation:
         import os
         return os.path.join(
             Simulation._get_scenario_dir_path(),
-            self.sid + ".prefab"
+            self.sid.sid + ".prefab"
         )
 
     def _get_json_path(self) -> str:
         import os
         return os.path.join(
             Simulation._get_scenario_dir_path(),
-            self.sid + ".json"
+            self.sid.sid + ".json"
         )
 
     def _add_to_prefab_file(self, new_content: List[str]) -> None:
@@ -226,26 +231,49 @@ class Simulation:
         prefab_file.writelines(new_content)
         prefab_file.close()
 
-    def _request_control_avs(self) -> None:
+    def _request_control_avs(self, vids: List[str]) -> None:
         from util import eprint
-        from communicator import sim_request_ai_for
-        from aiExchangeMessages_pb2 import AiID
-        for vehicle in self.vehicles:
-            mode = self._get_current_movement_mode(vehicle.vid)
+        from http.client import HTTPConnection
+        from urllib.parse import urlencode
+        from aiExchangeMessages_pb2 import VehicleID
+        for v in vids:
+            mode = self._get_current_movement_mode(v)
             if mode is MovementMode.AUTONOMOUS:
-                aid = AiID()
-                aid.vid.vid = vehicle.vid
-                aid.sid.sid = self.sid
-                sim_request_ai_for(aid)
+                vid = VehicleID()
+                vid.vid = v
+                connection = HTTPConnection(host="localhost", port=5000)  # FIXME Insert address of flask server
+                params = urlencode({
+                    "sid": self.serialized_sid,
+                    "vid": vid.SerializeToString()
+                })
+                connection.request("GET", "/sim/requestAiFor?" + params)
+                connection.getresponse()
+                # FIXME Check return status
             elif mode is MovementMode.TRAINING:
                 eprint("TRAINING not implemented, yet.")
 
+    def _get_vehicles(self) -> List[DBVehicle]:
+        """
+        NOTE As long as bng_scenario.make() is not called this will return an empty list.
+        """
+        import dill as pickle
+        return list(
+            filter(
+                lambda v: v is not None,
+                map(
+                    lambda vid: self._get_vehicle(vid),
+                    [p.id for p in pickle.loads(self.pickled_test_case).scenario.participants]
+                )
+            )
+        )
+
     def _get_vehicle(self, vid: str) -> DBVehicle:
-        found_vehicles = list(filter(lambda v: v.vid == vid, self.vehicles))
-        if found_vehicles:
-            return found_vehicles[0]
-        else:
-            raise ValueError("The simulation " + self.sid + " contains no vehicle " + vid + ".")
+        """
+        NOTE As long as bng_scenario.make() is not called this will return None.
+        """
+        from app import _get_scenario
+        # FIXME How to avoid this?
+        return _get_scenario(self.sid).get_vehicle(vid)
 
     def attach_request_data(self, data: DataResponse.Data, vid: str, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
@@ -347,83 +375,117 @@ class Simulation:
         sock.close()
         return is_open
 
-    @staticmethod
-    @static_vars(port=64256)
-    @celery.task()
-    def _start_simulation(sid: str, pickled_test_case: bytes) -> None:
-        from app import app
-        from dbtypes.beamng import DBBeamNGpy
-        from dbtypes.criteria import KPValue
-        from shutil import rmtree
-        import os
+    def verify(self) -> Tuple[KPValue, KPValue, KPValue]:
+        """
+        The type may be either precondition, failure or success.
+        """
         import dill as pickle
+        from app import _get_scenario
+        test_case: TestCase = pickle.loads(self.pickled_test_case)
+        bng_scenario = _get_scenario(self.sid)
+        return test_case.precondition_fct(bng_scenario).eval(), \
+               test_case.failure_fct(bng_scenario).eval(), \
+               test_case.success_fct(bng_scenario).eval()
+
+    @celery.task
+    def _run_runtime_verification(self, ai_frequency: int) -> None:
+        """
+        NOTE Since this method is a celery task it must not call anything that depends on a Scenario neither directly
+        nor indirectly.
+        """
+        # FIXME How to avoid all these requests?!
+        from httpUtil import do_get_request
+        from app import app
+        from aiExchangeMessages_pb2 import VehicleID, VehicleIDs
+
+        def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
+            from aiExchangeMessages_pb2 import VerificationResult
+            response = do_get_request("localhost", app.config["PORT"], "/sim/verify", {"sid": self.serialized_sid})
+            verification = VerificationResult()
+            verification.ParseFromString(b"".join(response.readlines()))
+            return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
+
+        test_case_result = "undetermined"
+        result = do_get_request("localhost", app.config["PORT"], "/sim/vids", {"sid": self.serialized_sid})
+        vids = VehicleIDs()
+        vids.ParseFromString(b"".join(result.readlines()))
+        while test_case_result == "undetermined":
+            for v in vids.vids:
+                vid = VehicleID()
+                vid.vid = v
+                do_get_request("localhost", app.config["PORT"], "/sim/pollSensors", {
+                    "sid": self.serialized_sid,
+                    "vid": vid.SerializeToString()
+                })
+            precondition, failure, success = _get_verification()
+            if precondition is KPValue.FALSE:
+                test_case_result = "skipped"
+            elif failure is KPValue.TRUE:
+                test_case_result = "failed"
+            elif success is KPValue.TRUE:
+                test_case_result = "succeeded"
+            else:
+                # test_case_result = "undetermined"
+                self._request_control_avs(vids.vids)
+                do_get_request("localhost", app.config["PORT"], "/sim/steps", {
+                    "sid": self.serialized_sid,
+                    "steps": ai_frequency
+                })
+        do_get_request("localhost", app.config["PORT"], "/sim/stop", {"sid": self.serialized_sid})
+
+    def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, AsyncResult]:
+        from app import app
+        import os
+        from shutil import rmtree
+
         home_path = app.config["BEAMNG_INSTALL_FOLDER"]
         user_path = app.config["BEAMNG_USER_PATH"]
 
         # Make sure there is no inference with previous tests while keeping the cache
         rmtree(os.path.join(user_path, "levels"), ignore_errors=True)
 
-        # Setup simulation
-        test_case = pickle.loads(pickled_test_case)
-        sim = Simulation(sid)
-        while not Simulation._is_port_available(Simulation._start_simulation.port):
-            Simulation._start_simulation.port += 1
-
-        bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
+        while not Simulation._is_port_available(run_test_case.port):
+            run_test_case.port += 1
+        bng_instance = DBBeamNGpy('localhost', run_test_case.port, home=home_path, user=user_path)
         authors = ", ".join(test_case.authors)
-        bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], sid, authors=authors)
+        bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], self.sid.sid, authors=authors)
 
         test_case.scenario.add_all(bng_scenario)
-        vehicles = [bng_scenario.get_vehicle(participant.id) for participant in test_case.scenario.participants]
-        sim.vehicles = vehicles
         bng_scenario.make(bng_instance)
 
         # Make manual changes to the scenario files
-        sim._make_lanes_visible()
-        sim._add_waypoints_to_scenario(test_case.scenario.participants)
-        sim._enable_participant_movements(test_case.scenario.participants)
+        self._make_lanes_visible()
+        self._add_waypoints_to_scenario(test_case.scenario.participants)
+        self._enable_participant_movements(test_case.scenario.participants)
         waypoints = set()
         for wps in [p.movement for p in test_case.scenario.participants]:
             for wp in wps:
                 if wp.id is not None:  # FIXME Not all waypoints are added
                     waypoints.add(wp.id)
-        sim._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
+        self._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
 
         bng_instance.open(launch=True)
-        try:
-            bng_instance.load_scenario(bng_scenario)
-            bng_instance.set_steps_per_second(test_case.stepsPerSecond)
-            bng_instance.set_deterministic()
-            bng_instance.hide_hud()
-            bng_instance.start_scenario()
-            bng_instance.pause()
+        bng_instance.load_scenario(bng_scenario)
+        bng_instance.set_steps_per_second(test_case.stepsPerSecond)
+        bng_instance.set_deterministic()
+        bng_instance.hide_hud()
+        bng_instance.start_scenario()
+        bng_instance.pause()
 
-            precondition = test_case.precondition_fct(bng_scenario)
-            failure = test_case.failure_fct(bng_scenario)
-            success = test_case.success_fct(bng_scenario)
-            test_case_result = "undetermined"
-            while test_case_result == "undetermined":
-                for vehicle in sim.vehicles:
-                    bng_instance.poll_sensors(vehicle)
-                if precondition.eval() is KPValue.FALSE:
-                    test_case_result = "skipped"
-                elif failure.eval() is KPValue.TRUE:
-                    test_case_result = "failed"
-                elif success.eval() is KPValue.TRUE:
-                    test_case_result = "succeeded"
-                else:
-                    # test_case_result = "undetermined"
-                    sim._request_control_avs()
-                    bng_instance.step(test_case.aiFrequency)
-            print("Test case result: " + test_case_result)
-        finally:
-            bng_instance.close()
-            Simulation.running_simulations.remove(sid)
+        return bng_scenario, Simulation._run_runtime_verification.delay(self, test_case.aiFrequency)
 
-    @staticmethod
-    def run_test_case(test_case: TestCase) -> Tuple[str, AsyncResult]:
-        import dill as pickle
-        # FIXME Generate sids automatically
-        sid = "fancySid"
-        Simulation.running_simulations.append(sid)
-        return sid, Simulation._start_simulation.delay(sid, pickle.dumps(test_case))
+
+@static_vars(port=64256)
+def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, AsyncResult]:
+    """
+    This method starts the actual simulation in a separate thread.
+    Additionally it already calculates and attaches all information that is need by this node and the separate
+    thread before calling _start_simulation(...).
+    """
+    import dill as pickle
+    # FIXME Generate sids automatically
+    sid = "fancySid"
+    sim = Simulation(sid, pickle.dumps(test_case))
+    bng_scenario, task = sim._start_simulation(test_case)
+
+    return sim, bng_scenario, task
