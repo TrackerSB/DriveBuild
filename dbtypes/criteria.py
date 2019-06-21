@@ -165,10 +165,10 @@ class SCLane(StateCondition):
         # FIXME Implement SCLane
         if self.lane == "offroad":
             for road in self.scenario.roads:
-                edges = self.scenario.bng.get_road_edges(road)
+                edges = self.scenario.bng.get_road_edges(road.rid)
         else:
             for road in self.scenario.roads:
-                edges = self.scenario.bng.get_road_edges(road)
+                edges = self.scenario.bng.get_road_edges(road.rid)
         return KPValue.UNKNOWN
 
 
