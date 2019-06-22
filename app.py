@@ -264,7 +264,7 @@ def do_after_flask_started() -> None:
         sim_node = SimNode()
         sim_node.host = get_ip()
         sim_node.port = app.config["PORT"]
-        response = do_post_request(app.config["MAI_HOST"], app.config["MAIN_PORT"], "/sim/register",
+        response = do_post_request(app.config["MAIN_HOST"], app.config["MAIN_PORT"], "/sim/register",
                                    sim_node.SerializeToString())
         if response.status == 200:
             print("Registered this node at the main application.")
