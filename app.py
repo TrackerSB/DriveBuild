@@ -264,8 +264,8 @@ def do_after_flask_started() -> None:
         sim_node = SimNode()
         sim_node.host = get_ip()  # FIXME Set to the appropriate host of this app
         sim_node.port = app.config["PORT"]
-        # FIXME Insert address of main application
-        response = do_post_request("localhost", 5000, "/sim/register", sim_node.SerializeToString())
+        response = do_post_request(app.config["MAI_HOST"], app.config["MAIN_PORT"], "/sim/register",
+                                   sim_node.SerializeToString())
         if response.status == 200:
             print("Registered this node at the main application.")
         else:

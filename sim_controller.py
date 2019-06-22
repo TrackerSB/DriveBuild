@@ -236,12 +236,13 @@ class Simulation:
         from http.client import HTTPConnection
         from urllib.parse import urlencode
         from aiExchangeMessages_pb2 import VehicleID
+        from app import app
         for v in vids:
             mode = self._get_current_movement_mode(v)
             if mode is MovementMode.AUTONOMOUS:
                 vid = VehicleID()
                 vid.vid = v
-                connection = HTTPConnection(host="localhost", port=5000)  # FIXME Insert address of flask server
+                connection = HTTPConnection(host=app.config["MAIN_HOST"], port=app.config["MAIN_PORT"])
                 params = urlencode({
                     "sid": self.serialized_sid,
                     "vid": vid.SerializeToString()
