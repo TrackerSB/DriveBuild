@@ -106,7 +106,6 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         ), node.get("db:id", _generate_lane_id()))
         lanes.append(lane)
 
-    # FIXME Implement generation of obstacles
     def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, float, Optional[str]]:
         """
         Returns the attributes all types of obstacles have in common.

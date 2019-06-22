@@ -9,7 +9,6 @@ from aiExchangeMessages_pb2 import DataResponse, DataRequest, Control, Void, Veh
 from dbtypes import AIStatus
 from sim_controller import Simulation
 
-# FIXME The communicator does not yet support multiple simulations at once
 _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
 
 
