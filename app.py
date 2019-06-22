@@ -262,7 +262,7 @@ def do_after_flask_started() -> None:
         from aiExchangeMessages_pb2 import SimNode
         from httpUtil import do_post_request
         sim_node = SimNode()
-        sim_node.host = get_ip()  # FIXME Set to the appropriate host of this app
+        sim_node.host = get_ip()
         sim_node.port = app.config["PORT"]
         response = do_post_request(app.config["MAI_HOST"], app.config["MAIN_PORT"], "/sim/register",
                                    sim_node.SerializeToString())
