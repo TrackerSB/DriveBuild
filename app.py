@@ -243,13 +243,26 @@ def status():
 
 def do_after_flask_started() -> None:
     from httpUtil import do_get_request
+    from socket import socket, AF_INET, SOCK_DGRAM
+
+    def get_ip():
+        s = socket(AF_INET, SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(("10.255.255.255", 1))
+            ip = s.getsockname()[0]
+        except:
+            ip = "127.0.0.1"
+        finally:
+            s.close()
+        return ip
 
     def register_sim_node():
         from util import eprint
         from aiExchangeMessages_pb2 import SimNode
         from httpUtil import do_post_request
         sim_node = SimNode()
-        sim_node.host = "localhost"  # FIXME Set to the appropriate host of this app
+        sim_node.host = get_ip()  # FIXME Set to the appropriate host of this app
         sim_node.port = app.config["PORT"]
         # FIXME Insert address of main application
         response = do_post_request("localhost", 5000, "/sim/register", sim_node.SerializeToString())
