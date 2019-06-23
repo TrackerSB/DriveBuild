@@ -203,8 +203,8 @@ def stop():
         response = _check_simulation_running(sid)
         if response is None:
             result = TestResult()
-            result.ParseFromString()
-            _get_task(sid).set_state(request.args["result"])
+            result.ParseFromString(request.args["result"].encode())
+            _get_task(sid).set_state(result.result)
             _get_scenario(sid).bng.close()
             void = Void()
             return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
