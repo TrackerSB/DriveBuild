@@ -304,7 +304,7 @@ def do_after_flask_started() -> None:
             # doesn't even have to be reachable
             s.connect(("10.255.255.255", 1))
             ip = s.getsockname()[0]
-        except:
+        except:  # TODO Find more precise exception
             ip = "127.0.0.1"
         finally:
             s.close()
