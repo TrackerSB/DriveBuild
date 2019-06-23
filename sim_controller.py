@@ -443,6 +443,7 @@ class Simulation:
             "result": result.SerializeToString()
         })
 
+    @static_vars(port=64256)
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtAsyncResult]:
         from app import app
         import os
@@ -452,11 +453,12 @@ class Simulation:
         user_path = app.config["BEAMNG_USER_PATH"]
 
         # Make sure there is no inference with previous tests while keeping the cache
-        rmtree(os.path.join(user_path, "levels"), ignore_errors=True)
+        rmtree(os.path.join(user_path, "levels", app.config["BEAMNG_LEVEL_NAME"], self.sid.sid + ".*"),
+               ignore_errors=True)
 
-        while not Simulation._is_port_available(run_test_case.port):
-            run_test_case.port += 1
-        bng_instance = DBBeamNGpy('localhost', run_test_case.port, home=home_path, user=user_path)
+        while not Simulation._is_port_available(Simulation._start_simulation.port):
+            Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
+        bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
         authors = ", ".join(test_case.authors)
         bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], self.sid.sid, authors=authors)
 
@@ -485,7 +487,6 @@ class Simulation:
         return bng_scenario, ExtAsyncResult(Simulation._run_runtime_verification.delay(self, test_case.aiFrequency))
 
 
-@static_vars(port=64256)
 def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncResult]:
     """
     This method starts the actual simulation in a separate thread.
