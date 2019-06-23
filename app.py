@@ -1,5 +1,4 @@
 import copyreg
-from signal import SIGINT, SIGTERM, SIGABRT, signal
 from threading import Thread
 from typing import Dict, Tuple, Optional
 
@@ -17,18 +16,6 @@ app.config.from_pyfile("app.cfg")
 redis_server = StrictRedis(host=app.config["REDIS_HOST"], port=app.config["REDIS_PORT"])
 
 all_tasks: Dict[Simulation, Tuple[Scenario, AsyncResult]] = {}
-
-
-def _stop_application(signum: int, frame) -> None:
-    from sim_controller import Simulation
-    print("_stop_application: called with signal " + str(signum))
-    Simulation.stop_all_simulations()
-    exit(0)
-
-
-signal(SIGABRT, _stop_application)
-signal(SIGINT, _stop_application)
-signal(SIGTERM, _stop_application)
 
 
 # Register pickler for _Element
