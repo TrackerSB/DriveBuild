@@ -493,8 +493,15 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncRe
     thread before calling _start_simulation(...).
     """
     import dill as pickle
-    # FIXME Generate sids automatically
-    sid = "fancySid"
+    from random import randint
+    from app import _get_simulation
+    from aiExchangeMessages_pb2 import SimulationID
+    while True:  # Pseudo "do-while"-loop
+        sid = "sim_" + str(randint(0, 10000))
+        sid_obj = SimulationID()
+        sid_obj.sid = sid
+        if _get_simulation(sid_obj) is None:
+            break
     sim = Simulation(sid, pickle.dumps(test_case))
     bng_scenario, task = sim._start_simulation(test_case)
 
