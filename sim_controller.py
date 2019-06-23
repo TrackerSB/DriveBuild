@@ -448,6 +448,7 @@ class Simulation:
         from app import app
         import os
         from shutil import rmtree
+        from redis import Redis
 
         home_path = app.config["BEAMNG_INSTALL_FOLDER"]
         user_path = app.config["BEAMNG_USER_PATH"]
@@ -456,33 +457,34 @@ class Simulation:
         rmtree(os.path.join(user_path, "levels", app.config["BEAMNG_LEVEL_NAME"], self.sid.sid + ".*"),
                ignore_errors=True)
 
-        while not Simulation._is_port_available(Simulation._start_simulation.port):
-            Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
-        bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
-        authors = ", ".join(test_case.authors)
-        bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], self.sid.sid, authors=authors)
+        with Redis().lock("beamng_start_lock"):
+            while not Simulation._is_port_available(Simulation._start_simulation.port):
+                Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
+            bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
+            authors = ", ".join(test_case.authors)
+            bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], self.sid.sid, authors=authors)
 
-        test_case.scenario.add_all(bng_scenario)
-        bng_scenario.make(bng_instance)
+            test_case.scenario.add_all(bng_scenario)
+            bng_scenario.make(bng_instance)
 
-        # Make manual changes to the scenario files
-        self._make_lanes_visible()
-        self._add_waypoints_to_scenario(test_case.scenario.participants)
-        self._enable_participant_movements(test_case.scenario.participants)
-        waypoints = set()
-        for wps in [p.movement for p in test_case.scenario.participants]:
-            for wp in wps:
-                if wp.id is not None:  # FIXME Not all waypoints are added
-                    waypoints.add(wp.id)
-        self._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
+            # Make manual changes to the scenario files
+            self._make_lanes_visible()
+            self._add_waypoints_to_scenario(test_case.scenario.participants)
+            self._enable_participant_movements(test_case.scenario.participants)
+            waypoints = set()
+            for wps in [p.movement for p in test_case.scenario.participants]:
+                for wp in wps:
+                    if wp.id is not None:  # FIXME Not all waypoints are added
+                        waypoints.add(wp.id)
+            self._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
 
-        bng_instance.open(launch=True)
-        bng_instance.load_scenario(bng_scenario)
-        bng_instance.set_steps_per_second(test_case.stepsPerSecond)
-        bng_instance.set_deterministic()
-        bng_instance.hide_hud()
-        bng_instance.start_scenario()
-        bng_instance.pause()
+            bng_instance.open(launch=True)
+            bng_instance.load_scenario(bng_scenario)
+            bng_instance.set_steps_per_second(test_case.stepsPerSecond)
+            bng_instance.set_deterministic()
+            bng_instance.hide_hud()
+            bng_instance.start_scenario()
+            bng_instance.pause()
 
         return bng_scenario, ExtAsyncResult(Simulation._run_runtime_verification.delay(self, test_case.aiFrequency))
 
