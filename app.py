@@ -3,19 +3,17 @@ from threading import Thread
 from typing import Dict, Tuple, Optional
 
 from beamngpy import Scenario
-from celery.result import AsyncResult
 from flask import Flask, Response
 from lxml.etree import _Element
 from redis import StrictRedis
 
 from aiExchangeMessages_pb2 import SimulationID
+from dbtypes import ExtAsyncResult
 from sim_controller import Simulation
 
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
 redis_server = StrictRedis(host=app.config["REDIS_HOST"], port=app.config["REDIS_PORT"])
-
-all_tasks: Dict[Simulation, Tuple[Scenario, AsyncResult]] = {}
 
 
 # Register pickler for _Element
@@ -32,18 +30,27 @@ def element_pickler(element: _Element):
 
 copyreg.pickle(_Element, element_pickler, element_unpickler)
 
+_all_tasks: Dict[Simulation, Tuple[Scenario, ExtAsyncResult]] = {}
+
 
 def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
-    for sim, _ in all_tasks.items():
+    for sim, _ in _all_tasks.items():
         if sim.sid.sid == sid.sid:
             return sim
     return None
 
 
 def _get_scenario(sid: SimulationID) -> Optional[Scenario]:
-    for sim, (scenario, _) in all_tasks.items():
+    for sim, (scenario, _) in _all_tasks.items():
         if sim.sid.sid == sid.sid:
             return scenario
+    return None
+
+
+def _get_task(sid: SimulationID) -> Optional[ExtAsyncResult]:
+    for sim, (_, task) in _all_tasks.items():
+        if sim.sid.sid == sid.sid:
+            return task
     return None
 
 
@@ -58,11 +65,21 @@ def test_launcher():
     new_tasks = run_tests(file_content)
     sids = SimulationIDs()
     for sim, (bng_scenario, task) in new_tasks.items():
-        if sim.sid.sid in all_tasks:
+        if sim.sid.sid in [s.sid.sid for s in _all_tasks]:
             warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
+            _all_tasks.pop(_get_simulation(sim.sid))
         sids.sids.append(sim.sid.sid)
-        all_tasks[sim] = (bng_scenario, task)
+        _all_tasks[sim] = (bng_scenario, task)
     return Response(response=sids.SerializeToString(), status=200, mimetype="application/x-protobuf")
+
+
+def is_simulation_running(sid: SimulationID) -> bool:
+    return _get_scenario(sid).bng is not None
+
+
+def _check_simulation_running(sid: SimulationID) -> Optional[Response]:
+    if not is_simulation_running(sid):
+        return Response(response="There is no running simulation with ID " + sid.sid, status=400)
 
 
 @app.route("/sim/requestAiFor", methods=["GET"])
@@ -73,9 +90,14 @@ def request_ai_for():
         from communicator import sim_request_ai_for
         from httpUtil import extract_vid, extract_sid
         _, sid = extract_sid()
-        _, vid = extract_vid()
-        sim_request_ai_for(sid, vid)
-        return Response(response="AI showed up and got permission to request data.", status=200, mimetype="text/plain")
+        response = _check_simulation_running(sid)
+        if response is None:
+            _, vid = extract_vid()
+            sim_request_ai_for(sid, vid)
+            return Response(response="AI showed up and got permission to request data.", status=200,
+                            mimetype="text/plain")
+        else:
+            return response
 
     return process_get_request(["sid", "vid"], do)
 
@@ -88,12 +110,16 @@ def verify():
     def do() -> Response:
         from aiExchangeMessages_pb2 import VerificationResult
         _, sid = extract_sid()
-        precondition, failure, success = _get_simulation(sid).verify()
-        verification = VerificationResult()
-        verification.precondition = precondition.name
-        verification.failure = failure.name
-        verification.success = success.name
-        return Response(response=verification.SerializeToString(), status=200, mimetype="text/plain")
+        response = _check_simulation_running(sid)
+        if response is None:
+            precondition, failure, success = _get_simulation(sid).verify()
+            verification = VerificationResult()
+            verification.precondition = precondition.name
+            verification.failure = failure.name
+            verification.success = success.name
+            return Response(response=verification.SerializeToString(), status=200, mimetype="text/plain")
+        else:
+            return response
 
     return process_get_request(["sid"], do)
 
@@ -107,12 +133,17 @@ def poll_sensors():
         from httpUtil import extract_sid, extract_vid
         from aiExchangeMessages_pb2 import Void
         _, sid = extract_sid()
-        _, vid = extract_vid()
-        bng_scenario = _get_scenario(sid)
-        vehicle = bng_scenario.get_vehicle(vid.vid)
-        bng_scenario.bng.poll_sensors(vehicle)
-        void = Void()
-        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        response = _check_simulation_running(sid)
+        if response is None:
+            _, vid = extract_vid()
+            bng_scenario = _get_scenario(sid)
+            vehicle = bng_scenario.get_vehicle(vid.vid)
+            bng_instance = bng_scenario.bng
+            bng_instance.poll_sensors(vehicle)
+            void = Void()
+            return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        else:
+            return response
 
     return process_get_request(["sid", "vid"], do)
 
@@ -127,10 +158,14 @@ def steps():
         from flask import request
         from aiExchangeMessages_pb2 import Void
         _, sid = extract_sid()
-        num_steps = int(request.args["steps"])
-        _get_scenario(sid).bng.step(num_steps)
-        void = Void()
-        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        response = _check_simulation_running(sid)
+        if response is None:
+            num_steps = int(request.args["steps"])
+            _get_scenario(sid).bng.step(num_steps)
+            void = Void()
+            return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        else:
+            return response
 
     return process_get_request(["sid", "steps"], do)
 
@@ -144,9 +179,13 @@ def vids():
         from httpUtil import extract_sid
         from aiExchangeMessages_pb2 import VehicleIDs
         _, sid = extract_sid()
-        vids = VehicleIDs()
-        vids.vids.extend([v.vid for v in _get_scenario(sid).vehicles])
-        return Response(response=vids.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        response = _check_simulation_running(sid)
+        if response is None:
+            vids = VehicleIDs()
+            vids.vids.extend([v.vid for v in _get_scenario(sid).vehicles])
+            return Response(response=vids.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        else:
+            return response
 
     return process_get_request(["sid"], do)
 
@@ -158,13 +197,21 @@ def stop():
 
     def do() -> Response:
         from httpUtil import extract_sid
-        from aiExchangeMessages_pb2 import Void
+        from aiExchangeMessages_pb2 import Void, TestResult
+        from flask import request
         _, sid = extract_sid()
-        _get_scenario(sid).bng.close()
-        void = Void()
-        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        response = _check_simulation_running(sid)
+        if response is None:
+            result = TestResult()
+            result.ParseFromString()
+            _get_task(sid).set_state(request.args["result"])
+            _get_scenario(sid).bng.close()
+            void = Void()
+            return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        else:
+            return response
 
-    return process_get_request(["sid"], do)
+    return process_get_request(["sid", "result"], do)
 
 
 @app.route("/ai/waitForSimulatorRequest", methods=["GET"])
@@ -173,13 +220,24 @@ def wait_for_simulator_request():
 
     def do() -> Response:
         from communicator import ai_wait_for_simulator_request
-        from aiExchangeMessages_pb2 import SimStateResponse
+        from aiExchangeMessages_pb2 import SimStateResponse, TestResult
         from httpUtil import extract_vid, extract_sid
         _, sid = extract_sid()
         _, vid = extract_vid()
         ai_wait_for_simulator_request(sid, vid)
         response = SimStateResponse()
-        response.state = SimStateResponse.SimState.RUNNING
+        scenario = _get_scenario(sid)
+        if scenario.bng is None:
+            task = _get_task(sid)
+            if task.get_state() is TestResult.Result.SUCCEEDED \
+                    or task.get_state() is TestResult.Result.FAILED:
+                response.state = SimStateResponse.SimState.FINISHED
+            elif task.get_state() is TestResult.Result.SKIPPED:
+                response.state = SimStateResponse.SimState.CANCELED
+            else:
+                response.state = SimStateResponse.SimState.ERRORED  # FIXME Can this be assumed?
+        else:
+            response.state = SimStateResponse.SimState.RUNNING
         return Response(response=response.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
     return process_get_request(["sid", "vid"], do)
@@ -194,12 +252,16 @@ def request_data():
         from aiExchangeMessages_pb2 import DataRequest
         from communicator import ai_request_data
         from httpUtil import extract_vid, extract_sid
-        data_request = DataRequest()
-        data_request.ParseFromString(request.args["request"].encode())
         _, sid = extract_sid()
-        _, vid = extract_vid()
-        data_response = ai_request_data(sid, vid, data_request)
-        return Response(response=data_response.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        response = _check_simulation_running(sid)
+        if response is None:
+            data_request = DataRequest()
+            data_request.ParseFromString(request.args["request"].encode())
+            _, vid = extract_vid()
+            data_response = ai_request_data(sid, vid, data_request)
+            return Response(response=data_response.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        else:
+            return response
 
     return process_get_request(["vid", "sid", "request"], do)
 
@@ -211,18 +273,22 @@ def control():
     from communicator import ai_control
     from httpUtil import extract_sid, extract_vid
     _, sid = extract_sid()
-    _, vid = extract_vid()
-    control_msg = Control()
-    control_msg.ParseFromString(request.data)
-    void = ai_control(_get_simulation(sid), vid, control_msg)
-    return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+    response = _check_simulation_running(sid)
+    if response is None:
+        _, vid = extract_vid()
+        control_msg = Control()
+        control_msg.ParseFromString(request.data)
+        void = ai_control(_get_simulation(sid), vid, control_msg)
+        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+    else:
+        return response
 
 
 @app.route("/stats/status", methods=["GET"])
 def status():
-    if all_tasks:
+    if _all_tasks:
         status_text = \
-            "<br />".join(["Simulation: " + sim.sid.sid + ": " + task.state for sim, (_, task) in all_tasks.items()])
+            "<br />".join(["Simulation: " + sim.sid.sid + ": " + task.state() for sim, (_, task) in _all_tasks.items()])
     else:
         status_text = "There were no test executions so far"
     return Response(response=status_text, status=200, mimetype="text/html")

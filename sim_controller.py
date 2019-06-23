@@ -1,9 +1,9 @@
 from typing import List, Set, Optional, Tuple
 
 from beamngpy import Scenario
-from celery.result import AsyncResult
 
 from aiExchangeMessages_pb2 import DataResponse, Control
+from dbtypes import ExtAsyncResult
 from dbtypes.beamng import DBVehicle, DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue
 from dbtypes.scheme import Participant, MovementMode
@@ -323,14 +323,19 @@ class Simulation:
         vehicle.control(throttle=accelerate, steering=steer, brake=brake, parkingbrake=0)  # FIXME Seems to be ignored
 
     def control_sim(self, command: Control.SimCommand) -> None:
-        if command is Control.SimCommand.RESUME:
-            pass
+        from app import _get_task, _get_scenario
+        from aiExchangeMessages_pb2 import TestResult
+        task = _get_task(self.sid)
+        if command is Control.SimCommand.SUCCEED:
+            task.set_state(TestResult.Result.SUCCEEDED)
         elif command is Control.SimCommand.FAIL:
-            pass  # FIXME Implement
+            task.set_state(TestResult.Result.FAILED)
         elif command is Control.SimCommand.CANCEL:
-            pass  # FIXME Implement
+            task.set_state(TestResult.Result.SKIPPED)
         else:
             raise NotImplementedError("Handling of the SimCommand " + str(command) + " is not implemented, yet.")
+
+        _get_scenario(self.sid).bng.close()
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
@@ -397,7 +402,7 @@ class Simulation:
         # FIXME How to avoid all these requests?!
         from httpUtil import do_get_request
         from app import app
-        from aiExchangeMessages_pb2 import VehicleID, VehicleIDs
+        from aiExchangeMessages_pb2 import VehicleID, VehicleIDs, TestResult
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
             from aiExchangeMessages_pb2 import VerificationResult
@@ -406,11 +411,11 @@ class Simulation:
             verification.ParseFromString(b"".join(response.readlines()))
             return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
 
-        test_case_result = "undetermined"
-        result = do_get_request("localhost", app.config["PORT"], "/sim/vids", {"sid": self.serialized_sid})
+        test_case_result: Optional[TestResult.Result] = None
+        vidsResult = do_get_request("localhost", app.config["PORT"], "/sim/vids", {"sid": self.serialized_sid})
         vids = VehicleIDs()
-        vids.ParseFromString(b"".join(result.readlines()))
-        while test_case_result == "undetermined":
+        vids.ParseFromString(b"".join(vidsResult.readlines()))
+        while test_case_result is None:
             for v in vids.vids:
                 vid = VehicleID()
                 vid.vid = v
@@ -420,21 +425,25 @@ class Simulation:
                 })
             precondition, failure, success = _get_verification()
             if precondition is KPValue.FALSE:
-                test_case_result = "skipped"
+                test_case_result = TestResult.Result.SKIPPED
             elif failure is KPValue.TRUE:
-                test_case_result = "failed"
+                test_case_result = TestResult.Result.FAILED
             elif success is KPValue.TRUE:
-                test_case_result = "succeeded"
+                test_case_result = TestResult.Result.SUCCEEDED
             else:
-                # test_case_result = "undetermined"
                 self._request_control_avs(vids.vids)
                 do_get_request("localhost", app.config["PORT"], "/sim/steps", {
                     "sid": self.serialized_sid,
                     "steps": ai_frequency
                 })
-        do_get_request("localhost", app.config["PORT"], "/sim/stop", {"sid": self.serialized_sid})
+        result = TestResult()
+        result.result = test_case_result
+        do_get_request("localhost", app.config["PORT"], "/sim/stop", {
+            "sid": self.serialized_sid,
+            "result": result.SerializeToString()
+        })
 
-    def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, AsyncResult]:
+    def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtAsyncResult]:
         from app import app
         import os
         from shutil import rmtree
@@ -473,11 +482,11 @@ class Simulation:
         bng_instance.start_scenario()
         bng_instance.pause()
 
-        return bng_scenario, Simulation._run_runtime_verification.delay(self, test_case.aiFrequency)
+        return bng_scenario, ExtAsyncResult(Simulation._run_runtime_verification.delay(self, test_case.aiFrequency))
 
 
 @static_vars(port=64256)
-def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, AsyncResult]:
+def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncResult]:
     """
     This method starts the actual simulation in a separate thread.
     Additionally it already calculates and attaches all information that is need by this node and the separate

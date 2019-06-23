@@ -13,11 +13,12 @@ _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
 
 
 def ai_wait_for_simulator_request(sid: SimulationID, vid: VehicleID) -> None:
+    from app import is_simulation_running
     print("ai_wait_for_simulator_request: enter")
     if sid.sid not in _registered_ais:
         _registered_ais[sid.sid] = {}
     _registered_ais[sid.sid][vid.vid] = AIStatus.WAITING
-    while _registered_ais[sid.sid][vid.vid] is AIStatus.WAITING:
+    while is_simulation_running(sid) and _registered_ais[sid.sid][vid.vid] is AIStatus.WAITING:
         pass
     print("ai_wait_for_simulator_request: leave")
 

@@ -1,9 +1,9 @@
 from typing import Tuple, List, Dict
 
 from beamngpy import Scenario
-from celery.result import AsyncResult
 from lxml.etree import _ElementTree
 
+from dbtypes import ExtAsyncResult
 from dbtypes.scheme import ScenarioMapping
 from sim_controller import Simulation
 
@@ -59,7 +59,7 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     return scenario_mapping_stubs, valid_crit_defs
 
 
-def run_tests(zip_file_content: bytes) -> Dict[Simulation, Tuple[Scenario, AsyncResult]]:
+def run_tests(zip_file_content: bytes) -> Dict[Simulation, Tuple[Scenario, ExtAsyncResult]]:
     from util import eprint
     from sim_controller import run_test_case
     from transformer import transform
