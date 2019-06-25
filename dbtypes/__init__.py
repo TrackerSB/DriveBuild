@@ -1,6 +1,12 @@
+from datetime import datetime
 from enum import Enum
 
+from beamngpy import Scenario
 from celery.result import AsyncResult
+from dataclasses import dataclass
+from lxml.etree import _ElementTree
+
+from aiExchangeMessages_pb2 import TestResult
 
 
 class AIStatus(Enum):
@@ -13,7 +19,6 @@ class ExtAsyncResult:
     """
     Wraps an AsyncResult and allows to set the returned status manually.
     """
-    from aiExchangeMessages_pb2 import TestResult
 
     _state_to_str = {
         0: "TEST SUCCEEDED",
@@ -39,3 +44,14 @@ class ExtAsyncResult:
         Passing None as status makes disables a manually set status.
         """
         self._status = status
+
+
+@dataclass
+class SimulationData:
+    scenario: Scenario
+    simulation_task: ExtAsyncResult
+    criteria: _ElementTree
+    environment: _ElementTree
+    start_time: datetime = None
+    end_time: datetime = None
+    result: TestResult.Result = None

@@ -1,6 +1,6 @@
 import copyreg
 from threading import Thread
-from typing import Dict, Tuple, Optional
+from typing import Dict, Optional, Union
 
 from beamngpy import Scenario
 from flask import Flask, Response
@@ -8,7 +8,7 @@ from lxml.etree import _Element
 from redis import StrictRedis
 
 from aiExchangeMessages_pb2 import SimulationID, Control, TestResult
-from dbtypes import ExtAsyncResult
+from dbtypes import ExtAsyncResult, SimulationData
 from sim_controller import Simulation
 
 app = Flask(__name__)
@@ -30,7 +30,8 @@ def element_pickler(element: _Element):
 
 copyreg.pickle(_Element, element_pickler, element_unpickler)
 
-_all_tasks: Dict[Simulation, Tuple[Scenario, ExtAsyncResult]] = {}
+
+_all_tasks: Dict[Simulation, SimulationData] = {}
 
 
 def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
@@ -41,16 +42,16 @@ def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
 
 
 def _get_scenario(sid: SimulationID) -> Optional[Scenario]:
-    for sim, (scenario, _) in _all_tasks.items():
+    for sim, data in _all_tasks.items():
         if sim.sid.sid == sid.sid:
-            return scenario
+            return data.scenario
     return None
 
 
 def _get_task(sid: SimulationID) -> Optional[ExtAsyncResult]:
-    for sim, (_, task) in _all_tasks.items():
+    for sim, data in _all_tasks.items():
         if sim.sid.sid == sid.sid:
-            return task
+            return data.simulation_task
     return None
 
 
@@ -64,12 +65,12 @@ def test_launcher():
     file_content = request.data
     new_tasks = run_tests(file_content)
     sids = SimulationIDs()
-    for sim, (bng_scenario, task) in new_tasks.items():
+    for sim, data in new_tasks.items():
         if sim.sid.sid in [s.sid.sid for s in _all_tasks]:
             warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
             _all_tasks.pop(_get_simulation(sim.sid))
         sids.sids.append(sim.sid.sid)
-        _all_tasks[sim] = (bng_scenario, task)
+        _all_tasks[sim] = data
     return Response(response=sids.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
 

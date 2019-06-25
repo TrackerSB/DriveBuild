@@ -1,9 +1,8 @@
 from typing import Tuple, List, Dict
 
-from beamngpy import Scenario
 from lxml.etree import _ElementTree
 
-from dbtypes import ExtAsyncResult
+from dbtypes import SimulationData
 from dbtypes.scheme import ScenarioMapping
 from sim_controller import Simulation
 
@@ -21,17 +20,17 @@ def extract_test_cases(zip_content: bytes) -> str:
     return temp_dir
 
 
-def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
+def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[Tuple[_ElementTree, str]]) \
         -> List[ScenarioMapping]:
     from util import eprint
     from util.xml import xpath
-    for criteria_def in criteria_defs:
+    for criteria_def, content in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
             needed_environment = element.text
             found_env = False
             for stub in mapping_stubs:
                 if needed_environment == stub.filename:
-                    stub.crit_defs.append(criteria_def)
+                    stub.crit_defs.append((criteria_def, content))
                     found_env = True
                     break
             if not found_env:
@@ -40,7 +39,7 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
     return [mapping for mapping in mapping_stubs if mapping.crit_defs]
 
 
-def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
+def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[Tuple[_ElementTree, str]]]:
     import os
     from util import eprint, is_dbe, is_dbc
     from util.xml import validate
@@ -59,7 +58,7 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     return scenario_mapping_stubs, valid_crit_defs
 
 
-def run_tests(zip_file_content: bytes) -> Dict[Simulation, Tuple[Scenario, ExtAsyncResult]]:
+def run_tests(zip_file_content: bytes) -> Dict[Simulation, SimulationData]:
     from util import eprint
     from sim_controller import run_test_case
     from transformer import transform
@@ -70,9 +69,10 @@ def run_tests(zip_file_content: bytes) -> Dict[Simulation, Tuple[Scenario, ExtAs
     mapping = associate_criteria(mapping_stubs, valid_crit_defs)
     if mapping:
         test_cases = transform(mapping)
-        for test_case in test_cases:
+        for test_case, crit_def, env_def in test_cases:
             sim, bng_scenario, task = run_test_case(test_case)
-            simulations[sim] = bng_scenario, task
+            data = SimulationData(bng_scenario, task, crit_def, env_def)
+            simulations[sim] = data
     else:
         eprint("Some criteria definitions have no valid environment.")
     return simulations

@@ -1,7 +1,8 @@
 from abc import ABC
-from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple, Optional, List
+
+from dataclasses import dataclass
 
 
 class MovementMode(Enum):

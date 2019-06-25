@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from lxml.etree import _ElementTree
 
@@ -11,7 +11,10 @@ def get_author(root: _ElementTree) -> str:
     return xpath(root, "db:author")[0].text
 
 
-def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
+def transform(mappings: List[ScenarioMapping]) -> List[Tuple[TestCase, _ElementTree, _ElementTree]]:
+    """
+    Return tuples containing the generated test case, its criteria definition and its environment
+    """
     from generator import generate_scenario
     from kp_transformer import generate_criteria
     from util.xml import xpath
@@ -19,7 +22,7 @@ def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
     for mapping in mappings:
         environment = mapping.environment
         environment_author = get_author(environment)
-        for crit_def in mapping.crit_defs:
+        for crit_def, crit_content in mapping.crit_defs:
             ai_frequency = int(xpath(crit_def, "db:aiFrequency")[0].text)
             steps_per_second = int(xpath(crit_def, "db:stepsPerSecond")[0].text)
             participants_node = xpath(crit_def, "db:participants")[0]
@@ -30,5 +33,7 @@ def transform(mappings: List[ScenarioMapping]) -> List[TestCase]:
             if crit_def_author not in authors:
                 authors.append(crit_def_author)
             test_cases.append(
-                TestCase(builder, precondition, success, failure, steps_per_second, ai_frequency, authors))
+                (TestCase(builder, precondition, success, failure, steps_per_second, ai_frequency, authors),
+                 crit_def, environment)
+            )
     return test_cases
