@@ -7,7 +7,7 @@ from flask import Flask, Response
 from lxml.etree import _Element
 from redis import StrictRedis
 
-from aiExchangeMessages_pb2 import SimulationID
+from aiExchangeMessages_pb2 import SimulationID, Control, TestResult
 from dbtypes import ExtAsyncResult
 from sim_controller import Simulation
 
@@ -197,15 +197,14 @@ def stop():
 
     def do() -> Response:
         from httpUtil import extract_sid
-        from aiExchangeMessages_pb2 import Void, TestResult
+        from aiExchangeMessages_pb2 import Void
         from flask import request
         _, sid = extract_sid()
         response = _check_simulation_running(sid)
         if response is None:
             result = TestResult()
             result.ParseFromString(request.args["result"].encode())
-            _get_task(sid).set_state(result.result)
-            _get_scenario(sid).bng.close()
+            control_sim(_get_simulation(sid), result.result)
             void = Void()
             return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
         else:
@@ -220,7 +219,7 @@ def wait_for_simulator_request():
 
     def do() -> Response:
         from communicator import ai_wait_for_simulator_request
-        from aiExchangeMessages_pb2 import SimStateResponse, TestResult
+        from aiExchangeMessages_pb2 import SimStateResponse
         from httpUtil import extract_vid, extract_sid
         _, sid = extract_sid()
         _, vid = extract_vid()
@@ -266,9 +265,27 @@ def request_data():
     return process_get_request(["vid", "sid", "request"], do)
 
 
+def control_sim(sim: Simulation, command: Union[Control.SimCommand, TestResult.Result]) -> None:
+    task = _get_task(sim.sid)
+    if isinstance(command, Control.SimCommand):
+        if command is Control.SimCommand.SUCCEED:
+            task.set_state(TestResult.Result.SUCCEEDED)
+        elif command is Control.SimCommand.FAIL:
+            task.set_state(TestResult.Result.FAILED)
+        elif command is Control.SimCommand.CANCEL:
+            task.set_state(TestResult.Result.SKIPPED)
+        else:
+            raise NotImplementedError("Handling of the SimCommand " + str(command) + " is not implemented, yet.")
+    elif isinstance(command, TestResult.Result):
+        task.set_state(command)
+    else:
+        raise ValueError("The simulation can not handle commands of type " + str(type(command)))
+
+    _get_scenario(sim.sid).bng.close()
+
+
 @app.route("/ai/control", methods=["POST"])
 def control():
-    from aiExchangeMessages_pb2 import Control
     from flask import request
     from communicator import ai_control
     from httpUtil import extract_sid, extract_vid

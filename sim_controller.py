@@ -2,7 +2,7 @@ from typing import List, Set, Optional, Tuple
 
 from beamngpy import Scenario
 
-from aiExchangeMessages_pb2 import DataResponse, Control
+from aiExchangeMessages_pb2 import DataResponse
 from dbtypes import ExtAsyncResult
 from dbtypes.beamng import DBVehicle, DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue
@@ -321,21 +321,6 @@ class Simulation:
         # FIXME Check ranges
         vehicle = self._get_vehicle(vid)
         vehicle.control(throttle=accelerate, steering=steer, brake=brake, parkingbrake=0)  # FIXME Seems to be ignored
-
-    def control_sim(self, command: Control.SimCommand) -> None:
-        from app import _get_task, _get_scenario
-        from aiExchangeMessages_pb2 import TestResult
-        task = _get_task(self.sid)
-        if command is Control.SimCommand.SUCCEED:
-            task.set_state(TestResult.Result.SUCCEEDED)
-        elif command is Control.SimCommand.FAIL:
-            task.set_state(TestResult.Result.FAILED)
-        elif command is Control.SimCommand.CANCEL:
-            task.set_state(TestResult.Result.SKIPPED)
-        else:
-            raise NotImplementedError("Handling of the SimCommand " + str(command) + " is not implemented, yet.")
-
-        _get_scenario(self.sid).bng.close()
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """

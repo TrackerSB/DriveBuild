@@ -33,10 +33,11 @@ def ai_request_data(sim: Simulation, vid: VehicleID, request: DataRequest) -> Da
 
 
 def ai_control(sim: Simulation, vid: VehicleID, control: Control) -> Void:
+    from app import control_sim
     print("ai_control: enter")
     command_type = control.WhichOneof("command")
     if command_type == "simCommand":
-        sim.control_sim(control.simCommand)
+        control_sim(sim, control.simCommand)
     elif command_type == "avCommand":
         command = control.avCommand
         sim.control_av(vid.vid, command.accelerate, command.steer, command.brake)
