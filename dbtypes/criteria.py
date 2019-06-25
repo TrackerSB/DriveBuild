@@ -1,9 +1,9 @@
 from abc import ABC
-from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple, Callable
 
 from beamngpy import Scenario
+from dataclasses import dataclass
 
 
 class KPValue(Enum):
@@ -161,15 +161,32 @@ class SCLane(StateCondition):
         return [PositionRequest(self._generate_rid())]
 
     def eval(self) -> KPValue:
+        from typing import Dict
+        from shapely.geometry import Polygon, Point
         x, y = self._poll_request_data()[0]
-        # FIXME Implement SCLane
-        # if self.lane == "offroad":
-        #     for road in self.scenario.roads:
-        #         edges = self.scenario.bng.get_road_edges(road.rid)
-        # else:
-        #     for road in self.scenario.roads:
-        #         edges = self.scenario.bng.get_road_edges(road.rid)
-        return KPValue.UNKNOWN
+        point = Point(x, y)
+
+        def _to_polygon(road_edges: List[Dict[str, float]]) -> Polygon:
+            points = [p["left"] for p in road_edges]
+            right_edge_points = [p["right"] for p in road_edges]
+            right_edge_points.reverse()
+            points.extend(right_edge_points)
+            return Polygon()
+
+        if self.lane == "offroad":
+            is_offroad = KPValue.TRUE
+            for road in self.scenario.roads:
+                edges = self.scenario.bng.get_road_edges(road.rid)
+                polygon = _to_polygon(edges)
+                if polygon.contains(point):
+                    is_offroad = KPValue.FALSE
+                    break
+            return is_offroad
+        else:
+            for road in self.scenario.roads:
+                edges = self.scenario.bng.get_road_edges(road.rid)
+                polygon = _to_polygon(edges)
+                return KPValue.TRUE if polygon.contains(point) else KPValue.FALSE
 
 
 class SCSpeed(StateCondition):

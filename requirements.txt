@@ -5,7 +5,7 @@ celery==3.1.25
 protobuf
 shapely
 numpy
-beamngpy>=1.10
+beamngpy>=1.12
 lxml
 flask
 dataclasses

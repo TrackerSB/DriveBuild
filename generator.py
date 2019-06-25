@@ -15,9 +15,9 @@ class ScenarioBuilder:
         self.participants = participants
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
-        from dbtypes.beamng import DBRoad
+        from beamngpy import Road
         for lane in self.lanes:
-            road = DBRoad(lane.lid, 'a_asphalt_01_a')
+            road = Road('a_asphalt_01_a', rid=lane.lid)
             road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
             road.nodes.extend(road_nodes)
             scenario.add_road(road)
