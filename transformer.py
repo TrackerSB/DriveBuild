@@ -22,7 +22,7 @@ def transform(mappings: List[ScenarioMapping]) -> List[Tuple[TestCase, _ElementT
     for mapping in mappings:
         environment = mapping.environment
         environment_author = get_author(environment)
-        for crit_def, crit_content in mapping.crit_defs:
+        for crit_def in mapping.crit_defs:
             ai_frequency = int(xpath(crit_def, "db:aiFrequency")[0].text)
             steps_per_second = int(xpath(crit_def, "db:stepsPerSecond")[0].text)
             participants_node = xpath(crit_def, "db:participants")[0]

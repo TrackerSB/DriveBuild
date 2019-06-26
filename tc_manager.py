@@ -20,17 +20,17 @@ def extract_test_cases(zip_content: bytes) -> str:
     return temp_dir
 
 
-def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[Tuple[_ElementTree, str]]) \
+def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
         -> List[ScenarioMapping]:
     from util import eprint
     from util.xml import xpath
-    for criteria_def, content in criteria_defs:
+    for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
             needed_environment = element.text
             found_env = False
             for stub in mapping_stubs:
                 if needed_environment == stub.filename:
-                    stub.crit_defs.append((criteria_def, content))
+                    stub.crit_defs.append(criteria_def)
                     found_env = True
                     break
             if not found_env:
@@ -39,7 +39,7 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
     return [mapping for mapping in mapping_stubs if mapping.crit_defs]
 
 
-def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[Tuple[_ElementTree, str]]]:
+def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     import os
     from util import eprint, is_dbe, is_dbc
     from util.xml import validate
