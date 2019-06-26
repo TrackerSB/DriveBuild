@@ -25,9 +25,23 @@ class DBConnection:
 
     def store_data(self, data: SimulationData) -> Any:
         from lxml.etree import tostring
+        from aiExchangeMessages_pb2 import TestResult
+        if data.result is TestResult.Result.SUCCESSFUL:
+            successful = "TRUE"
+        elif data.result is TestResult.Result.FAILURE:
+            successful = "FALSE"
+        else:
+            successful = "NULL"
         args = {
-            "content": tostring(data.environment.getroot())
+            "environment": tostring(data.environment.getroot()),
+            "criteria": tostring(data.criteria),
+            "successful": successful,
+            "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S")
         }
-        id = self._run_query("INSERT INTO environments VALUES (DEFAULT, :content) returning id", args)
+        self._run_query("""
+        INSERT INTO tests VALUES
+            (DEFAULT, :environment, :criteria, :successful, :started, :finished)
+        """, args)
         print(id)
         return None
