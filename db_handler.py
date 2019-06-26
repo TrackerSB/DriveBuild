@@ -26,12 +26,15 @@ class DBConnection:
     def store_data(self, data: SimulationData) -> Any:
         from lxml.etree import tostring
         from aiExchangeMessages_pb2 import TestResult
-        if data.result is TestResult.Result.SUCCEEDED:
+        result = data.simulation_task.state()
+        if result is TestResult.Result.SUCCEEDED:
             successful = "TRUE"
-        elif data.result is TestResult.Result.FAILED:
+        elif result is TestResult.Result.FAILED:
             successful = "FALSE"
-        elif data.result is TestResult.Result.SKIPPED:
+        elif result is TestResult.Result.SKIPPED:
             successful = "NULL"
+        else:
+            raise ValueError("SimulationData can not be stored (data.simulation_task.state() = " + str(result) + ").")
         args = {
             "environment": tostring(data.environment.getroot()),
             "criteria": tostring(data.criteria),

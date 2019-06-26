@@ -270,7 +270,8 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     :param direct: True only if the given command represents a Control.SimCommand controlling the simulation directly.
     False only if the given command represents a TestResult.Result to be associated with the given simulation.
     """
-    task = _get_data(sim.sid).simulation_task
+    data = _get_data(sim.sid)
+    task = data.simulation_task
     if direct:
         if command is Control.SimCommand.SUCCEED:
             task.set_state(TestResult.Result.SUCCEEDED)
@@ -283,7 +284,6 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     else:
         task.set_state(command)
 
-    data = _get_data(sim.sid)
     data.scenario.bng.close()
     db_handler.store_data(data)
 
