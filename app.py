@@ -205,7 +205,7 @@ def stop():
         if response is None:
             result = TestResult()
             result.ParseFromString(request.args["result"].encode())
-            control_sim(_get_simulation(sid), result.result)
+            control_sim(_get_simulation(sid), result.result, False)
             void = Void()
             return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
         else:
@@ -266,12 +266,17 @@ def request_data():
     return process_get_request(["vid", "sid", "request"], do)
 
 
-def control_sim(sim: Simulation, command: Any) -> None:
+def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     """
-    Parameter command is of type Union[Control.SimCommand, TestResult.Result].
+    Stops a simulation and sets its associated test result.
+    :param sim: The simulation to stop.
+    :param command: The command controlling the simulation or the test result of the simulation to set. (Its "type" is
+    Union[Control.SimCommand, TestResult.Result]).
+    :param direct: True only if the given command represents a Control.SimCommand controlling the simulation directly.
+    False only if the given command represents a TestResult.Result to be associated with the given simulation.
     """
     task = _get_task(sim.sid)
-    if isinstance(command, Control.SimCommand):
+    if direct:
         if command is Control.SimCommand.SUCCEED:
             task.set_state(TestResult.Result.SUCCEEDED)
         elif command is Control.SimCommand.FAIL:
