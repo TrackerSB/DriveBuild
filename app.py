@@ -266,7 +266,10 @@ def request_data():
     return process_get_request(["vid", "sid", "request"], do)
 
 
-def control_sim(sim: Simulation, command: Union[Control.SimCommand, TestResult.Result]) -> None:
+def control_sim(sim: Simulation, command: Any) -> None:
+    """
+    Parameter command is of type Union[Control.SimCommand, TestResult.Result].
+    """
     task = _get_task(sim.sid)
     if isinstance(command, Control.SimCommand):
         if command is Control.SimCommand.SUCCEED:
