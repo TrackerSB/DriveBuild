@@ -26,11 +26,11 @@ class DBConnection:
     def store_data(self, data: SimulationData) -> Any:
         from lxml.etree import tostring
         from aiExchangeMessages_pb2 import TestResult
-        if data.result is TestResult.Result.SUCCESSFUL:
+        if data.result is TestResult.Result.SUCCEEDED:
             successful = "TRUE"
-        elif data.result is TestResult.Result.FAILURE:
+        elif data.result is TestResult.Result.FAILED:
             successful = "FALSE"
-        else:
+        elif data.result is TestResult.Result.SKIPPED:
             successful = "NULL"
         args = {
             "environment": tostring(data.environment.getroot()),
