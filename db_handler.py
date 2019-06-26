@@ -26,7 +26,7 @@ class DBConnection:
     def store_data(self, data: SimulationData) -> Any:
         from lxml.etree import tostring
         from aiExchangeMessages_pb2 import TestResult
-        result = data.simulation_task.state()
+        result = data.simulation_task.get_state()
         if result is TestResult.Result.SUCCEEDED:
             successful = "TRUE"
         elif result is TestResult.Result.FAILED:
