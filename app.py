@@ -30,10 +30,10 @@ def element_pickler(element: _Element):
 
 copyreg.pickle(_Element, element_pickler, element_unpickler)
 
-
 _all_tasks: Dict[Simulation, SimulationData] = {}
 
 
+# FIXME Any way to avoid these methods?
 def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
     for sim, _ in _all_tasks.items():
         if sim.sid.sid == sid.sid:
