@@ -371,9 +371,9 @@ class Simulation:
         The type may be either precondition, failure or success.
         """
         import dill as pickle
-        from app import _get_scenario
+        from app import _get_data
         test_case: TestCase = pickle.loads(self.pickled_test_case)
-        bng_scenario = _get_scenario(self.sid)
+        bng_scenario = _get_data(self.sid).scenario
         return test_case.precondition_fct(bng_scenario).eval(), \
                test_case.failure_fct(bng_scenario).eval(), \
                test_case.success_fct(bng_scenario).eval()

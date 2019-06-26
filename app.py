@@ -1,19 +1,21 @@
 import copyreg
 from threading import Thread
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
-from beamngpy import Scenario
 from flask import Flask, Response
 from lxml.etree import _Element
 from redis import StrictRedis
 
 from aiExchangeMessages_pb2 import SimulationID, Control, TestResult
-from dbtypes import ExtAsyncResult, SimulationData
+from db_handler import DBConnection
+from dbtypes import SimulationData
 from sim_controller import Simulation
 
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
 redis_server = StrictRedis(host=app.config["REDIS_HOST"], port=app.config["REDIS_PORT"])
+db_handler = DBConnection(app.config["DBMS_HOST"], app.config["DBMS_PORT"], app.config["DBMS_NAME"],
+                          app.config["DBMS_USERNAME"], app.config["DBMS_PASSWORD"])
 
 
 # Register pickler for _Element
@@ -41,17 +43,10 @@ def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
     return None
 
 
-def _get_scenario(sid: SimulationID) -> Optional[Scenario]:
+def _get_data(sid: SimulationID) -> Optional[SimulationData]:
     for sim, data in _all_tasks.items():
         if sim.sid.sid == sid.sid:
-            return data.scenario
-    return None
-
-
-def _get_task(sid: SimulationID) -> Optional[ExtAsyncResult]:
-    for sim, data in _all_tasks.items():
-        if sim.sid.sid == sid.sid:
-            return data.simulation_task
+            return data
     return None
 
 
@@ -75,7 +70,7 @@ def test_launcher():
 
 
 def is_simulation_running(sid: SimulationID) -> bool:
-    return _get_scenario(sid).bng is not None
+    return _get_data(sid).scenario.bng is not None
 
 
 def _check_simulation_running(sid: SimulationID) -> Optional[Response]:
@@ -137,7 +132,7 @@ def poll_sensors():
         response = _check_simulation_running(sid)
         if response is None:
             _, vid = extract_vid()
-            bng_scenario = _get_scenario(sid)
+            bng_scenario = _get_data(sid).scenario
             vehicle = bng_scenario.get_vehicle(vid.vid)
             bng_instance = bng_scenario.bng
             bng_instance.poll_sensors(vehicle)
@@ -162,7 +157,7 @@ def steps():
         response = _check_simulation_running(sid)
         if response is None:
             num_steps = int(request.args["steps"])
-            _get_scenario(sid).bng.step(num_steps)
+            _get_data(sid).scenario.bng.step(num_steps)
             void = Void()
             return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
         else:
@@ -183,7 +178,7 @@ def vids():
         response = _check_simulation_running(sid)
         if response is None:
             vids = VehicleIDs()
-            vids.vids.extend([v.vid for v in _get_scenario(sid).vehicles])
+            vids.vids.extend([v.vid for v in _get_data(sid).scenario.vehicles])
             return Response(response=vids.SerializeToString(), status=200, mimetype="application/x-protobuf")
         else:
             return response
@@ -226,9 +221,9 @@ def wait_for_simulator_request():
         _, vid = extract_vid()
         ai_wait_for_simulator_request(sid, vid)
         response = SimStateResponse()
-        scenario = _get_scenario(sid)
+        scenario = _get_data(sid).scenario
         if scenario.bng is None:
-            task = _get_task(sid)
+            task = _get_data(sid).simulation_task
             if task.get_state() is TestResult.Result.SUCCEEDED \
                     or task.get_state() is TestResult.Result.FAILED:
                 response.state = SimStateResponse.SimState.FINISHED
@@ -275,7 +270,7 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     :param direct: True only if the given command represents a Control.SimCommand controlling the simulation directly.
     False only if the given command represents a TestResult.Result to be associated with the given simulation.
     """
-    task = _get_task(sim.sid)
+    task = _get_data(sim.sid).simulation_task
     if direct:
         if command is Control.SimCommand.SUCCEED:
             task.set_state(TestResult.Result.SUCCEEDED)
@@ -290,7 +285,9 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     else:
         raise ValueError("The simulation can not handle commands of type " + str(type(command)))
 
-    _get_scenario(sim.sid).bng.close()
+    data = _get_data(sim.sid)
+    data.scenario.bng.close()
+    db_handler.store_data(data)
 
 
 @app.route("/ai/control", methods=["POST"])
@@ -313,8 +310,11 @@ def control():
 @app.route("/stats/status", methods=["GET"])
 def status():
     if _all_tasks:
+        def _to_str(sim: Simulation, data: SimulationData) -> str:
+            return "Simulation: " + sim.sid.sid + ": " + data.simulation_task.state()
+
         status_text = \
-            "<br />".join(["Simulation: " + sim.sid.sid + ": " + task.state() for sim, (_, task) in _all_tasks.items()])
+            "<br />".join([_to_str(sim, data) for sim, data in _all_tasks.items()])
     else:
         status_text = "There were no test executions so far"
     return Response(response=status_text, status=200, mimetype="text/html")
