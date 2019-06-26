@@ -280,10 +280,8 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
             task.set_state(TestResult.Result.SKIPPED)
         else:
             raise NotImplementedError("Handling of the SimCommand " + str(command) + " is not implemented, yet.")
-    elif isinstance(command, TestResult.Result):
-        task.set_state(command)
     else:
-        raise ValueError("The simulation can not handle commands of type " + str(type(command)))
+        task.set_state(command)
 
     data = _get_data(sim.sid)
     data.scenario.bng.close()
