@@ -186,7 +186,6 @@ def vids():
     return process_get_request(["sid"], do)
 
 
-# FIXME How to banish this?
 @app.route("/sim/stop", methods=["GET"])
 def stop():
     from httpUtil import process_get_request
@@ -266,18 +265,18 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     Stops a simulation and sets its associated test result.
     :param sim: The simulation to stop.
     :param command: The command controlling the simulation or the test result of the simulation to set. (Its "type" is
-    Union[Control.SimCommand, TestResult.Result]).
-    :param direct: True only if the given command represents a Control.SimCommand controlling the simulation directly.
-    False only if the given command represents a TestResult.Result to be associated with the given simulation.
+    Union[Control.SimCommand.Command, TestResult.Result]).
+    :param direct: True only if the given command represents a Control.SimCommand.Command controlling the simulation
+    directly. False only if the given command represents a TestResult.Result to be associated with the given simulation.
     """
     data = _get_data(sim.sid)
     task = data.simulation_task
     if direct:
-        if command is Control.SimCommand.SUCCEED:
+        if command is Control.SimCommand.Command.SUCCEED:
             task.set_state(TestResult.Result.SUCCEEDED)
-        elif command is Control.SimCommand.FAIL:
+        elif command is Control.SimCommand.Command.FAIL:
             task.set_state(TestResult.Result.FAILED)
-        elif command is Control.SimCommand.CANCEL:
+        elif command is Control.SimCommand.Command.CANCEL:
             task.set_state(TestResult.Result.SKIPPED)
         else:
             raise NotImplementedError("Handling of the SimCommand " + str(command) + " is not implemented, yet.")
