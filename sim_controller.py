@@ -272,9 +272,9 @@ class Simulation:
         """
         NOTE As long as bng_scenario.make() is not called this will return None.
         """
-        from app import _get_scenario
+        from app import _get_data
         # FIXME How to avoid this?
-        return _get_scenario(self.sid).get_vehicle(vid)
+        return _get_data(self.sid).scenario.get_vehicle(vid)
 
     def attach_request_data(self, data: DataResponse.Data, vid: str, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
