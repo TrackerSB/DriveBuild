@@ -311,15 +311,33 @@ def control():
 
 @app.route("/stats/status", methods=["GET"])
 def status():
-    if _all_tasks:
-        def _to_str(sim: Simulation, data: SimulationData) -> str:
-            return "Simulation: " + sim.sid.sid + ": " + data.simulation_task.state()
+    from httpUtil import process_get_request
 
-        status_text = \
-            "<br />".join([_to_str(sim, data) for sim, data in _all_tasks.items()])
-    else:
-        status_text = "There were no test executions so far"
-    return Response(response=status_text, status=200, mimetype="text/html")
+    def do() -> Response:
+        from flask import request
+        from aiExchangeMessages_pb2 import SimulationID
+        serialized_sid = request.args.get("sid", default=None)
+        if serialized_sid:
+            sid = SimulationID()
+            sid.ParseFromString(serialized_sid.encode())
+            data = _get_data(sid)
+            if data:
+                return Response(response=data.simulation_task.state(), status=200, mimetype="text/plain")
+            else:
+                return Response(response="Simulation node with ID " + sid.sid + " not found",
+                                status=400, mimetype="text/plain")
+        else:
+            if _all_tasks:
+                def _to_str(sim: Simulation, data: SimulationData) -> str:
+                    return "Simulation: " + sim.sid.sid + ": " + data.simulation_task.state()
+
+                status_text = \
+                    "<br />".join([_to_str(sim, data) for sim, data in _all_tasks.items()])
+            else:
+                status_text = "There were no test executions so far"
+            return Response(response=status_text, status=200, mimetype="text/html")
+
+    return process_get_request([], do)
 
 
 def do_after_flask_started() -> None:
