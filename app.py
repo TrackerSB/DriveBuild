@@ -289,19 +289,24 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
 
 @app.route("/ai/control", methods=["POST"])
 def control():
-    from flask import request
-    from communicator import ai_control
-    from httpUtil import extract_sid, extract_vid
-    _, sid = extract_sid()
-    response = _check_simulation_running(sid)
-    if response is None:
-        _, vid = extract_vid()
-        control_msg = Control()
-        control_msg.ParseFromString(request.data)
-        void = ai_control(_get_simulation(sid), vid, control_msg)
-        return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
-    else:
-        return response
+    from httpUtil import process_mixed_request
+
+    def do() -> Response:
+        from flask import request
+        from communicator import ai_control
+        from httpUtil import extract_sid, extract_vid
+        _, sid = extract_sid()
+        response = _check_simulation_running(sid)
+        if response is None:
+            _, vid = extract_vid()
+            control_msg = Control()
+            control_msg.ParseFromString(request.data)
+            void = ai_control(_get_simulation(sid), vid, control_msg)
+            return Response(response=void.SerializeToString(), status=200, mimetype="application/x-protobuf")
+        else:
+            return response
+
+    return process_mixed_request(["sid", "vid"], do)
 
 
 @app.route("/stats/status", methods=["GET"])
