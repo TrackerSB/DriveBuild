@@ -72,19 +72,23 @@ class Simulation:
         ])
         return lua_av_command
 
+    def get_user_path(self) -> str:
+        from app import app
+        import os
+        return os.path.join(app.config["BEAMNG_USER_PATH"], self.sid.sid)
+
     def _get_lua_path(self) -> str:
         import os
         return os.path.join(
-            Simulation._get_scenario_dir_path(),
+            self._get_scenario_dir_path(),
             self.sid.sid + ".lua"
         )
 
-    @staticmethod
-    def _get_scenario_dir_path() -> str:
+    def _get_scenario_dir_path(self) -> str:
         from app import app
         import os
         return os.path.join(
-            app.config["BEAMNG_USER_PATH"],
+            self.get_user_path(),
             "levels",
             app.config["BEAMNG_LEVEL_NAME"],
             "scenarios"
@@ -93,14 +97,14 @@ class Simulation:
     def _get_prefab_path(self) -> str:
         import os
         return os.path.join(
-            Simulation._get_scenario_dir_path(),
+            self._get_scenario_dir_path(),
             self.sid.sid + ".prefab"
         )
 
     def _get_json_path(self) -> str:
         import os
         return os.path.join(
-            Simulation._get_scenario_dir_path(),
+            self._get_scenario_dir_path(),
             self.sid.sid + ".json"
         )
 
@@ -431,16 +435,10 @@ class Simulation:
     @static_vars(port=64256)
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtAsyncResult]:
         from app import app
-        import os
-        from shutil import rmtree
         from redis import Redis
 
         home_path = app.config["BEAMNG_INSTALL_FOLDER"]
-        user_path = app.config["BEAMNG_USER_PATH"]
-
-        # Make sure there is no inference with previous tests while keeping the cache
-        rmtree(os.path.join(user_path, "levels", app.config["BEAMNG_LEVEL_NAME"], self.sid.sid + ".*"),
-               ignore_errors=True)
+        user_path = self.get_user_path()
 
         with Redis().lock("beamng_start_lock"):
             while not Simulation._is_port_available(Simulation._start_simulation.port):

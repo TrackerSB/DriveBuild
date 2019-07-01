@@ -57,6 +57,7 @@ def test_launcher():
     from tc_manager import run_tests
     from warnings import warn
     from aiExchangeMessages_pb2 import SimulationIDs
+    from shutil import rmtree
     file_content = request.data
     new_tasks = run_tests(file_content)
     sids = SimulationIDs()
@@ -66,6 +67,8 @@ def test_launcher():
             _all_tasks.pop(_get_simulation(sim.sid))
         sids.sids.append(sim.sid.sid)
         _all_tasks[sim] = data
+        # Make sure there is no folder of previous tests having the same sid that got not propery removed
+        rmtree(sim.get_user_path(), ignore_errors=True)
     return Response(response=sids.SerializeToString(), status=200, mimetype="application/x-protobuf")
 
 
@@ -269,6 +272,7 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
     :param direct: True only if the given command represents a Control.SimCommand.Command controlling the simulation
     directly. False only if the given command represents a TestResult.Result to be associated with the given simulation.
     """
+    from shutil import rmtree
     data = _get_data(sim.sid)
     task = data.simulation_task
     if direct:
@@ -285,6 +289,9 @@ def control_sim(sim: Simulation, command: int, direct: bool) -> None:
 
     data.scenario.bng.close()
     db_handler.store_data(data)
+
+    # Make sure there is no inference with following tests
+    rmtree(sim.get_user_path(), ignore_errors=True)
 
 
 @app.route("/ai/control", methods=["POST"])
