@@ -482,6 +482,7 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncRe
     from random import randint
     from app import _get_simulation
     from aiExchangeMessages_pb2 import SimulationID
+    from shutil import rmtree
     while True:  # Pseudo "do-while"-loop
         sid = "sim_" + str(randint(0, 10000))
         sid_obj = SimulationID()
@@ -489,6 +490,8 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncRe
         if _get_simulation(sid_obj) is None:
             break
     sim = Simulation(sid, pickle.dumps(test_case))
+    # Make sure there is no folder of previous tests having the same sid that got not propery removed
+    rmtree(sim.get_user_path(), ignore_errors=True)
     bng_scenario, task = sim._start_simulation(test_case)
 
     return sim, bng_scenario, task
