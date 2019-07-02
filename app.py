@@ -347,6 +347,7 @@ def status():
 def do_after_flask_started() -> None:
     from httpUtil import do_get_request
     from socket import socket, AF_INET, SOCK_DGRAM
+    from redis import Redis
 
     def get_ip():
         s = socket(AF_INET, SOCK_DGRAM)
@@ -375,21 +376,23 @@ def do_after_flask_started() -> None:
             eprint("Could not register this node at the main application.")
             exit(1)
 
-    called = False
-    while not called:
+    registered = False
+    while not registered:
         # NOTE Which url does not matter
         check_response = do_get_request("localhost", app.config["PORT"], "/stats/status", {})
         if check_response.status == 200:
-            register_sim_node()
-            called = True
+            with Redis().lock("register node lock"):
+                if not registered:
+                    register_sim_node()
+                    registered = True
         else:
             print("This simulation node is not registered, yet.")
             print(check_response.status)
             print(check_response.reason)
 
 
-# FIXME Check frequently whether the main application is still running
-thread = Thread(target=do_after_flask_started)  # NOTE The main method is not called by PyCharm
-thread.start()
 if __name__ == "__main__":
+    # FIXME Check frequently whether the main application is still running
+    thread = Thread(target=do_after_flask_started)  # NOTE The main method is not called by PyCharm
+    thread.start()
     app.run(host="0.0.0.0", port=app.config["PORT"])
