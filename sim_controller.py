@@ -30,10 +30,8 @@ class Simulation:
         :param in_lua: Whether the resulting path should be appropriate for lua or python (True=Lua, False=Python).
         :return: The path of the file for storing the movement mode of the given participant.
         """
-        from app import app
         import os
-        return os.path.join("" if in_lua else app.config["BEAMNG_USER_PATH"],
-                            self.sid.sid + "_" + pid + "_movementMode")
+        return os.path.join("" if in_lua else self.get_user_path(), pid + "_movementMode")
 
     def _get_current_movement_mode(self, pid: str) -> Optional[MovementMode]:
         import os
@@ -237,8 +235,7 @@ class Simulation:
 
     def _request_control_avs(self, vids: List[str]) -> None:
         from util import eprint
-        from http.client import HTTPConnection
-        from urllib.parse import urlencode
+        from httpUtil import do_get_request
         from aiExchangeMessages_pb2 import VehicleID
         from app import app
         for v in vids:
@@ -246,16 +243,16 @@ class Simulation:
             if mode is MovementMode.AUTONOMOUS:
                 vid = VehicleID()
                 vid.vid = v
-                connection = HTTPConnection(host=app.config["MAIN_HOST"], port=app.config["MAIN_PORT"])
-                params = urlencode({
+                response = do_get_request(app.config["MAIN_HOST"], app.config["MAIN_PORT"], "/sim/requestAiFor", {
                     "sid": self.serialized_sid,
                     "vid": vid.SerializeToString()
                 })
-                connection.request("GET", "/sim/requestAiFor?" + params)
-                connection.getresponse()
-                # FIXME Check return status
+                if response.status != 200:
+                    eprint("Requesting AIs failed with " + response.status + " (" + response.reason + ").")
             elif mode is MovementMode.TRAINING:
                 eprint("TRAINING not implemented, yet.")
+            elif not mode:
+                eprint("There is current MovementMode set.")
 
     def _get_vehicles(self) -> List[DBVehicle]:
         """
