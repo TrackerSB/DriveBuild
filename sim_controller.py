@@ -250,7 +250,7 @@ class Simulation:
                 if response.status != 200:
                     eprint("Requesting AIs failed with " + response.status + " (" + response.reason + ").")
             elif mode is MovementMode.TRAINING:
-                eprint("TRAINING not implemented, yet.")
+                eprint("TRAINING not implemented, yet.")  # FIXME Implement training mode
             elif not mode:
                 eprint("There is current MovementMode set.")
 
