@@ -437,7 +437,7 @@ class Simulation:
         home_path = app.config["BEAMNG_INSTALL_FOLDER"]
         user_path = self.get_user_path()
 
-        with Redis().lock("beamng_start_lock"):
+        with Redis().lock("start sim lock"):
             while not Simulation._is_port_available(Simulation._start_simulation.port):
                 Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
             bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
