@@ -37,6 +37,7 @@ _all_tasks: Dict[Simulation, SimulationData] = {}
 
 # FIXME Any way to avoid these methods?
 def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
+    global _all_tasks
     for sim, _ in _all_tasks.items():
         if sim.sid.sid == sid.sid:
             return sim
@@ -44,6 +45,7 @@ def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
 
 
 def _get_data(sid: SimulationID) -> Optional[SimulationData]:
+    global _all_tasks
     for sim, data in _all_tasks.items():
         if sim.sid.sid == sid.sid:
             return data
@@ -57,6 +59,7 @@ def test_launcher():
     from tc_manager import run_tests
     from warnings import warn
     from aiExchangeMessages_pb2 import SimulationIDs
+    global _all_tasks
     file_content = request.data
     new_tasks = run_tests(file_content)
     sids = SimulationIDs()
@@ -320,6 +323,7 @@ def status():
     def do() -> Response:
         from flask import request
         from aiExchangeMessages_pb2 import SimulationID
+        global _all_tasks
         serialized_sid = request.args.get("sid", default=None)
         if serialized_sid:
             sid = SimulationID()
