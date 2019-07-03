@@ -395,8 +395,8 @@ def do_after_flask_started() -> None:
             print(check_response.reason)
 
 
+# FIXME Check frequently whether the main application is still running
+thread = Thread(target=do_after_flask_started)  # NOTE The main method is not called by PyCharm
+thread.start()
 if __name__ == "__main__":
-    # FIXME Check frequently whether the main application is still running
-    thread = Thread(target=do_after_flask_started)  # NOTE The main method is not called by PyCharm
-    thread.start()
     app.run(host="0.0.0.0", port=app.config["PORT"])
