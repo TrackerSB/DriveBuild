@@ -1,8 +1,8 @@
 from datetime import datetime
 from enum import Enum
+from threading import Thread
 
 from beamngpy import Scenario
-from celery.result import AsyncResult
 from dataclasses import dataclass
 from lxml.etree import _ElementTree
 
@@ -15,9 +15,9 @@ class AIStatus(Enum):
     REQUESTED = "REQUESTED"
 
 
-class ExtAsyncResult:
+class ExtThread:
     """
-    Wraps an AsyncResult and allows to set the returned status manually.
+    Wraps a Thread and allows to set the returned status manually.
     """
 
     _state_to_str = {
@@ -26,12 +26,13 @@ class ExtAsyncResult:
         2: "TEST SKIPPED"
     }
 
-    def __init__(self, task: AsyncResult):
-        self.task = task
+    def __init__(self, thread: Thread):
+        self.thread = thread
         self._status = None
 
     def state(self) -> str:
-        return self.task.status if self._status is None else ExtAsyncResult._state_to_str[self._status]
+        thread_state = "ALIVE" if self.thread.is_alive() else "NOT ALIVE"
+        return thread_state if self._status is None else ExtThread._state_to_str[self._status]
 
     def get_state(self) -> TestResult.Result:
         """
@@ -49,7 +50,7 @@ class ExtAsyncResult:
 @dataclass
 class SimulationData:
     scenario: Scenario
-    simulation_task: ExtAsyncResult
+    simulation_task: ExtThread
     criteria: _ElementTree
     environment: _ElementTree
     start_time: datetime = None

@@ -14,7 +14,8 @@ NAMESPACES = {
 
 
 def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
-    from util import eprint, is_dbe, is_dbc
+    from common import eprint
+    from util import is_dbe, is_dbc
     valid: bool = False
     parsed: Optional[_ElementTree] = None
     if is_dbe(path) or is_dbc(path):

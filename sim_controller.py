@@ -3,11 +3,10 @@ from typing import List, Set, Optional, Tuple
 from beamngpy import Scenario
 
 from aiExchangeMessages_pb2 import DataResponse
-from dbtypes import ExtAsyncResult
+from dbtypes import ExtThread
 from dbtypes.beamng import DBVehicle, DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue
 from dbtypes.scheme import Participant, MovementMode
-from run_celery import celery
 from util import static_vars
 
 
@@ -234,7 +233,7 @@ class Simulation:
         prefab_file.close()
 
     def _request_control_avs(self, vids: List[str]) -> None:
-        from util import eprint
+        from common import eprint
         from httpUtil import do_get_request
         from aiExchangeMessages_pb2 import VehicleID
         from app import app
@@ -273,7 +272,7 @@ class Simulation:
         """
         NOTE As long as bng_scenario.make() is not called this will return None.
         """
-        from app import _get_data
+        from start import _get_data
         # FIXME How to avoid this?
         return _get_data(self.sid).scenario.get_vehicle(vid)
 
@@ -379,16 +378,17 @@ class Simulation:
                test_case.failure_fct(bng_scenario).eval(), \
                test_case.success_fct(bng_scenario).eval()
 
-    @celery.task
     def _run_runtime_verification(self, ai_frequency: int) -> None:
         """
         NOTE Since this method is a celery task it must not call anything that depends on a Scenario neither directly
         nor indirectly.
         """
-        # FIXME How to avoid all these requests?!
+        # FIXME Update the previous note to match threading instead of celery
         from httpUtil import do_get_request
         from app import app
-        from aiExchangeMessages_pb2 import VehicleID, VehicleIDs, TestResult
+        from aiExchangeMessages_pb2 import TestResult
+        # FIXME How to avoid this import?
+        from start import _get_data
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
             from aiExchangeMessages_pb2 import VerificationResult
@@ -398,17 +398,9 @@ class Simulation:
             return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
 
         test_case_result: Optional[TestResult.Result] = None
-        vidsResult = do_get_request("localhost", app.config["PORT"], "/sim/vids", {"sid": self.serialized_sid})
-        vids = VehicleIDs()
-        vids.ParseFromString(b"".join(vidsResult.readlines()))
         while test_case_result is None:
-            for v in vids.vids:
-                vid = VehicleID()
-                vid.vid = v
-                do_get_request("localhost", app.config["PORT"], "/sim/pollSensors", {
-                    "sid": self.serialized_sid,
-                    "vid": vid.SerializeToString()
-                })
+            for vehicle in self._get_vehicles():
+                _get_data(self.sid).scenario.bng.poll_sensors(vehicle)
             precondition, failure, success = _get_verification()
             if precondition is KPValue.FALSE:
                 test_case_result = TestResult.Result.SKIPPED
@@ -430,9 +422,10 @@ class Simulation:
         })
 
     @static_vars(port=64256)
-    def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtAsyncResult]:
+    def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from app import app
         from redis import Redis
+        from threading import Thread
 
         home_path = app.config["BEAMNG_INSTALL_FOLDER"]
         user_path = self.get_user_path()
@@ -466,10 +459,13 @@ class Simulation:
             bng_instance.start_scenario()
             bng_instance.pause()
 
-        return bng_scenario, ExtAsyncResult(Simulation._run_runtime_verification.delay(self, test_case.aiFrequency))
+        runtime_thread = Thread(target=Simulation._run_runtime_verification, args=(self, test_case.aiFrequency))
+        runtime_thread.daemon = True
+        runtime_thread.start()
+        return bng_scenario, ExtThread(runtime_thread)
 
 
-def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncResult]:
+def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]:
     """
     This method starts the actual simulation in a separate thread.
     Additionally it already calculates and attaches all information that is need by this node and the separate
@@ -489,6 +485,6 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtAsyncRe
     sim = Simulation(sid, pickle.dumps(test_case))
     # Make sure there is no folder of previous tests having the same sid that got not propery removed
     rmtree(sim.get_user_path(), ignore_errors=True)
-    bng_scenario, task = sim._start_simulation(test_case)
+    bng_scenario, thread = sim._start_simulation(test_case)
 
-    return sim, bng_scenario, task
+    return sim, bng_scenario, thread

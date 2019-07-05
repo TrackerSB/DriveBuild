@@ -22,7 +22,7 @@ def extract_test_cases(zip_content: bytes) -> str:
 
 def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
         -> List[ScenarioMapping]:
-    from util import eprint
+    from common import eprint
     from util.xml import xpath
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
@@ -41,7 +41,8 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
 
 def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     import os
-    from util import eprint, is_dbe, is_dbc
+    from common import eprint
+    from util import is_dbe, is_dbc
     from util.xml import validate
     scenario_mapping_stubs = list()
     valid_crit_defs = list()
@@ -59,7 +60,7 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
 
 
 def run_tests(zip_file_content: bytes) -> Dict[Simulation, SimulationData]:
-    from util import eprint
+    from common import eprint
     from sim_controller import run_test_case
     from transformer import transform
     folder = extract_test_cases(zip_file_content)
@@ -70,8 +71,8 @@ def run_tests(zip_file_content: bytes) -> Dict[Simulation, SimulationData]:
     if mapping:
         test_cases = transform(mapping)
         for test_case, crit_def, env_def in test_cases:
-            sim, bng_scenario, task = run_test_case(test_case)
-            data = SimulationData(bng_scenario, task, crit_def, env_def)
+            sim, bng_scenario, thread = run_test_case(test_case)
+            data = SimulationData(bng_scenario, thread, crit_def, env_def)
             simulations[sim] = data
     else:
         eprint("Some criteria definitions have no valid environment.")

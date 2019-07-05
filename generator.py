@@ -25,7 +25,7 @@ class ScenarioBuilder:
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
         from dbtypes.scheme import Cone, Cube, Cylinder, Bump
-        from util import eprint
+        from common import eprint
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
             height = obstacle.height
@@ -79,7 +79,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
-    from util import eprint, static_vars
+    from common import eprint, static_vars
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
         LidarRequest
 
