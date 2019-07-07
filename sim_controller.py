@@ -1,25 +1,42 @@
-from typing import List, Set, Optional, Tuple
+from socket import socket
+from typing import List, Set, Optional, Tuple, Callable
 
 from beamngpy import Scenario
 
-from aiExchangeMessages_pb2 import DataResponse
+from aiExchangeMessages_pb2 import DataResponse, SimulationID
 from dbtypes import ExtThread
-from dbtypes.beamng import DBVehicle, DBBeamNGpy
-from dbtypes.criteria import TestCase, KPValue
+from dbtypes.beamng import DBBeamNGpy
+from dbtypes.criteria import TestCase, KPValue, CriteriaFunction
 from dbtypes.scheme import Participant, MovementMode
 from util import static_vars
 
 
 class Simulation:
-
-    def __init__(self, sid: str, pickled_test_case: bytes):
-        from aiExchangeMessages_pb2 import SimulationID
-        sid_obj = SimulationID()
-        sid_obj.sid = sid
-        self.sid = sid_obj
-        self.serialized_sid = sid_obj.SerializeToString()
+    def __init__(self, sid: SimulationID, pickled_test_case: bytes, port: int):
+        self.sid = sid
+        self.serialized_sid = sid.SerializeToString()
         self.pickled_test_case = pickled_test_case
-        # NOTE Neither BeamNGpy nor Scenario can be serialized
+        self.port = port
+        self._sim_server_socket = None
+        self._sim_node_client_socket = None
+
+    def start_server(self, handle_simulation_message: Callable[[socket, Tuple[str, int]], None]) -> None:
+        from threading import Thread
+        from common import accept_at_server, create_server
+        if self._sim_server_socket:
+            raise ValueError("The simulation already started a server at " + str(self.port))
+        else:
+            self._sim_server_socket = create_server(self.port)
+            simulation_sim_node_com_server = Thread(target=accept_at_server,
+                                                    args=(self._sim_server_socket, handle_simulation_message))
+            simulation_sim_node_com_server.daemon = True
+            simulation_sim_node_com_server.start()
+
+    def send_message_to_sim_node(self, action: bytes, data: List[bytes], timeout: Optional[float] = None) -> bytes:
+        from common import send_message, create_client
+        if not self._sim_node_client_socket:
+            self._sim_node_client_socket = create_client("localhost", self.port)
+        return send_message(self._sim_node_client_socket, action, data, timeout)
 
     def _get_movement_mode_file_path(self, pid: str, in_lua: bool) -> str:
         """
@@ -70,9 +87,9 @@ class Simulation:
         return lua_av_command
 
     def get_user_path(self) -> str:
-        from app import app
+        from config import BEAMNG_USER_PATH
         import os
-        return os.path.join(app.config["BEAMNG_USER_PATH"], self.sid.sid)
+        return os.path.join(BEAMNG_USER_PATH, self.sid.sid)
 
     def _get_lua_path(self) -> str:
         import os
@@ -82,12 +99,12 @@ class Simulation:
         )
 
     def _get_scenario_dir_path(self) -> str:
-        from app import app
+        from config import BEAMNG_LEVEL_NAME
         import os
         return os.path.join(
             self.get_user_path(),
             "levels",
-            app.config["BEAMNG_LEVEL_NAME"],
+            BEAMNG_LEVEL_NAME,
             "scenarios"
         )
 
@@ -234,47 +251,20 @@ class Simulation:
 
     def _request_control_avs(self, vids: List[str]) -> None:
         from common import eprint
-        from httpUtil import do_get_request
         from aiExchangeMessages_pb2 import VehicleID
-        from app import app
         for v in vids:
             mode = self._get_current_movement_mode(v)
             if mode is MovementMode.AUTONOMOUS:
                 vid = VehicleID()
                 vid.vid = v
-                response = do_get_request(app.config["MAIN_HOST"], app.config["MAIN_PORT"], "/sim/requestAiFor", {
-                    "sid": self.serialized_sid,
-                    "vid": vid.SerializeToString()
-                })
-                if response.status != 200:
-                    eprint("Requesting AIs failed with " + response.status + " (" + response.reason + ").")
+                # FIXME Determine appropriate timeout
+                message = self.send_message_to_sim_node(b"requestAiFor", [self.serialized_sid, vid.SerializeToString()])
+                print(message)
+                # FIXME Continue...
             elif mode is MovementMode.TRAINING:
                 eprint("TRAINING not implemented, yet.")  # FIXME Implement training mode
             elif not mode:
                 eprint("There is current MovementMode set.")
-
-    def _get_vehicles(self) -> List[DBVehicle]:
-        """
-        NOTE As long as bng_scenario.make() is not called this will return an empty list.
-        """
-        import dill as pickle
-        return list(
-            filter(
-                lambda v: v is not None,
-                map(
-                    lambda vid: self._get_vehicle(vid),
-                    [p.id for p in pickle.loads(self.pickled_test_case).scenario.participants]
-                )
-            )
-        )
-
-    def _get_vehicle(self, vid: str) -> DBVehicle:
-        """
-        NOTE As long as bng_scenario.make() is not called this will return None.
-        """
-        from start import _get_data
-        # FIXME How to avoid this?
-        return _get_data(self.sid).scenario.get_vehicle(vid)
 
     def attach_request_data(self, data: DataResponse.Data, vid: str, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
@@ -310,17 +300,6 @@ class Simulation:
         else:
             raise NotImplementedError(
                 "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
-
-    def control_av(self, vid: str, accelerate: float, steer: float, brake: float) -> None:
-        """
-        :param vid: The vehicle to control.
-        :param accelerate: The throttle of the car (Range 0.0 to 1.0)
-        :param steer: The steering angle (Range -1.0 to 1.0) # FIXME Negative/Positive left/right?
-        :param brake: The brake intensity (Range 0.0 to 1.0)
-        """
-        # FIXME Check ranges
-        vehicle = self._get_vehicle(vid)
-        vehicle.control(throttle=accelerate, steering=steer, brake=brake, parkingbrake=0)  # FIXME Seems to be ignored
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
@@ -366,17 +345,13 @@ class Simulation:
         sock.close()
         return is_open
 
-    def verify(self) -> Tuple[KPValue, KPValue, KPValue]:
+    def get_verification(self) -> Tuple[CriteriaFunction, CriteriaFunction, CriteriaFunction]:
         """
-        The type may be either precondition, failure or success.
+        Returns precondition, failure and success function.
         """
         import dill as pickle
-        from app import _get_data
         test_case: TestCase = pickle.loads(self.pickled_test_case)
-        bng_scenario = _get_data(self.sid).scenario
-        return test_case.precondition_fct(bng_scenario).eval(), \
-               test_case.failure_fct(bng_scenario).eval(), \
-               test_case.success_fct(bng_scenario).eval()
+        return test_case.precondition_fct, test_case.failure_fct, test_case.success_fct
 
     def _run_runtime_verification(self, ai_frequency: int) -> None:
         """
@@ -384,23 +359,29 @@ class Simulation:
         nor indirectly.
         """
         # FIXME Update the previous note to match threading instead of celery
-        from httpUtil import do_get_request
-        from app import app
-        from aiExchangeMessages_pb2 import TestResult
-        # FIXME How to avoid this import?
-        from start import _get_data
+        from aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
             from aiExchangeMessages_pb2 import VerificationResult
-            response = do_get_request("localhost", app.config["PORT"], "/sim/verify", {"sid": self.serialized_sid})
-            verification = VerificationResult()
-            verification.ParseFromString(b"".join(response.readlines()))
-            return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
+            from common import eprint
+            # FIXME Determine appropriate timeout
+            response = self.send_message_to_sim_node(b"verify", [self.serialized_sid], 10)
+            if response:
+                verification = VerificationResult()
+                verification.ParseFromString(response)
+                return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
+            else:
+                eprint("Verification of criteria at simulation " + self.sid.sid + " timed out.")
+                return KPValue.UNKNOWN, KPValue.UNKNOWN, KPValue.UNKNOWN
 
+        # FIXME Wait for simulation to be registered at the simulation node?
+        # FIXME Use is_simulation_running?
+        response = self.send_message_to_sim_node(b"vids", [self.serialized_sid])
+        vids = VehicleIDs()
+        vids.ParseFromString(response)
         test_case_result: Optional[TestResult.Result] = None
         while test_case_result is None:
-            for vehicle in self._get_vehicles():
-                _get_data(self.sid).scenario.bng.poll_sensors(vehicle)
+            self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
             precondition, failure, success = _get_verification()
             if precondition is KPValue.FALSE:
                 test_case_result = TestResult.Result.SKIPPED
@@ -410,32 +391,28 @@ class Simulation:
                 test_case_result = TestResult.Result.SUCCEEDED
             else:
                 self._request_control_avs(vids.vids)
-                do_get_request("localhost", app.config["PORT"], "/sim/steps", {
-                    "sid": self.serialized_sid,
-                    "steps": ai_frequency
-                })
+                freq = Num()
+                freq.num = ai_frequency
+                self.send_message_to_sim_node(b"steps", [self.serialized_sid, freq.SerializeToString()])
         result = TestResult()
         result.result = test_case_result
-        do_get_request("localhost", app.config["PORT"], "/sim/stop", {
-            "sid": self.serialized_sid,
-            "result": result.SerializeToString()
-        })
+        self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()], 10)
 
     @static_vars(port=64256)
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
-        from app import app
         from redis import Redis
         from threading import Thread
+        from config import BEAMNG_INSTALL_FOLDER, BEAMNG_LEVEL_NAME
 
-        home_path = app.config["BEAMNG_INSTALL_FOLDER"]
+        home_path = BEAMNG_INSTALL_FOLDER
         user_path = self.get_user_path()
 
-        with Redis().lock("start sim lock"):
+        with Redis().lock("start sim lock 5"):
             while not Simulation._is_port_available(Simulation._start_simulation.port):
                 Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
             bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
             authors = ", ".join(test_case.authors)
-            bng_scenario = Scenario(app.config["BEAMNG_LEVEL_NAME"], self.sid.sid, authors=authors)
+            bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self.sid.sid, authors=authors)
 
             test_case.scenario.add_all(bng_scenario)
             bng_scenario.make(bng_instance)
@@ -462,9 +439,13 @@ class Simulation:
         runtime_thread = Thread(target=Simulation._run_runtime_verification, args=(self, test_case.aiFrequency))
         runtime_thread.daemon = True
         runtime_thread.start()
-        return bng_scenario, ExtThread(runtime_thread)
+
+        while not runtime_thread.ident:  # Wait for the Thread to get an ID
+            pass
+        return bng_scenario, ExtThread(runtime_thread.ident)
 
 
+@static_vars(counter=0)
 def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]:
     """
     This method starts the actual simulation in a separate thread.
@@ -472,17 +453,14 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]
     thread before calling _start_simulation(...).
     """
     import dill as pickle
-    from random import randint
-    from app import _get_simulation
-    from aiExchangeMessages_pb2 import SimulationID
     from shutil import rmtree
-    while True:  # Pseudo "do-while"-loop
-        sid = "sim_" + str(randint(0, 10000))
-        sid_obj = SimulationID()
-        sid_obj.sid = sid
-        if _get_simulation(sid_obj) is None:
-            break
-    sim = Simulation(sid, pickle.dumps(test_case))
+    from common import send_message, create_client
+    from config import SIM_NODE_PORT, FIRST_SIM_PORT
+    sid = SimulationID()
+    response = send_message(create_client("localhost", SIM_NODE_PORT), b"generateSid", [], None)
+    sid.ParseFromString(response)
+    sim = Simulation(sid, pickle.dumps(test_case), FIRST_SIM_PORT + run_test_case.counter)
+    run_test_case.counter += 1  # FIXME Add a lock?
     # Make sure there is no folder of previous tests having the same sid that got not propery removed
     rmtree(sim.get_user_path(), ignore_errors=True)
     bng_scenario, thread = sim._start_simulation(test_case)

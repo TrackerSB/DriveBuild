@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from socket import socket
 from threading import Thread
 
 from beamngpy import Scenario
@@ -17,7 +18,7 @@ class AIStatus(Enum):
 
 class ExtThread:
     """
-    Wraps a Thread and allows to set the returned status manually.
+    Wraps a Thread such that this object can be serialized and allows to set the returned status manually.
     """
 
     _state_to_str = {
@@ -26,12 +27,19 @@ class ExtThread:
         2: "TEST SKIPPED"
     }
 
-    def __init__(self, thread: Thread):
-        self.thread = thread
+    def __init__(self, thread_id: int):
+        self.thread_id = thread_id
         self._status = None
 
+    def _get_thread(self) -> Thread:
+        import threading
+        for thread in threading.enumerate():
+            if thread.ident == self.thread_id:
+                return thread
+        raise ValueError("Could not find thread with id " + str(self.thread_id) + ".")
+
     def state(self) -> str:
-        thread_state = "ALIVE" if self.thread.is_alive() else "NOT ALIVE"
+        thread_state = "ALIVE" if self._get_thread().is_alive() else "NOT ALIVE"
         return thread_state if self._status is None else ExtThread._state_to_str[self._status]
 
     def get_state(self) -> TestResult.Result:

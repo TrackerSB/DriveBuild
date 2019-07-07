@@ -63,6 +63,7 @@ def run_tests(zip_file_content: bytes) -> Dict[Simulation, SimulationData]:
     from common import eprint
     from sim_controller import run_test_case
     from transformer import transform
+    from datetime import datetime
     folder = extract_test_cases(zip_file_content)
     mapping_stubs, valid_crit_defs = get_valid(folder)
 
@@ -73,6 +74,7 @@ def run_tests(zip_file_content: bytes) -> Dict[Simulation, SimulationData]:
         for test_case, crit_def, env_def in test_cases:
             sim, bng_scenario, thread = run_test_case(test_case)
             data = SimulationData(bng_scenario, thread, crit_def, env_def)
+            data.start_time = datetime.now()
             simulations[sim] = data
     else:
         eprint("Some criteria definitions have no valid environment.")

@@ -1,22 +1,15 @@
-# General
-DEBUG = True
-SECRET_KEY = "DriveBuild forever"
-SESSION_TYPE = "filesystem"
-PORT = 5001
+# Main application (address for clients)
+MAIN_APP_HOST = "localhost"
+MAIN_APP_PORT = 5001
 
-# Main application
-# FIXME Insert address of main application server
-MAIN_HOST = "localhost"
-MAIN_PORT = 5000
+# SimNode (address for communication of node to itself)
+SIM_NODE_PORT = 5002
+FIRST_SIM_PORT = 40000
 
 # BeamNG
 BEAMNG_INSTALL_FOLDER = "G:\\gitrepos\\beamng-research_unlimited\\trunk"
 BEAMNG_USER_PATH = "G:\\gitrepos\\BeamNG_user_path"
 BEAMNG_LEVEL_NAME = "smallgrid"
-
-# Redis
-REDIS_HOST = "localhost"
-REDIS_PORT = 6379
 
 # Database
 DBMS_HOST = "dbms.infosun.fim.uni-passau.de"
