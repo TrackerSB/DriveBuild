@@ -1,4 +1,5 @@
 from socket import socket
+from threading import Lock
 from typing import List, Set, Optional, Tuple, Callable
 
 from beamngpy import Scenario
@@ -398,43 +399,43 @@ class Simulation:
         result.result = test_case_result
         self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()], 10)
 
-    @static_vars(port=64256)
+    @static_vars(port=64256, lock=Lock())
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
-        from redis import Redis
         from threading import Thread
         from config import BEAMNG_INSTALL_FOLDER, BEAMNG_LEVEL_NAME
 
         home_path = BEAMNG_INSTALL_FOLDER
         user_path = self.get_user_path()
 
-        with Redis().lock("start sim lock 5"):
-            while not Simulation._is_port_available(Simulation._start_simulation.port):
-                Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
-            bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
-            authors = ", ".join(test_case.authors)
-            bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self.sid.sid, authors=authors)
+        Simulation._start_simulation.lock.acquire()
+        while not Simulation._is_port_available(Simulation._start_simulation.port):
+            Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
+        bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
+        authors = ", ".join(test_case.authors)
+        bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self.sid.sid, authors=authors)
 
-            test_case.scenario.add_all(bng_scenario)
-            bng_scenario.make(bng_instance)
+        test_case.scenario.add_all(bng_scenario)
+        bng_scenario.make(bng_instance)
 
-            # Make manual changes to the scenario files
-            self._make_lanes_visible()
-            self._add_waypoints_to_scenario(test_case.scenario.participants)
-            self._enable_participant_movements(test_case.scenario.participants)
-            waypoints = set()
-            for wps in [p.movement for p in test_case.scenario.participants]:
-                for wp in wps:
-                    if wp.id is not None:  # FIXME Not all waypoints are added
-                        waypoints.add(wp.id)
-            self._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
+        # Make manual changes to the scenario files
+        self._make_lanes_visible()
+        self._add_waypoints_to_scenario(test_case.scenario.participants)
+        self._enable_participant_movements(test_case.scenario.participants)
+        waypoints = set()
+        for wps in [p.movement for p in test_case.scenario.participants]:
+            for wp in wps:
+                if wp.id is not None:  # FIXME Not all waypoints are added
+                    waypoints.add(wp.id)
+        self._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
 
-            bng_instance.open(launch=True)
-            bng_instance.load_scenario(bng_scenario)
-            bng_instance.set_steps_per_second(test_case.stepsPerSecond)
-            bng_instance.set_deterministic()
-            bng_instance.hide_hud()
-            bng_instance.start_scenario()
-            bng_instance.pause()
+        bng_instance.open(launch=True)
+        bng_instance.load_scenario(bng_scenario)
+        bng_instance.set_steps_per_second(test_case.stepsPerSecond)
+        bng_instance.set_deterministic()
+        bng_instance.hide_hud()
+        bng_instance.start_scenario()
+        bng_instance.pause()
+        Simulation._start_simulation.lock.release()
 
         runtime_thread = Thread(target=Simulation._run_runtime_verification, args=(self, test_case.aiFrequency))
         runtime_thread.daemon = True
