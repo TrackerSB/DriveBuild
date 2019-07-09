@@ -1,12 +1,9 @@
 pg8000
 dill
 werkzeug
-redis==2.10.6
-celery==3.1.25
 protobuf
 shapely
 numpy
 beamngpy>=1.12
 lxml
-flask
 dataclasses
