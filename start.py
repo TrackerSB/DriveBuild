@@ -231,8 +231,10 @@ if __name__ == "__main__":
                 response.state = SimStateResponse.SimState.FINISHED
             elif task.get_state() is TestResult.Result.SKIPPED:
                 response.state = SimStateResponse.SimState.CANCELED
+            elif TestResult.Result.UNKNOWN:
+                response.state = SimStateResponse.SimState.ERRORED
             else:
-                response.state = SimStateResponse.SimState.ERRORED  # FIXME Can this be assumed?
+                raise NotImplementedError("Handling the TestResult state " + task.state() + " is not implemented, yet.")
         else:
             response.state = SimStateResponse.SimState.RUNNING
         return response
@@ -341,6 +343,13 @@ if __name__ == "__main__":
         return data_response
 
 
+    def _result(sid: SimulationID) -> TestResult:
+        result = TestResult()
+        state = _get_data(sid).simulation_task.get_state()
+        result.result = state if state else TestResult.Result.UNKNOWN
+        return result
+
+
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:
         if action == b"runTests":
             result = _run_tests(data[0])
@@ -370,6 +379,10 @@ if __name__ == "__main__":
             request = DataRequest()
             request.ParseFromString(data[2])
             result = _request_data(sid, vid, request)
+        elif action == b"result":
+            sid = SimulationID()
+            sid.ParseFromString(data[0])
+            result = _result(sid)
         else:
             message = "The action \"" + action.decode() + "\" is unknown."
             eprint(message)
