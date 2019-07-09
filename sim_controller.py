@@ -4,7 +4,7 @@ from typing import List, Set, Optional, Tuple, Callable
 
 from beamngpy import Scenario
 
-from aiExchangeMessages_pb2 import DataResponse, SimulationID
+from aiExchangeMessages_pb2 import SimulationID
 from dbtypes import ExtThread
 from dbtypes.beamng import DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue, CriteriaFunction
@@ -50,7 +50,7 @@ class Simulation:
         import os
         return os.path.join("" if in_lua else self.get_user_path(), pid + "_movementMode")
 
-    def _get_current_movement_mode(self, pid: str) -> Optional[MovementMode]:
+    def get_current_movement_mode(self, pid: str) -> Optional[MovementMode]:
         import os
         mode_file_path = self._get_movement_mode_file_path(pid, False)
         if os.path.exists(mode_file_path):
@@ -69,9 +69,9 @@ class Simulation:
         NOTE Pass -1 as idx when passing mode of the initial state of the participant
         """
         lua_av_command = []
-        if next_mode is MovementMode.MANUAL:
+        if next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
             # FIXME Recognize speed (limits)
-            if current_mode is not MovementMode.MANUAL:
+            if current_mode not in [MovementMode.MANUAL, MovementMode.TRAINING]:
                 remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, participant.movement[idx + 1:])) + "'}"
                 lua_av_command.extend([
                     "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
@@ -254,53 +254,16 @@ class Simulation:
         from common import eprint
         from aiExchangeMessages_pb2 import VehicleID
         for v in vids:
-            mode = self._get_current_movement_mode(v)
-            if mode is MovementMode.AUTONOMOUS:
+            mode = self.get_current_movement_mode(v)
+            if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING]:
                 vid = VehicleID()
                 vid.vid = v
                 # FIXME Determine appropriate timeout
                 message = self.send_message_to_sim_node(b"requestAiFor", [self.serialized_sid, vid.SerializeToString()])
                 print(message)
                 # FIXME Continue...
-            elif mode is MovementMode.TRAINING:
-                eprint("TRAINING not implemented, yet.")  # FIXME Implement training mode
             elif not mode:
                 eprint("There is current MovementMode set.")
-
-    def attach_request_data(self, data: DataResponse.Data, vid: str, rid: str) -> None:
-        from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
-            DamageRequest
-        from PIL import Image
-        from io import BytesIO
-        vehicle = self._get_vehicle(vid)
-        sensor_data = vehicle.poll_request(rid)
-        request_type = type(vehicle.requests[rid])
-        if request_type is PositionRequest:
-            data.position.x = sensor_data[0]
-            data.position.y = sensor_data[1]
-        elif request_type is SpeedRequest:
-            data.speed.speed = sensor_data
-        elif request_type is SteeringAngleRequest:
-            data.angle.angle = sensor_data
-        elif request_type is LidarRequest:
-            data.lidar.points.extend(sensor_data)
-        elif request_type is CameraRequest:
-            def _convert(image: Image) -> bytes:
-                bytes_arr = BytesIO()
-                image.save(bytes_arr, format="PNG")
-                return bytes_arr.getvalue()
-
-            data.camera.color = _convert(sensor_data[0])
-            data.camera.annotated = _convert(sensor_data[1])
-            data.camera.depth = _convert(sensor_data[2])
-        elif request_type is DamageRequest:
-            data.damage.is_damaged = sensor_data
-        # elif request_type is LightRequest:
-        # response = DataResponse.Data.Light()
-        # FIXME Add DataResponse.Data.Light
-        else:
-            raise NotImplementedError(
-                "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """

@@ -19,12 +19,13 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
     from aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
-        VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control
+    VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse
     from common import eprint, create_client, process_messages, accept_at_server, create_server
     from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT, DBMS_HOST, DBMS_PORT, DBMS_NAME, DBMS_USERNAME, \
         DBMS_PASSWORD
     from threading import Thread
     from dbtypes import AIStatus, SimulationData
+    from dbtypes.scheme import MovementMode
     from typing import Optional, List, Tuple, Dict
     from socket import socket
     from db_handler import DBConnection
@@ -287,10 +288,57 @@ if __name__ == "__main__":
         if command_type == "simCommand":
             _control_sim(sid, control.simCommand.command, True)
         elif command_type == "avCommand":
-            _control_av(sid, vid, control.avCommand)
+            sim = _get_simulation(sid)
+            if sim and sim.get_current_movement_mode(vid.vid) is MovementMode.MANUAL:
+                _control_av(sid, vid, control.avCommand)
         else:
             raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
         return Void()
+
+
+    def attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
+        from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
+            DamageRequest
+        from PIL import Image
+        from io import BytesIO
+        vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
+        sensor_data = vehicle.poll_request(rid)
+        request_type = type(vehicle.requests[rid])
+        if request_type is PositionRequest:
+            data.position.x = sensor_data[0]
+            data.position.y = sensor_data[1]
+        elif request_type is SpeedRequest:
+            data.speed.speed = sensor_data
+        elif request_type is SteeringAngleRequest:
+            data.angle.angle = sensor_data
+        elif request_type is LidarRequest:
+            data.lidar.points.extend(sensor_data)
+        elif request_type is CameraRequest:
+            def _convert(image: Image) -> bytes:
+                bytes_arr = BytesIO()
+                image.save(bytes_arr, format="PNG")
+                return bytes_arr.getvalue()
+
+            data.camera.color = _convert(sensor_data[0])
+            data.camera.annotated = _convert(sensor_data[1])
+            data.camera.depth = _convert(sensor_data[2])
+        elif request_type is DamageRequest:
+            data.damage.is_damaged = sensor_data
+        # elif request_type is LightRequest:
+        # response = DataResponse.Data.Light()
+        # FIXME Add DataResponse.Data.Light
+        else:
+            raise NotImplementedError(
+                "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
+
+
+    def _request_data(sid: SimulationID, vid: VehicleID, request: DataRequest) -> DataResponse:
+        print("ai_request_data: enter")
+        data_response = DataResponse()
+        for rid in request.request_ids:
+            attach_request_data(data_response.data[rid], sid, vid, rid)
+        print("ai_request_data: leave")
+        return data_response
 
 
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:
@@ -314,6 +362,14 @@ if __name__ == "__main__":
             control = Control()
             control.ParseFromString(data[2])
             result = _control(sid, vid, control)
+        elif action == b"requestData":
+            sid = SimulationID()
+            sid.ParseFromString(data[0])
+            vid = VehicleID()
+            vid.ParseFromString(data[1])
+            request = DataRequest()
+            request.ParseFromString(data[2])
+            result = _request_data(sid, vid, request)
         else:
             message = "The action \"" + action.decode() + "\" is unknown."
             eprint(message)
