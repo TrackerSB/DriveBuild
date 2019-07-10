@@ -19,21 +19,20 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
     from aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
-    VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse
+        VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User
     from common import eprint, create_client, process_messages, accept_at_server, create_server
-    from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT, DBMS_HOST, DBMS_PORT, DBMS_NAME, DBMS_USERNAME, \
-        DBMS_PASSWORD
+    from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT
     from threading import Thread
     from dbtypes import AIStatus, SimulationData
     from dbtypes.scheme import MovementMode
-    from typing import Optional, List, Tuple, Dict
+    from typing import Optional, List, Tuple, Dict, Any
     from socket import socket
-    from db_handler import DBConnection
+    from db_handler import get_connection
     from sim_controller import Simulation
 
     _all_tasks: Dict[Simulation, SimulationData] = {}
     _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
-    _dbms_connection = DBConnection(DBMS_HOST, DBMS_PORT, DBMS_NAME, DBMS_USERNAME, DBMS_PASSWORD)
+    _dbms_connection = get_connection()
 
 
     def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
@@ -183,7 +182,7 @@ if __name__ == "__main__":
 
 
     # Actions to be requested by main application
-    def _run_tests(file_content: bytes) -> SimulationIDs:
+    def _run_tests(file_content: bytes, user: User) -> SimulationIDs:
         from tc_manager import run_tests
         from warnings import warn
         new_tasks = run_tests(file_content)
@@ -194,6 +193,7 @@ if __name__ == "__main__":
                 _all_tasks.pop(_get_simulation(sim.sid))
             sids.sids.append(sim.sid.sid)
             sim.start_server(_handle_simulation_message)
+            data.user = user
             _all_tasks[sim] = data
         return sids
 
@@ -257,6 +257,34 @@ if __name__ == "__main__":
         vehicle.control(throttle=command.accelerate, steering=command.steer, brake=command.brake, parkingbrake=0)
 
 
+    def store_data(data: SimulationData) -> Any:
+        from lxml.etree import tostring
+        from aiExchangeMessages_pb2 import TestResult
+        result = data.simulation_task.get_state()
+        if result is TestResult.Result.SUCCEEDED:
+            successful = "TRUE"
+        elif result is TestResult.Result.FAILED:
+            successful = "FALSE"
+        elif result is TestResult.Result.SKIPPED:
+            successful = "NULL"
+        else:
+            raise ValueError("SimulationData can not be stored (data.simulation_task.state() = " + str(result) + ").")
+        args = {
+            "environment": tostring(data.environment.getroot()),
+            "criteria": tostring(data.criteria),
+            "successful": successful,
+            "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "username": data.user.username
+        }
+        _dbms_connection.run_query("""
+        INSERT INTO tests VALUES
+            (DEFAULT, :environment, :criteria, :successful, :started, :finished, :username)
+        """, args)
+        print(id)
+        return None
+
+
     def _control_sim(sid: SimulationID, command: int, direct: bool) -> None:
         """
         Stops a simulation and sets its associated test result.
@@ -284,7 +312,7 @@ if __name__ == "__main__":
 
         data.scenario.bng.close()
         data.end_time = datetime.now()
-        _dbms_connection.store_data(data)
+        store_data(data)
 
         # Make sure there is no inference with following tests
         sim = _get_simulation(sid)
@@ -360,7 +388,9 @@ if __name__ == "__main__":
 
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:
         if action == b"runTests":
-            result = _run_tests(data[0])
+            user = User()
+            user.ParseFromString(data[1])
+            result = _run_tests(data[0], user)
         elif action == b"status":
             sid = SimulationID()
             sid.ParseFromString(data[0])

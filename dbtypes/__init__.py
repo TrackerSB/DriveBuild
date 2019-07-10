@@ -7,7 +7,7 @@ from beamngpy import Scenario
 from dataclasses import dataclass
 from lxml.etree import _ElementTree
 
-from aiExchangeMessages_pb2 import TestResult
+from aiExchangeMessages_pb2 import TestResult, User
 
 
 class AIStatus(Enum):
@@ -64,3 +64,4 @@ class SimulationData:
     start_time: datetime = None
     end_time: datetime = None
     result: TestResult.Result = None
+    user: User = None
