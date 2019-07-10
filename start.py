@@ -119,13 +119,16 @@ if __name__ == "__main__":
 
 
     def _request_ai_for(sid: SimulationID, vid: VehicleID) -> Void:
+        print("sim_request_ai_for: enter")
         while sid.sid not in _registered_ais \
                 or vid.vid not in _registered_ais[sid.sid] \
                 or _registered_ais[sid.sid][vid.vid] is not AIStatus.WAITING:
             pass
         _registered_ais[sid.sid][vid.vid] = AIStatus.REQUESTED
+        print("sim_request_ai_for: requested")
         while _registered_ais[sid.sid][vid.vid] is AIStatus.REQUESTED:
             pass
+        print("sim_request_ai_for: leave")
         void = Void()
         void.message = "Simulation " + sid.sid + " finished requesting vehicle " + vid.vid + "."
         return void
@@ -133,6 +136,7 @@ if __name__ == "__main__":
 
     def _handle_simulation_message(conn: socket, _: Tuple[str, int]) -> None:
         from common import process_messages
+        print("_handle_simulation_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
             if action == b"vids":
@@ -217,6 +221,7 @@ if __name__ == "__main__":
 
 
     def _wait_for_simulator_request(sid: SimulationID, vid: VehicleID) -> SimStateResponse:
+        print("ai_wait_for_simulator_request: enter")
         if sid.sid not in _registered_ais:
             _registered_ais[sid.sid] = {}
         _registered_ais[sid.sid][vid.vid] = AIStatus.WAITING
@@ -237,6 +242,7 @@ if __name__ == "__main__":
                 raise NotImplementedError("Handling the TestResult state " + task.state() + " is not implemented, yet.")
         else:
             response.state = SimStateResponse.SimState.RUNNING
+        print("ai_wait_for_simulator_request: leave")
         return response
 
 
@@ -286,6 +292,7 @@ if __name__ == "__main__":
 
 
     def _control(sid: SimulationID, vid: VehicleID, control: Control) -> Void:
+        print("ai_control: enter")
         command_type = control.WhichOneof("command")
         if command_type == "simCommand":
             _control_sim(sid, control.simCommand.command, True)
@@ -295,6 +302,7 @@ if __name__ == "__main__":
                 _control_av(sid, vid, control.avCommand)
         else:
             raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
+        print("ai_control: leave")
         return Void()
 
 
@@ -400,4 +408,5 @@ if __name__ == "__main__":
         main_app_client.close()
         exit(1)
     sim_node_main_app_com = Thread(target=process_messages, args=(main_app_client, _handle_main_app_message))
+    print("_handle_main_app_message --> " + str(main_app_client.getsockname()))
     sim_node_main_app_com.start()

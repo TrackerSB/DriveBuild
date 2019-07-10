@@ -343,9 +343,11 @@ class Simulation:
         response = self.send_message_to_sim_node(b"vids", [self.serialized_sid])
         vids = VehicleIDs()
         vids.ParseFromString(response)
+        print("vids: " + str(vids.vids))
         test_case_result: Optional[TestResult.Result] = None
         while test_case_result is None:
             self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
+            print("Polled sensors")
             precondition, failure, success = _get_verification()
             if precondition is KPValue.FALSE:
                 test_case_result = TestResult.Result.SKIPPED
