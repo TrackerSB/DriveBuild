@@ -1,5 +1,6 @@
 from typing import List, Tuple, Optional
 
+from beamngpy import BeamNGpy
 from lxml.etree import _ElementTree, _Element
 
 
@@ -7,12 +8,14 @@ class ScenarioBuilder:
     from beamngpy import Scenario
     from dbtypes.scheme import Lane, Obstacle, Participant
 
-    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant]):
+    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant],
+                 time_of_day: Optional[float]):
         if participants is None:
             participants = list()
         self.lanes = lanes
         self.obstacles = obstacles
         self.participants = participants
+        self.time_of_day = time_of_day
 
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
@@ -67,7 +70,12 @@ class ScenarioBuilder:
         """
         pass
 
+    def set_time_of_day_to(self, instance: BeamNGpy):
+        if self.time_of_day:
+            instance.set_tod(self.time_of_day)
+
     def add_all(self, scenario: Scenario) -> None:
+        # NOTE time_of_day has to be called on the BeamNG instance not on a scenario
         self.add_lanes_to_scenario(scenario)
         self.add_obstacles_to_scenario(scenario)
         self.add_participants_to_scenario(scenario)
@@ -194,4 +202,8 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 None if target_speed is None else float(target_speed)
             ))
         participants.append(Participant(pid, initial_state, CarModel[node.get("model")].value, movements, ai_requests))
-    return ScenarioBuilder(lanes, obstacles, participants)
+
+        time_of_day_elements = xpath(node, "db:timeOfDay")
+        time_of_day = float(time_of_day_elements[0].text) if time_of_day_elements else None
+
+    return ScenarioBuilder(lanes, obstacles, participants, time_of_day)

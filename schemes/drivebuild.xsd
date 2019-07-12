@@ -7,6 +7,15 @@
         <xs:complexType>
             <xs:all>
                 <xs:element name="author" type="xs:string"/>
+                <xs:element name="timeOfDay" minOccurs="0">
+                    <xs:simpleType>
+                        <xs:restriction base="nonNegativeDecimal">
+                            <xs:minInclusive value="0"/>
+                            <xs:maxInclusive value="1"/>
+                            <xs:fractionDigits value="2"/>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:element>
 
                 <xs:element name="lanes" minOccurs="0">
                     <xs:complexType>

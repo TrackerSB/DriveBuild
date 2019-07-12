@@ -397,6 +397,7 @@ class Simulation:
         bng_instance.load_scenario(bng_scenario)
         bng_instance.set_steps_per_second(test_case.stepsPerSecond)
         bng_instance.set_deterministic()
+        test_case.scenario.set_time_of_day_to(bng_instance)
         bng_instance.hide_hud()
         bng_instance.start_scenario()
         bng_instance.pause()
