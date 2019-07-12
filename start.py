@@ -212,7 +212,7 @@ if __name__ == "__main__":
                 elif task.get_state() is TestResult.Result.SKIPPED:
                     sim_state.state = SimStateResponse.SimState.CANCELED
                 else:
-                    sim_state.state = SimStateResponse.SimState.ERRORED  # FIXME Can this be assumed?
+                    sim_state.state = SimStateResponse.SimState.TIMEOUT
             else:
                 sim_state.state = SimStateResponse.SimState.RUNNING
         else:
@@ -237,7 +237,7 @@ if __name__ == "__main__":
             elif task.get_state() is TestResult.Result.SKIPPED:
                 response.state = SimStateResponse.SimState.CANCELED
             elif TestResult.Result.UNKNOWN:
-                response.state = SimStateResponse.SimState.ERRORED
+                response.state = SimStateResponse.SimState.TIMEOUT
             else:
                 raise NotImplementedError("Handling the TestResult state " + task.state() + " is not implemented, yet.")
         else:
@@ -262,26 +262,28 @@ if __name__ == "__main__":
         from aiExchangeMessages_pb2 import TestResult
         result = data.simulation_task.get_state()
         if result is TestResult.Result.SUCCEEDED:
-            successful = "TRUE"
+            successful_value = "TRUE"
         elif result is TestResult.Result.FAILED:
-            successful = "FALSE"
+            successful_value = "FALSE"
         elif result is TestResult.Result.SKIPPED:
-            successful = "NULL"
+            successful_value = "NULL"
         else:
-            raise ValueError("SimulationData can not be stored (data.simulation_task.state() = " + str(result) + ").")
-        args = {
-            "environment": tostring(data.environment.getroot()),
-            "criteria": tostring(data.criteria),
-            "successful": successful,
-            "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "username": data.user.username
-        }
-        _dbms_connection.run_query("""
-        INSERT INTO tests VALUES
-            (DEFAULT, :environment, :criteria, :successful, :started, :finished, :username)
-        """, args)
-        print(id)
+            eprint("SimulationData can not be stored (data.simulation_task.state() = " + str(result) + ").")
+            successful_value = None
+        if successful_value:
+            args = {
+                "environment": tostring(data.environment.getroot()),
+                "criteria": tostring(data.criteria),
+                "successful": successful_value,
+                "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "username": data.user.username
+            }
+            _dbms_connection.run_query("""
+            INSERT INTO tests VALUES
+                (DEFAULT, :environment, :criteria, :successful, :started, :finished, :username)
+            """, args)
+            print(id)
         return None
 
 

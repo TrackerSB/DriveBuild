@@ -318,12 +318,9 @@ class Simulation:
         return test_case.precondition_fct, test_case.failure_fct, test_case.success_fct
 
     def _run_runtime_verification(self, ai_frequency: int) -> None:
-        """
-        NOTE Since this method is a celery task it must not call anything that depends on a Scenario neither directly
-        nor indirectly.
-        """
-        # FIXME Update the previous note to match threading instead of celery
         from aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num
+        from config import TIMEOUT
+        from datetime import datetime
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
             from aiExchangeMessages_pb2 import VerificationResult
@@ -344,8 +341,9 @@ class Simulation:
         vids = VehicleIDs()
         vids.ParseFromString(response)
         print("vids: " + str(vids.vids))
-        test_case_result: Optional[TestResult.Result] = None
-        while test_case_result is None:
+        test_case_result: TestResult.Result = TestResult.Result.UNKNOWN
+        start_time = datetime.now()
+        while test_case_result is TestResult.Result.UNKNOWN and (datetime.now() - start_time).seconds < TIMEOUT:
             self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
             print("Polled sensors")
             precondition, failure, success = _get_verification()
