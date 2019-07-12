@@ -182,3 +182,33 @@ class LightRequest(AiRequest):
     def read_sensor_cache_of(self, vehicle: Vehicle) -> CarLight:
         # FIXME How to get lights?
         return None
+
+
+class LaneCenterDistanceRequest(AiRequest):
+    from beamngpy import Vehicle
+    from typing import Tuple, List, Optional, Any
+    # from dbtypes.scheme import Lane  # FIXME Cannot import Lane
+
+    def __init__(self, rid: str, lanes: List[Any]):  # lanes: List[Lane]
+        from shapely.geometry import LineString, Point
+        super().__init__(rid)
+        self.lane_lines = {}
+        for lane in lanes:
+            lane_line = LineString([Point(node.position[0], node.position[1]) for node in lane.nodes])
+            self.lane_lines[lane.lid] = lane_line
+
+    def add_sensor_to(self, vehicle: Vehicle) -> None:
+        pass
+
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[Optional[str], Optional[float]]:
+        from shapely.geometry import Point
+        x, y, _ = vehicle.state["pos"]
+        car_pos = Point(x, y)
+        lane_id = None
+        min_dist = None
+        for cur_lane_id, cur_lane in self.lane_lines.items():
+            cur_dist = cur_lane.distance(car_pos)
+            if not min_dist or cur_dist < min_dist:
+                lane_id = cur_lane_id
+                min_dist = cur_dist
+        return lane_id, min_dist

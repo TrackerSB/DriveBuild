@@ -246,6 +246,13 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+    <xs:element name="laneCenterDistance" substitutionGroup="aiData">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="aiData"/>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 
     <!-- Basic dbtypes -->
     <xs:attributeGroup name="positionAttributes">
