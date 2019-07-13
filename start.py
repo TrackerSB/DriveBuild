@@ -431,6 +431,14 @@ if __name__ == "__main__":
             sid = SimulationID()
             sid.ParseFromString(data[0])
             result = _result(sid)
+        elif action == b"requestSocket":
+            client = create_client(MAIN_APP_HOST, MAIN_APP_PORT)
+            client_thread = Thread(target=process_messages, args=(client, _handle_main_app_message))
+            client_thread.daemon = True
+            print("_handle_main_app_message --> " + str(client.getsockname()))
+            client_thread.start()
+            result = Void()
+            result.message = "Connected another client socket to the main app."
         else:
             message = "The action \"" + action.decode() + "\" is unknown."
             eprint(message)
