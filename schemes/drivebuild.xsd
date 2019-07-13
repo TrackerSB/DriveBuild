@@ -165,7 +165,8 @@
                 <xs:extension base="obstacle">
                     <xs:attribute name="width" type="positiveDecimal" use="required"/>
                     <xs:attribute name="length" type="positiveDecimal" use="required"/>
-                    <xs:attribute name="upperLength" type="positiveDecimal" use="required"/> <!-- FIXME Negative heights? -->
+                    <xs:attribute name="upperLength" type="positiveDecimal"
+                                  use="required"/> <!-- FIXME Negative heights? -->
                     <xs:attribute name="upperWidth" type="positiveDecimal" use="required"/>
                 </xs:extension>
             </xs:complexContent>
