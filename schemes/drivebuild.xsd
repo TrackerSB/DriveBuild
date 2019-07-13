@@ -403,17 +403,7 @@
 
     <!-- Lane criterion -->
     <xs:attributeGroup name="lane">
-        <xs:attribute name="onLane" use="required">
-            <xs:simpleType>
-                <xs:union memberTypes="xs:IDREF">
-                    <xs:simpleType>
-                        <xs:restriction base="xs:string">
-                            <xs:enumeration value="offroad"/>
-                        </xs:restriction>
-                    </xs:simpleType>
-                </xs:union>
-            </xs:simpleType>
-        </xs:attribute>
+        <xs:attribute name="onLane" use="required" type="xs:string"/>
     </xs:attributeGroup>
     <xs:element name="scLane" substitutionGroup="stateCondition">
         <xs:complexType>
