@@ -205,7 +205,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             ))
         participants.append(Participant(pid, initial_state, CarModel[node.get("model")].value, movements, ai_requests))
 
-        time_of_day_elements = xpath(node, "db:timeOfDay")
-        time_of_day = float(time_of_day_elements[0].text) if time_of_day_elements else None
+    time_of_day_elements = xpath(env, "db:timeOfDay")
+    time_of_day = float(time_of_day_elements[0].text) if time_of_day_elements else None
 
     return ScenarioBuilder(lanes, obstacles, participants, time_of_day)
