@@ -118,16 +118,16 @@ if __name__ == "__main__":
 
 
     def _request_ai_for(sid: SimulationID, vid: VehicleID) -> Void:
-        print("sim_request_ai_for: enter")
+        print("sim_request_ai_for: enter for " + vid.vid)
         while sid.sid not in _registered_ais \
                 or vid.vid not in _registered_ais[sid.sid] \
                 or _registered_ais[sid.sid][vid.vid] is not AIStatus.WAITING:
             pass
         _registered_ais[sid.sid][vid.vid] = AIStatus.REQUESTED
-        print("sim_request_ai_for: requested")
+        print("sim_request_ai_for: requested for " + vid.vid)
         while _registered_ais[sid.sid][vid.vid] is AIStatus.REQUESTED:
             pass
-        print("sim_request_ai_for: leave")
+        print("sim_request_ai_for: leave for " + vid.vid)
         void = Void()
         void.message = "Simulation " + sid.sid + " finished requesting vehicle " + vid.vid + "."
         return void
@@ -224,7 +224,7 @@ if __name__ == "__main__":
 
 
     def _wait_for_simulator_request(sid: SimulationID, vid: VehicleID) -> SimStateResponse:
-        print("ai_wait_for_simulator_request: enter")
+        print("ai_wait_for_simulator_request: enter for " + vid.vid)
         if sid.sid not in _registered_ais:
             _registered_ais[sid.sid] = {}
         _registered_ais[sid.sid][vid.vid] = AIStatus.WAITING
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                 raise NotImplementedError("Handling the TestResult state " + task.state() + " is not implemented, yet.")
         else:
             response.state = SimStateResponse.SimState.RUNNING
-        print("ai_wait_for_simulator_request: leave")
+        print("ai_wait_for_simulator_request: leave for " + vid.vid)
         return response
 
 
@@ -325,7 +325,7 @@ if __name__ == "__main__":
 
 
     def _control(sid: SimulationID, vid: VehicleID, control: Control) -> Void:
-        print("ai_control: enter")
+        print("ai_control: enter for " + vid.vid)
         command_type = control.WhichOneof("command")
         if command_type == "simCommand":
             _control_sim(sid, control.simCommand.command, True)
@@ -335,7 +335,7 @@ if __name__ == "__main__":
                 _control_av(sid, vid, control.avCommand)
         else:
             raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
-        print("ai_control: leave")
+        print("ai_control: leave for " + vid.vid)
         return Void()
 
 
@@ -379,11 +379,11 @@ if __name__ == "__main__":
 
 
     def _request_data(sid: SimulationID, vid: VehicleID, request: DataRequest) -> DataResponse:
-        print("ai_request_data: enter")
+        print("ai_request_data: enter for " + vid.vid)
         data_response = DataResponse()
         for rid in request.request_ids:
             attach_request_data(data_response.data[rid], sid, vid, rid)
-        print("ai_request_data: leave")
+        print("ai_request_data: leave for " + vid.vid)
         return data_response
 
 
