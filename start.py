@@ -185,16 +185,19 @@ if __name__ == "__main__":
     def _run_tests(file_content: bytes, user: User) -> SimulationIDs:
         from tc_manager import run_tests
         from warnings import warn
-        new_tasks = run_tests(file_content)
         sids = SimulationIDs()
-        for sim, data in new_tasks.items():
-            if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
-                warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
-                _all_tasks.pop(_get_simulation(sim.sid))
-            sids.sids.append(sim.sid.sid)
-            sim.start_server(_handle_simulation_message)
-            data.user = user
-            _all_tasks[sim] = data
+        try:
+            new_tasks = run_tests(file_content)
+            for sim, data in new_tasks.items():
+                if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
+                    warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
+                    _all_tasks.pop(_get_simulation(sim.sid))
+                sids.sids.append(sim.sid.sid)
+                sim.start_server(_handle_simulation_message)
+                data.user = user
+                _all_tasks[sim] = data
+        except Exception as e:
+            sids.sids.append(str(e))
         return sids
 
 
