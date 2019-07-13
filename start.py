@@ -336,7 +336,9 @@ if __name__ == "__main__":
         else:
             raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
         print("ai_control: leave for " + vid.vid)
-        return Void()
+        result = Void()
+        result.message = "Controlled vehicle " + vid.vid + " in simulation " + sid.sid + "."
+        return result
 
 
     def attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
