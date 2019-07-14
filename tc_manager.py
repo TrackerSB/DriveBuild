@@ -9,14 +9,14 @@ from sim_controller import Simulation
 
 def extract_test_cases(zip_content: bytes) -> str:
     import zipfile
-    from tempfile import mkdtemp, mkstemp
-    _, zip_file_name = mkstemp(suffix=".zip")
-    zip_file = open(zip_file_name, "w+b")
-    zip_file.write(zip_content)
-    zip_ref = zipfile.ZipFile(zip_file, 'r')
-    temp_dir = mkdtemp(prefix="drivebuild_")
-    zip_ref.extractall(temp_dir)
-    zip_ref.close()
+    from tempfile import mkdtemp, NamedTemporaryFile
+    from os import remove
+    with NamedTemporaryFile(mode="w+b", suffix=".zip", delete=False) as zip_file:
+        zip_file.write(zip_content)
+    with zipfile.ZipFile(zip_file.name, "r") as zip_ref:
+        temp_dir = mkdtemp(prefix="drivebuild_")
+        zip_ref.extractall(temp_dir)
+    remove(zip_file.name)
     return temp_dir
 
 
