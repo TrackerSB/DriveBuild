@@ -50,7 +50,11 @@ if __name__ == "__main__":
 
 
     def _is_simulation_running(sid: SimulationID) -> bool:
-        return _get_data(sid).scenario.bng is not None
+        while True:  # Pseudo "do-while"-loop
+            data = _get_data(sid)
+            if data:
+                break
+        return data.scenario.bng is not None
 
 
     # Actions to be requested by the SimNode itself (not a simulation)
@@ -232,9 +236,10 @@ if __name__ == "__main__":
         while _is_simulation_running(sid) and _registered_ais[sid.sid][vid.vid] is AIStatus.WAITING:
             pass
         response = SimStateResponse()
-        scenario = _get_data(sid).scenario
+        data = _get_data(sid)
+        scenario = data.scenario
         if scenario.bng is None:
-            task = _get_data(sid).simulation_task
+            task = data.simulation_task
             if task.get_state() is TestResult.Result.SUCCEEDED or task.get_state() is TestResult.Result.FAILED:
                 response.state = SimStateResponse.SimState.FINISHED
             elif task.get_state() is TestResult.Result.SKIPPED:
@@ -391,8 +396,12 @@ if __name__ == "__main__":
 
     def _result(sid: SimulationID) -> TestResult:
         result = TestResult()
-        state = _get_data(sid).simulation_task.get_state()
-        result.result = state if state else TestResult.Result.UNKNOWN
+        data = _get_data(sid)
+        if data:
+            state = data.simulation_task.get_state()
+            result.result = state if state else TestResult.Result.UNKNOWN
+        else:
+            result.result = TestResult.Result.UNKNOWN
         return result
 
 
