@@ -201,6 +201,7 @@ if __name__ == "__main__":
                 data.user = user
                 _all_tasks[sim] = data
         except Exception as e:
+            eprint(e)
             sids.sids.append(str(e))
         return sids
 
