@@ -406,6 +406,16 @@ if __name__ == "__main__":
         return result
 
 
+    def _get_running_tests(user: User) -> SimulationIDs:
+        sids = SimulationIDs()
+        for sim, data in _all_tasks.items():
+            if data.user.username == user.username:
+                sids.sids.append(sim.sid.sid)
+        if not sids.sids:  # Avoid an empty message
+            sids.sids.append("No simulations running")
+        return sids
+
+
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:
         if action == b"runTests":
             user = User()
@@ -449,6 +459,10 @@ if __name__ == "__main__":
             client_thread.start()
             result = Void()
             result.message = "Connected another client socket to the main app."
+        elif action == b"runningTests":
+            user = User()
+            user.ParseFromString(data[0])
+            result = _get_running_tests(user)
         else:
             message = "The action \"" + action.decode() + "\" is unknown."
             eprint(message)
