@@ -7,7 +7,7 @@ from lxml.etree import _ElementTree, _Element
 XSD_FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "schemes", "drivebuild.xsd")
 SCHEMA_ROOT = etree.parse(XSD_FILE_PATH)
 SCHEMA = etree.XMLSchema(SCHEMA_ROOT)
-PARSER = etree.XMLParser(schema=SCHEMA, recover=False)
+PARSER = etree.XMLParser(schema=SCHEMA, recover=False, remove_comments=True)
 NAMESPACES = {
     "db": "http://drivebuild.com"
 }
