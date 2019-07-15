@@ -469,6 +469,14 @@ if __name__ == "__main__":
             user = User()
             user.ParseFromString(data[0])
             result = _get_running_tests(user)
+        elif action == b"stop":
+            sid = SimulationID()
+            sid.ParseFromString(data[0])
+            test_result = TestResult()
+            test_result.ParseFromString(data[1])
+            _control_sim(sid, test_result.result, False)
+            result = Void()
+            result.message = "Stopped simulation " + sid.sid + "."
         else:
             message = "The action \"" + action.decode() + "\" is unknown."
             eprint(message)
