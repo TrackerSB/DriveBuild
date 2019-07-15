@@ -347,7 +347,7 @@ if __name__ == "__main__":
         return result
 
 
-    def attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
+    def _attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
             DamageRequest, LaneCenterDistanceRequest
         from PIL import Image
@@ -390,7 +390,7 @@ if __name__ == "__main__":
         print("ai_request_data: enter for " + vid.vid)
         data_response = DataResponse()
         for rid in request.request_ids:
-            attach_request_data(data_response.data[rid], sid, vid, rid)
+            _attach_request_data(data_response.data[rid], sid, vid, rid)
         print("ai_request_data: leave for " + vid.vid)
         return data_response
 
