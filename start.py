@@ -101,10 +101,13 @@ if __name__ == "__main__":
 
     def _poll_sensors(sid: SimulationID) -> Void:
         vehicles = _get_data(sid).scenario.vehicles.keys()
-        for vehicle in vehicles:
-            _get_data(sid).scenario.bng.poll_sensors(vehicle)
         void = Void()
-        void.message = "Polled all registered sensors of simulation " + sid.sid + "."
+        if _is_simulation_running(sid):
+            for vehicle in vehicles:
+                _get_data(sid).scenario.bng.poll_sensors(vehicle)
+            void.message = "Polled all registered sensors of simulation " + sid.sid + "."
+        else:
+            void.message = "Skipped polling sensors since simulation " + sid.sid + " is not running anymore."
         return void
 
 
@@ -165,9 +168,12 @@ if __name__ == "__main__":
                 sid.ParseFromString(data[0])
                 steps = Num()
                 steps.ParseFromString(data[1])
-                _get_data(sid).scenario.bng.step(steps.num)
                 result = Void()
-                result.message = "Simulated " + str(steps.num) + " steps in simulation " + sid.sid + "."
+                if _is_simulation_running(sid):
+                    _get_data(sid).scenario.bng.step(steps.num)
+                    result.message = "Simulated " + str(steps.num) + " steps in simulation " + sid.sid + "."
+                else:
+                    result.message = "Simulation " + sid.sid + " is not running anymore."
             elif action == b"stop":
                 sid = SimulationID()
                 sid.ParseFromString(data[0])
