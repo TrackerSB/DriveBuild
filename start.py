@@ -415,7 +415,7 @@ if __name__ == "__main__":
     def _get_running_tests(user: User) -> SimulationIDs:
         sids = SimulationIDs()
         for sim, data in _all_tasks.items():
-            if data.user.username == user.username:
+            if _is_simulation_running(sim.sid) and data.user.username == user.username:
                 sids.sids.append(sim.sid.sid)
         if not sids.sids:  # Avoid an empty message
             sids.sids.append("No simulations running")
