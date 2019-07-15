@@ -305,7 +305,7 @@ if __name__ == "__main__":
     def _control_sim(sid: SimulationID, command: int, direct: bool) -> None:
         """
         Stops a simulation and sets its associated test result.
-        :param sim: The simulation to stop.
+        :param sid: The simulation to stop.
         :param command: The command controlling the simulation or the test result of the simulation to set. (Its "type" is
         Union[Control.SimCommand.Command, TestResult.Result]).
         :param direct: True only if the given command represents a Control.SimCommand.Command controlling the simulation
