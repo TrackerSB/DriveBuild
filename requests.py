@@ -212,3 +212,45 @@ class LaneCenterDistanceRequest(AiRequest):
                 lane_id = cur_lane_id
                 min_dist = cur_dist
         return lane_id, min_dist
+
+
+class CarToLaneAngleRequest(AiRequest):
+    from beamngpy import Vehicle
+    from typing import Tuple, Any, List
+    # from dbtypes.scheme import Lane  # FIXME Can not import Lane
+
+    def __init__(self, rid: str, lanes: List[Any]):  # lanes: List[Lane]
+        from shapely.geometry import LineString, Point
+        super().__init__(rid)
+        self.lane_lines = {}
+        for lane in lanes:
+            lane_line = LineString([Point(node.position[0], node.position[1]) for node in lane.nodes])
+            self.lane_lines[lane.lid] = lane_line
+
+    def add_sensor_to(self, vehicle: Vehicle) -> None:
+        pass
+
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[str, float]:
+        from shapely.geometry import Point, LineString
+        from numpy import rad2deg, arctan2
+        x, y, _ = vehicle.state["pos"]
+        car_pos = Point(x, y)
+        x_dir, y_dir, _ = vehicle.state["dir"]
+        car_angle = rad2deg(arctan2(y_dir, x_dir))
+        min_dist = None
+        angle_diff = None
+        lane_id = None
+        for cur_lane_id, cur_lane in self.lane_lines.items():
+            cur_coord = cur_lane.coords[0]
+            for i in range(1, len(cur_lane.coords)):
+                next_coord = cur_lane.coords[i]
+                cur_line = LineString([cur_coord, next_coord])
+                cur_dist = cur_line.distance(car_pos)
+                if not min_dist or cur_dist < min_dist:
+                    min_dist = cur_dist
+                    diff = next_coord - cur_coord
+                    cur_angle = rad2deg(arctan2(diff[1], diff[0]))
+                    angle_diff = car_angle - cur_angle
+                    lane_id = cur_lane_id
+                cur_coord = next_coord
+        return lane_id, angle_diff

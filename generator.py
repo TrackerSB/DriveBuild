@@ -89,7 +89,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from util.xml import xpath, get_tag_name
     from common import eprint, static_vars
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
-        LidarRequest, LaneCenterDistanceRequest
+        LidarRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest
 
     lanes: List[Lane] = list()
 
@@ -188,6 +188,8 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 ai_requests.append(LidarRequest(rid, radius))
             elif tag == "laneCenterDistance":
                 ai_requests.append(LaneCenterDistanceRequest(rid, lanes))
+            elif tag == "carToLaneAngle":
+                ai_requests.append(CarToLaneAngleRequest(rid, lanes))
             else:
                 eprint("The tag " + tag + " is not supported, yet.")
         movements = list()
