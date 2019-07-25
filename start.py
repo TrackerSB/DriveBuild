@@ -19,7 +19,8 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
     from aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
-        VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User
+    VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, \
+    MaySimulationIDs
     from common import eprint, create_client, process_messages, accept_at_server, create_server
     from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT
     from threading import Thread
@@ -192,10 +193,10 @@ if __name__ == "__main__":
 
 
     # Actions to be requested by main application
-    def _run_tests(file_content: bytes, user: User) -> SimulationIDs:
+    def _run_tests(file_content: bytes, user: User) -> MaySimulationIDs:
         from tc_manager import run_tests
         from warnings import warn
-        sids = SimulationIDs()
+        sids = MaySimulationIDs()
         try:
             new_tasks = run_tests(file_content)
             for sim, data in new_tasks.items():
@@ -208,7 +209,7 @@ if __name__ == "__main__":
                 _all_tasks[sim] = data
         except Exception as e:
             eprint(e)
-            sids.sids.append(str(e))
+            sids.message.message = str(e)
         return sids
 
 
