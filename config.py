@@ -1,6 +1,6 @@
 # Main application (address for clients)
 MAIN_APP_HOST = "defender.fim.uni-passau.de"
-MAIN_APP_PORT = 8383
+MAIN_APP_PORT = 5001
 
 # SimNode (address for communication of node to itself)
 SIM_NODE_PORT = 5002
