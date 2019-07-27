@@ -20,10 +20,14 @@ class ScenarioBuilder:
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         for lane in self.lanes:
-            road = Road('a_asphalt_01_a', rid=lane.lid)
-            road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
-            road.nodes.extend(road_nodes)
-            scenario.add_road(road)
+            main_road = Road('a_asphalt_01_a', rid=lane.lid)
+            main_road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
+            main_road.nodes.extend(main_road_nodes)
+            scenario.add_road(main_road)
+            center_line = Road('metal_orange_plate_a')
+            center_line_nodes = [(lp.position[0], lp.position[1], 0.01, 0.3) for lp in lane.nodes]
+            center_line.nodes.extend(center_line_nodes)
+            scenario.add_road(center_line)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
