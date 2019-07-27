@@ -250,6 +250,20 @@ class Simulation:
         prefab_file.writelines(new_content)
         prefab_file.close()
 
+    def _annotate_objects(self) -> None:
+        prefab_file_path = self._get_prefab_path()
+        prefab_file = open(prefab_file_path, "r")
+        original_content = prefab_file.readlines()
+        prefab_file.close()
+        new_content = list()
+        for line in original_content:
+            if "overObjects" in line:
+                new_content.append("annotation = \"STREET\";\n")
+            new_content.append(line)
+        prefab_file = open(prefab_file_path, "w")
+        prefab_file.writelines(new_content)
+        prefab_file.close()
+
     def _request_control_avs(self, vids: List[str]) -> None:
         from common import eprint
         from aiExchangeMessages_pb2 import VehicleID
@@ -382,6 +396,7 @@ class Simulation:
 
         # Make manual changes to the scenario files
         self._make_lanes_visible()
+        self._annotate_objects()
         self._add_waypoints_to_scenario(test_case.scenario.participants)
         self._enable_participant_movements(test_case.scenario.participants)
         waypoints = set()
