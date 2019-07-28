@@ -19,8 +19,8 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
     from aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
-    VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, \
-    MaySimulationIDs
+        VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, \
+        MaySimulationIDs
     from common import eprint, create_client, process_messages, accept_at_server, create_server
     from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT
     from threading import Thread
@@ -308,10 +308,11 @@ if __name__ == "__main__":
         """
         Stops a simulation and sets its associated test result.
         :param sid: The simulation to stop.
-        :param command: The command controlling the simulation or the test result of the simulation to set. (Its "type" is
-        Union[Control.SimCommand.Command, TestResult.Result]).
+        :param command: The command controlling the simulation or the test result of the simulation to set. (Its "type"
+        is Union[Control.SimCommand.Command, TestResult.Result]).
         :param direct: True only if the given command represents a Control.SimCommand.Command controlling the simulation
-        directly. False only if the given command represents a TestResult.Result to be associated with the given simulation.
+        directly. False only if the given command represents a TestResult.Result to be associated with the given
+        simulation.
         """
         from shutil import rmtree
         from datetime import datetime
