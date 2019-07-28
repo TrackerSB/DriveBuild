@@ -28,21 +28,22 @@ class ScenarioBuilder:
             main_road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
             main_road.nodes.extend(main_road_nodes)
             scenario.add_road(main_road)
-            center_line = Road('line_yellow')
-            center_line_nodes = [(lp.position[0], lp.position[1], 0, self.add_lanes_to_scenario.line_width)
-                                 for lp in lane.nodes]
-            center_line.nodes.extend(center_line_nodes)
-            scenario.add_road(center_line)
-            for side in ["right", "left"]:
-                side_line = Road('line_white')
-                # FIXME Recognize changing widths
-                side_line_coords = LineString([[lp.position[0], lp.position[1]] for lp in lane.nodes]) \
-                    .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width, side=side) \
-                    .coords.xy
-                side_line_nodes = [(lln[0], lln[1], 0, self.add_lanes_to_scenario.line_width)
-                                   for lln in zip(side_line_coords[0], side_line_coords[1])]
-                side_line.nodes.extend(side_line_nodes)
-                scenario.add_road(side_line)
+            if lane.markings:
+                center_line = Road('line_yellow')
+                center_line_nodes = [(lp.position[0], lp.position[1], 0, self.add_lanes_to_scenario.line_width)
+                                     for lp in lane.nodes]
+                center_line.nodes.extend(center_line_nodes)
+                scenario.add_road(center_line)
+                for side in ["right", "left"]:
+                    side_line = Road('line_white')
+                    # FIXME Recognize changing widths
+                    side_line_coords = LineString([[lp.position[0], lp.position[1]] for lp in lane.nodes]) \
+                        .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width, side=side) \
+                        .coords.xy
+                    side_line_nodes = [(lln[0], lln[1], 0, self.add_lanes_to_scenario.line_width)
+                                       for lln in zip(side_line_coords[0], side_line_coords[1])]
+                    side_line.nodes.extend(side_line_nodes)
+                    scenario.add_road(side_line)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
@@ -130,7 +131,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 lambda n: LaneNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
                 lane_segment_nodes
             )
-        ), node.get("id", _generate_lane_id()))
+        ), node.get("markings", False), node.get("id", _generate_lane_id()))
         lanes.append(lane)
 
     def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, float, Optional[str]]:

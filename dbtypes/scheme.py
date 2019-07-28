@@ -116,6 +116,7 @@ class LaneNode:
 @dataclass
 class Lane:
     nodes: List[LaneNode]
+    markings: bool
     lid: Optional[str] = None
 
 
