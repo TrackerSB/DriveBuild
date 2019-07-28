@@ -130,7 +130,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 lambda n: LaneNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
                 lane_segment_nodes
             )
-        ), node.get("db:id", _generate_lane_id()))
+        ), node.get("id", _generate_lane_id()))
         lanes.append(lane)
 
     def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, float, Optional[str]]:
