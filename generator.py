@@ -3,6 +3,8 @@ from typing import List, Tuple, Optional
 from beamngpy import BeamNGpy
 from lxml.etree import _ElementTree, _Element
 
+from common import static_vars
+
 
 class ScenarioBuilder:
     from beamngpy import Scenario
@@ -17,17 +19,30 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
+    @static_vars(line_width=0.3)
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
+        from shapely.geometry import LineString
         for lane in self.lanes:
             main_road = Road('a_asphalt_01_a', rid=lane.lid)
             main_road_nodes = [(lp.position[0], lp.position[1], 0, lp.width) for lp in lane.nodes]
             main_road.nodes.extend(main_road_nodes)
             scenario.add_road(main_road)
-            center_line = Road('metal_orange_plate_a')
-            center_line_nodes = [(lp.position[0], lp.position[1], 0.01, 0.3) for lp in lane.nodes]
+            center_line = Road('line_yellow')
+            center_line_nodes = [(lp.position[0], lp.position[1], 0, self.add_lanes_to_scenario.line_width)
+                                 for lp in lane.nodes]
             center_line.nodes.extend(center_line_nodes)
             scenario.add_road(center_line)
+            for side in ["right", "left"]:
+                side_line = Road('line_white')
+                # FIXME Recognize changing widths
+                side_line_coords = LineString([[lp.position[0], lp.position[1]] for lp in lane.nodes]) \
+                    .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width, side=side) \
+                    .coords.xy
+                side_line_nodes = [(lln[0], lln[1], 0, self.add_lanes_to_scenario.line_width)
+                                   for lln in zip(side_line_coords[0], side_line_coords[1])]
+                side_line.nodes.extend(side_line_nodes)
+                scenario.add_road(side_line)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump

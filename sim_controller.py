@@ -231,18 +231,39 @@ class Simulation:
         self._generate_lua_file(participants)
         self._add_lua_triggers(participants)
 
+    @static_vars(render_priorities={"asphalt_01_a": 10, "line_white": 9, "line_yellow": 9})
     def _make_lanes_visible(self) -> None:
         """
-        Workaround for making lanes visible.
+        Workaround for making lanes visible and rendered correctly.
         """
         prefab_file_path = self._get_prefab_path()
         prefab_file = open(prefab_file_path, "r")
         original_content = prefab_file.readlines()
         prefab_file.close()
+
         new_content = list()
+
+        def _add_material_specific_lines(material: str) -> None:
+            if material in ["a_asphalt_01_a"]:
+                new_content.append("renderPriority = \"10\";\n")
+                new_content.append("textureLength = \"2.5\";\n")
+                new_content.append("distanceFade = \"1000 1000\";\n")
+            elif material in ["line_white", "line_yellow"]:
+                new_content.append("renderPriority = \"9\";\n")
+                new_content.append("textureLength = \"16\";\n")
+                new_content.append("distanceFade = \"0 0\";\n")
+
         for line in original_content:
             if "overObjects" in line:
                 new_line = line.replace("0", "1")
+            elif "renderPriority" in line \
+                    or "textureLength" in line \
+                    or "distanceFade" in line:  # Remove generated material specific lines
+                new_line = ""
+            elif "Material" in line:  # Add custom material specific lines
+                material = line.split("=")[1].strip()[1:-2]
+                _add_material_specific_lines(material)
+                new_line = line
             else:
                 new_line = line
             new_content.append(new_line)
