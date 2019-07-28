@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Union
 
 from lxml.etree import _ElementTree
 
@@ -59,23 +59,22 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     return scenario_mapping_stubs, valid_crit_defs
 
 
-def run_tests(zip_file_content: bytes) -> Dict[Simulation, SimulationData]:
-    from common import eprint
+def run_tests(zip_file_content: bytes) -> Union[Dict[Simulation, SimulationData], str]:
     from sim_controller import run_test_case
     from transformer import transform
     from datetime import datetime
     folder = extract_test_cases(zip_file_content)
     mapping_stubs, valid_crit_defs = get_valid(folder)
 
-    simulations = {}
     mapping = associate_criteria(mapping_stubs, valid_crit_defs)
     if mapping:
+        simulations = {}
         test_cases = transform(mapping)
         for test_case, crit_def, env_def in test_cases:
             sim, bng_scenario, thread = run_test_case(test_case)
             data = SimulationData(bng_scenario, thread, crit_def, env_def)
             data.start_time = datetime.now()
             simulations[sim] = data
+        return simulations
     else:
-        eprint("Some criteria definitions have no valid environment.")
-    return simulations
+        return "No valid tests submitted."

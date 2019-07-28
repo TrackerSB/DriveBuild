@@ -199,14 +199,22 @@ if __name__ == "__main__":
         may_sids = MaySimulationIDs()
         try:
             new_tasks = run_tests(file_content)
-            for sim, data in new_tasks.items():
-                if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
-                    warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
-                    _all_tasks.pop(_get_simulation(sim.sid))
-                may_sids.sids.sids.append(sim.sid.sid)
-                sim.start_server(_handle_simulation_message)
-                data.user = user
-                _all_tasks[sim] = data
+            if isinstance(new_tasks, Dict):
+                if new_tasks:
+                    for sim, data in new_tasks.items():
+                        if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
+                            warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
+                            _all_tasks.pop(_get_simulation(sim.sid))
+                        may_sids.sids.sids.append(sim.sid.sid)
+                        sim.start_server(_handle_simulation_message)
+                        data.user = user
+                        _all_tasks[sim] = data
+                else:
+                    may_sids.message.message = "There were no valid tests to run."
+            elif isinstance(new_tasks, str):
+                may_sids.message.message = new_tasks
+            else:
+                eprint("Can not handle a _run_tests(...) result of type " + str(type(new_tasks)) + ".")
         except Exception as e:
             eprint("_run_tests(...) errored:")
             eprint(e)
