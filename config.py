@@ -10,4 +10,4 @@ TIMEOUT = 600  # In seconds
 # BeamNG
 BEAMNG_INSTALL_FOLDER = "G:\\gitrepos\\beamng-research_unlimited\\trunk"
 BEAMNG_USER_PATH = "G:\\gitrepos\\BeamNG_user_path"
-BEAMNG_LEVEL_NAME = "smallgrid"
+BEAMNG_LEVEL_NAME = "drivebuild"
