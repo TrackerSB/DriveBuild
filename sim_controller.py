@@ -72,9 +72,12 @@ class Simulation:
         if next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
             # FIXME Recognize speed (limits)
             if current_mode not in [MovementMode.MANUAL, MovementMode.TRAINING]:
-                remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, participant.movement[idx + 1:])) + "'}"
+                remaining_waypoints = participant.movement[idx + 1:]
+                while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
+                    remaining_waypoints.append(remaining_waypoints[-1])
+                ser_remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, remaining_waypoints)) + "'}"
                 lua_av_command.extend([
-                    "    sh.setAiRoute('" + participant.id + "', " + remaining_waypoints + ")"
+                    "    sh.setAiRoute('" + participant.id + "', " + ser_remaining_waypoints + ")"
                 ])
         else:
             lua_av_command.extend([
