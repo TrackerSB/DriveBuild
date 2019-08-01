@@ -116,8 +116,8 @@
                 </xs:element>
 
                 <xs:element name="precondition" type="criterion" minOccurs="0"/>
-                <xs:element name="success" type="criterion" minOccurs="0"/>
-                <xs:element name="failure" type="criterion" minOccurs="0"/>
+                <xs:element name="success" type="criterion" minOccurs="1"/>
+                <xs:element name="failure" type="criterion" minOccurs="1"/>
             </xs:all>
         </xs:complexType>
     </xs:element>
