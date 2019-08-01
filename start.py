@@ -416,7 +416,7 @@ if __name__ == "__main__":
             except ValueError:
                 error = Error()
                 error.message = "There is no request with ID \"" + rid + "\"."
-                data_response[rid] = None
+                data_response[rid] = error
         print("ai_request_data: leave for " + vid.vid)
         return data_response
 
