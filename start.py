@@ -371,43 +371,52 @@ if __name__ == "__main__":
         from io import BytesIO
         vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
         sensor_data = vehicle.poll_request(rid)
-        request_type = type(vehicle.requests[rid])
-        if request_type is PositionRequest:
-            data.position.x = sensor_data[0]
-            data.position.y = sensor_data[1]
-        elif request_type is SpeedRequest:
-            data.speed.speed = sensor_data
-        elif request_type is SteeringAngleRequest:
-            data.angle.angle = sensor_data
-        elif request_type is LidarRequest:
-            data.lidar.points.extend(sensor_data)
-        elif request_type is CameraRequest:
-            def _convert(image: Image) -> bytes:
-                bytes_arr = BytesIO()
-                image.save(bytes_arr, format="PNG")
-                return bytes_arr.getvalue()
+        if rid in vehicle.requests:
+            request_type = type(vehicle.requests[rid])
+            if request_type is PositionRequest:
+                data.position.x = sensor_data[0]
+                data.position.y = sensor_data[1]
+            elif request_type is SpeedRequest:
+                data.speed.speed = sensor_data
+            elif request_type is SteeringAngleRequest:
+                data.angle.angle = sensor_data
+            elif request_type is LidarRequest:
+                data.lidar.points.extend(sensor_data)
+            elif request_type is CameraRequest:
+                def _convert(image: Image) -> bytes:
+                    bytes_arr = BytesIO()
+                    image.save(bytes_arr, format="PNG")
+                    return bytes_arr.getvalue()
 
-            data.camera.color = _convert(sensor_data[0])
-            data.camera.annotated = _convert(sensor_data[1])
-            data.camera.depth = _convert(sensor_data[2])
-        elif request_type is DamageRequest:
-            data.damage.is_damaged = sensor_data
-        elif request_type is LaneCenterDistanceRequest:
-            data.lane_center_distance.lane_id = sensor_data[0]
-            data.lane_center_distance.distance = sensor_data[1]
-        # elif request_type is LightRequest:
-        # response = DataResponse.Data.Light()
-        # FIXME Add DataResponse.Data.Light
+                data.camera.color = _convert(sensor_data[0])
+                data.camera.annotated = _convert(sensor_data[1])
+                data.camera.depth = _convert(sensor_data[2])
+            elif request_type is DamageRequest:
+                data.damage.is_damaged = sensor_data
+            elif request_type is LaneCenterDistanceRequest:
+                data.lane_center_distance.lane_id = sensor_data[0]
+                data.lane_center_distance.distance = sensor_data[1]
+            # elif request_type is LightRequest:
+            # response = DataResponse.Data.Light()
+            # FIXME Add DataResponse.Data.Light
+            else:
+                raise NotImplementedError(
+                    "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
         else:
-            raise NotImplementedError(
-                "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
+            raise ValueError("There is no request called \"" + rid + "\".")
 
 
     def _request_data(sid: SimulationID, vid: VehicleID, request: DataRequest) -> DataResponse:
+        from aiExchangeMessages_pb2 import Error
         print("ai_request_data: enter for " + vid.vid)
         data_response = DataResponse()
         for rid in request.request_ids:
-            _attach_request_data(data_response.data[rid], sid, vid, rid)
+            try:
+                _attach_request_data(data_response.data[rid], sid, vid, rid)
+            except ValueError:
+                error = Error()
+                error.message = "There is no request with ID \"" + rid + "\"."
+                data_response[rid] = None
         print("ai_request_data: leave for " + vid.vid)
         return data_response
 
