@@ -1,16 +1,20 @@
 import re
 from typing import List, Optional
 
+from lxml.etree import _ElementTree
+
 from common import static_vars
 from dbtypes.scheme import Position
 
 
-def is_dbe(filename_path: str) -> bool:
-    return filename_path.endswith(".dbe.xml")
+def is_dbe(root: _ElementTree) -> bool:
+    from util.xml import get_tag_name
+    return get_tag_name(root.getroot()) == "environment"
 
 
-def is_dbc(filename_path: str) -> bool:
-    return filename_path.endswith(".dbc.xml")
+def is_dbc(root: _ElementTree) -> bool:
+    from util.xml import get_tag_name
+    return get_tag_name(root.getroot()) == "criteria"
 
 
 @static_vars(pattern=re.compile(r"\(-?\d+,-?\d+\)(;\(-?\d+,-?\d+\))*"))

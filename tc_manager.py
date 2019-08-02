@@ -49,10 +49,10 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     for filename in os.listdir(folder):
         path = os.path.join(folder, filename)
         valid, root = validate(path)
-        if valid:
-            if is_dbe(path):
+        if valid and root:
+            if is_dbe(root):
                 scenario_mapping_stubs.append(ScenarioMapping(root, filename))
-            elif is_dbc(path):
+            elif is_dbc(root):
                 valid_crit_defs.append(root)
             else:
                 eprint(filename + " is valid but can not be classified as DBE or DBC.")

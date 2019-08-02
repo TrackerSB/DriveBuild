@@ -17,8 +17,8 @@ def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
     from util import is_dbe, is_dbc
     valid: bool = False
     parsed: Optional[_ElementTree] = None
-    if is_dbe(path) or is_dbc(path):
-        parsed = etree.parse(path, PARSER)  # May throw XMLSyntaxException
+    parsed = etree.parse(path, PARSER)  # May throw XMLSyntaxException
+    if is_dbe(parsed) or is_dbc(parsed):
         valid = SCHEMA.validate(parsed)
     return valid, parsed
 
