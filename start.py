@@ -407,14 +407,13 @@ if __name__ == "__main__":
 
 
     def _request_data(sid: SimulationID, vid: VehicleID, request: DataRequest) -> DataResponse:
-        from aiExchangeMessages_pb2 import Error
         print("ai_request_data: enter for " + vid.vid)
         data_response = DataResponse()
         for rid in request.request_ids:
             try:
                 _attach_request_data(data_response.data[rid], sid, vid, rid)
             except ValueError:
-                error = Error()
+                error = DataResponse.Error()
                 error.message = "There is no request with ID \"" + rid + "\"."
                 data_response[rid] = error
         print("ai_request_data: leave for " + vid.vid)
