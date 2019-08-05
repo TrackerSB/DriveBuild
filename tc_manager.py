@@ -34,8 +34,11 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
                     found_env = True
                     break
             if not found_env:
-                eprint("A criteria definition needs " + needed_environment
-                       + " but it is either not valid or not available")
+                if needed_environment:
+                    eprint("A criteria definition needs " + needed_environment
+                           + " but it is either not valid or not available")
+                else:
+                    eprint("A criteria definition is missing a declaration of an associated environment.")
     return [mapping for mapping in mapping_stubs if mapping.crit_defs]
 
 
