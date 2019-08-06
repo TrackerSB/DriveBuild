@@ -431,14 +431,14 @@ if __name__ == "__main__":
         return result
 
 
-    def _get_running_tests(user: User) -> SimulationIDs:
-        sids = SimulationIDs()
+    def _get_running_tests(user: User) -> MaySimulationIDs:
+        may_sids = MaySimulationIDs()
         for sim, data in _all_tasks.items():
             if _is_simulation_running(sim.sid) and data.user.username == user.username:
-                sids.sids.append(sim.sid.sid)
-        if not sids.sids:  # Avoid an empty message
-            sids.sids.append("No simulations running")
-        return sids
+                may_sids.sids.sids.append(sim.sid.sid)
+        if not may_sids.sids.sids:  # Avoid an empty message
+            may_sids.message.message = "No simulations running"
+        return may_sids
 
 
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:
