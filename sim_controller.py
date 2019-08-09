@@ -33,11 +33,11 @@ class Simulation:
             simulation_sim_node_com_server.daemon = True
             simulation_sim_node_com_server.start()
 
-    def send_message_to_sim_node(self, action: bytes, data: List[bytes], timeout: Optional[float] = None) -> bytes:
-        from common import send_message, create_client
+    def send_message_to_sim_node(self, action: bytes, data: List[bytes]) -> bytes:
+        from common import send_request, create_client
         if not self._sim_node_client_socket:
             self._sim_node_client_socket = create_client("localhost", self.port)
-        return send_message(self._sim_node_client_socket, action, data, timeout)
+        return send_request(self._sim_node_client_socket, action, data)
 
     def _get_movement_mode_file_path(self, pid: str, in_lua: bool) -> str:
         """
@@ -364,7 +364,7 @@ class Simulation:
             from aiExchangeMessages_pb2 import VerificationResult
             from common import eprint
             # FIXME Determine appropriate timeout
-            response = self.send_message_to_sim_node(b"verify", [self.serialized_sid], 10)
+            response = self.send_message_to_sim_node(b"verify", [self.serialized_sid])
             if response:
                 verification = VerificationResult()
                 verification.ParseFromString(response)
@@ -398,7 +398,7 @@ class Simulation:
                 self.send_message_to_sim_node(b"steps", [self.serialized_sid, freq.SerializeToString()])
         result = TestResult()
         result.result = test_case_result
-        self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()], 10)
+        self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()])
 
     @static_vars(port=64256, lock=Lock())
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
@@ -458,10 +458,10 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]
     """
     import dill as pickle
     from shutil import rmtree
-    from common import send_message, create_client
+    from common import create_client, send_request
     from config import SIM_NODE_PORT, FIRST_SIM_PORT
     sid = SimulationID()
-    response = send_message(create_client("localhost", SIM_NODE_PORT), b"generateSid", [], None)
+    response = send_request(create_client("localhost", SIM_NODE_PORT), b"generateSid", [])
     sid.ParseFromString(response)
     sim = Simulation(sid, pickle.dumps(test_case), FIRST_SIM_PORT + run_test_case.counter)
     run_test_case.counter += 1  # FIXME Add a lock?

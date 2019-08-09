@@ -19,9 +19,8 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
     from aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
-        VehicleID, Num, SimulationIDs, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, \
-        MaySimulationIDs
-    from common import eprint, create_client, process_messages, accept_at_server, create_server
+        VehicleID, Num, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, MaySimulationIDs
+    from common import eprint, create_client, process_requests, accept_at_server, create_server
     from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT
     from threading import Thread
     from dbtypes import AIStatus, SimulationData
@@ -71,7 +70,7 @@ if __name__ == "__main__":
 
 
     def _handle_sim_node_message(conn: socket, _: Tuple[str, int]) -> None:
-        from common import process_message
+        from common import process_request
         print("_handle_sim_node_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
@@ -84,7 +83,7 @@ if __name__ == "__main__":
                 result.message = message
             return result.SerializeToString()
 
-        process_message(conn, _handle_message)
+        process_request(conn, _handle_message)
 
 
     sim_node_sim_node_com = Thread(target=accept_at_server,
@@ -142,7 +141,7 @@ if __name__ == "__main__":
 
 
     def _handle_simulation_message(conn: socket, _: Tuple[str, int]) -> None:
-        from common import process_messages
+        from common import process_requests
         print("_handle_simulation_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
@@ -189,7 +188,7 @@ if __name__ == "__main__":
                 result.message = message
             return result.SerializeToString()
 
-        process_messages(conn, _handle_message)
+        process_requests(conn, _handle_message)
 
 
     # Actions to be requested by main application
@@ -478,7 +477,7 @@ if __name__ == "__main__":
             result = _result(sid)
         elif action == b"requestSocket":
             client = create_client(MAIN_APP_HOST, MAIN_APP_PORT)
-            client_thread = Thread(target=process_messages, args=(client, _handle_main_app_message))
+            client_thread = Thread(target=process_requests, args=(client, _handle_main_app_message))
             client_thread.daemon = True
             print("_handle_main_app_message --> " + str(client.getsockname()))
             client_thread.start()
@@ -512,6 +511,6 @@ if __name__ == "__main__":
         eprint("SimNode was no prefix assigned.")
         main_app_client.close()
         exit(1)
-    sim_node_main_app_com = Thread(target=process_messages, args=(main_app_client, _handle_main_app_message))
+    sim_node_main_app_com = Thread(target=process_requests, args=(main_app_client, _handle_main_app_message))
     print("_handle_main_app_message --> " + str(main_app_client.getsockname()))
     sim_node_main_app_com.start()
