@@ -38,7 +38,8 @@ class ScenarioBuilder:
                     side_line = Road('line_white')
                     # FIXME Recognize changing widths
                     side_line_coords = LineString([[lp.position[0], lp.position[1]] for lp in lane.nodes]) \
-                        .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width, side=side) \
+                        .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width,
+                                         side=side) \
                         .coords.xy
                     side_line_nodes = [(lln[0], lln[1], 0, self.add_lanes_to_scenario.line_width)
                                        for lln in zip(side_line_coords[0], side_line_coords[1])]
