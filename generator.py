@@ -172,19 +172,25 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         upper_width = float(node.get("upperWidth"))
         obstacles.append(Bump(x, y, height, width, length, upper_length, upper_width, oid, x_rot, y_rot, z_rot))
 
+    def _extract_common_state_vals(n: _Element) -> Tuple[MovementMode, Optional[float], Optional[float]]:
+        speed_limit = n.get("speedLimit")
+        target_speed = n.get("speed")
+        return MovementMode[n.get("movementMode")], \
+               None if speed_limit is None else float(speed_limit) / 3.6, \
+               None if target_speed is None else float(target_speed) / 3.6
+
     participants = list()
     participant_nodes = xpath(participants_node, "db:participant")
     for node in participant_nodes:
         pid = node.get("id")
         initial_state_node = xpath(node, "db:initialState")[0]
-        speed_limit = initial_state_node.get("speedLimit")
-        target_speed = initial_state_node.get("speed")
+        common_state_vals = _extract_common_state_vals(initial_state_node)
         initial_state = InitialState(
             (float(initial_state_node.get("x")), float(initial_state_node.get("y"))),
             float(initial_state_node.get("orientation")),
-            MovementMode[initial_state_node.get("movementMode")],
-            None if speed_limit is None else float(speed_limit),
-            None if target_speed is None else float(target_speed)
+            common_state_vals[0],
+            common_state_vals[1],
+            common_state_vals[2]
         )
         ai_requests = list()
         request_nodes = xpath(node, "db:ai/*")
@@ -215,15 +221,14 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         movements = list()
         waypoint_nodes = xpath(node, "db:movement/db:waypoint")
         for wp_node in waypoint_nodes:
-            speed_limit = wp_node.get("speedLimit")
-            target_speed = wp_node.get("speed")
+            common_state_vals = _extract_common_state_vals(initial_state_node)
             movements.append(WayPoint(
                 (float(wp_node.get("x")), float(wp_node.get("y"))),
                 float(wp_node.get("tolerance")),
                 wp_node.get("id"),
-                MovementMode[wp_node.get("movementMode")],
-                None if speed_limit is None else float(speed_limit),
-                None if target_speed is None else float(target_speed)
+                common_state_vals[0],
+                common_state_vals[1],
+                common_state_vals[2]
             ))
         participants.append(Participant(pid, initial_state, CarModel[node.get("model")].value, movements, ai_requests))
 

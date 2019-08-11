@@ -70,15 +70,24 @@ class Simulation:
         """
         lua_av_command = []
         if next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
-            # FIXME Recognize speed (limits)
             if current_mode not in [MovementMode.MANUAL, MovementMode.TRAINING]:
                 remaining_waypoints = participant.movement[idx + 1:]
                 while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
                     remaining_waypoints.append(remaining_waypoints[-1])
                 ser_remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, remaining_waypoints)) + "'}"
-                lua_av_command.extend([
-                    "    sh.setAiRoute('" + participant.id + "', " + ser_remaining_waypoints + ")"
-                ])
+                ai_path_command = "    sh.setAiPath({vehicleName = '" + participant.id + "', " \
+                                  + "waypoints = " + ser_remaining_waypoints
+                speed_limit = remaining_waypoints[0].speed_limit
+                target_speed = remaining_waypoints[0].target_speed
+                # NOTE BeamNG allows to EITHER set a target speed or a speed limit
+                if speed_limit:
+                    ai_path_command = ai_path_command + ", routeSpeed = " + str(speed_limit) + ", " \
+                                      + "routeSpeedMode = 'limit'"
+                elif target_speed:
+                    ai_path_command = ai_path_command + ", routeSpeed = " + str(speed_limit) + ", " \
+                                      + "routeSpeedMode = 'set'"
+                ai_path_command = ai_path_command + "})"
+                lua_av_command.extend([ai_path_command])
         else:
             lua_av_command.extend([
                 "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
