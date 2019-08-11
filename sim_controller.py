@@ -296,7 +296,6 @@ class Simulation:
             if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING]:
                 vid = VehicleID()
                 vid.vid = v
-                # FIXME Determine appropriate timeout
                 message = self.send_message_to_sim_node(b"requestAiFor", [self.serialized_sid, vid.SerializeToString()])
                 print(message)
                 # FIXME Continue...
