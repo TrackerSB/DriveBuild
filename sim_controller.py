@@ -255,29 +255,38 @@ class Simulation:
 
         new_content = list()
 
-        def _add_material_specific_lines(material: str) -> None:
-            if material in ["a_asphalt_01_a"]:
+        def _add_replaced_lane_properties(material: str) -> None:
+            if material in ["road_rubber_sticky"]:
                 new_content.append("renderPriority = \"10\";\n")
                 new_content.append("textureLength = \"2.5\";\n")
                 new_content.append("distanceFade = \"1000 1000\";\n")
+                new_content.append("drivability = \"1\";")
             elif material in ["line_white", "line_yellow"]:
                 new_content.append("renderPriority = \"9\";\n")
                 new_content.append("textureLength = \"16\";\n")
                 new_content.append("distanceFade = \"0 0\";\n")
+                new_content.append("drivability = \"-1\";\n")
 
+        in_lane_segment = False
         for line in original_content:
-            if "overObjects" in line:
-                new_line = line.replace("0", "1")
-            elif "renderPriority" in line \
-                    or "textureLength" in line \
-                    or "distanceFade" in line:  # Remove generated material specific lines
-                new_line = ""
-            elif "Material" in line:  # Add custom material specific lines
-                material = line.split("=")[1].strip()[1:-2]
-                _add_material_specific_lines(material)
-                new_line = line
-            else:
-                new_line = line
+            new_line = line
+            if "new DecalRoad" in line:
+                in_lane_segment = True
+            elif "};" in line:
+                in_lane_segment = False
+            elif in_lane_segment:
+                if "overObjects" in line:  # NOTE Make sure lanes are visible
+                    new_line = line.replace("0", "1")
+                elif "improvedSpline" in line:  # NOTE Make sure markings are drawn nicely
+                    new_line = line.replace("1", "0")
+                elif "renderPriority" in line \
+                        or "textureLength" in line \
+                        or "distanceFade" in line \
+                        or "drivability" in line:  # Remove lane properties to be replaced
+                    new_line = ""
+                elif "Material" in line:  # Add custom material specific lines
+                    material = line.split("=")[1].strip()[1:-2]
+                    _add_replaced_lane_properties(material)
             new_content.append(new_line)
         prefab_file = open(prefab_file_path, "w")
         prefab_file.writelines(new_content)
