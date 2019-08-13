@@ -19,30 +19,53 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
-    @static_vars(line_width=0.3)
+    @static_vars(line_width=0.3, num_nodes=100, smoothness=1000)
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         from shapely.geometry import LineString
+        from scipy.interpolate import splev, splprep
+        from numpy.ma import arange
+        from numpy import repeat
+
+        def _interpolate_nodes(old_x_vals: List[float], old_y_vals: List[float], old_width_vals: List[float],
+                               num_nodes: int) -> Tuple[List[float], List[float], List[float], List[float]]:
+            k = 1 if len(old_x_vals) <= 3 else 3
+            pos_tck, pos_u = splprep([old_x_vals, old_y_vals], s=self.add_lanes_to_scenario.smoothness, k=k)
+            step_size = 1 / num_nodes
+            unew = arange(0, 1 + step_size, step_size)
+            new_x_vals, new_y_vals = splev(unew, pos_tck)
+            z_vals = repeat(0.01, len(unew))
+            width_tck, width_u = splprep([pos_u, old_width_vals], s=self.add_lanes_to_scenario.smoothness, k=k)
+            _, new_width_vals = splev(unew, width_tck)
+            return new_x_vals, new_y_vals, z_vals, new_width_vals
+
         for lane in self.lanes:
+            old_x_vals = [node.position[0] for node in lane.nodes]
+            old_y_vals = [node.position[1] for node in lane.nodes]
+            old_width_vals = [node.width for node in lane.nodes]
             main_road = Road('road_rubber_sticky', rid=lane.lid)
-            main_road_nodes = [(lp.position[0], lp.position[1], 0.01, lp.width) for lp in lane.nodes]
-            main_road.nodes.extend(main_road_nodes)
+            new_x_vals, new_y_vals, z_vals, new_width_vals \
+                = _interpolate_nodes(old_x_vals, old_y_vals, old_width_vals, self.add_lanes_to_scenario.num_nodes)
+            main_nodes = list(zip(new_x_vals, new_y_vals, z_vals, new_width_vals))
+            main_road.nodes.extend(main_nodes)
             scenario.add_road(main_road)
             if lane.markings:
                 center_line = Road('line_yellow')
-                center_line_nodes = [(lp.position[0], lp.position[1], 0.01, self.add_lanes_to_scenario.line_width)
-                                     for lp in lane.nodes]
-                center_line.nodes.extend(center_line_nodes)
+                center_line.nodes.extend(
+                    [(x, y, z, self.add_lanes_to_scenario.line_width) for x, y, z, _ in main_nodes])
                 scenario.add_road(center_line)
                 for side in ["right", "left"]:
                     side_line = Road('line_white')
                     # FIXME Recognize changing widths
-                    side_line_coords = LineString([[lp.position[0], lp.position[1]] for lp in lane.nodes]) \
+                    side_line_coords = LineString(zip(new_x_vals, new_y_vals)) \
                         .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width,
                                          side=side) \
                         .coords.xy
-                    side_line_nodes = [(lln[0], lln[1], 0.01, self.add_lanes_to_scenario.line_width)
-                                       for lln in zip(side_line_coords[0], side_line_coords[1])]
+                    # NOTE The parallel LineString may have a different number of points than initially given
+                    num_side_line_nodes = len(side_line_coords[0])
+                    z_vals = repeat(0.01, num_side_line_nodes)
+                    marking_widths = repeat(self.add_lanes_to_scenario.line_width, num_side_line_nodes)
+                    side_line_nodes = zip(side_line_coords[0], side_line_coords[1], z_vals, marking_widths)
                     side_line.nodes.extend(side_line_nodes)
                     scenario.add_road(side_line)
 
