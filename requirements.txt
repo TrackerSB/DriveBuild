@@ -1,8 +1,8 @@
+numpy
+scipy
 beamngpy>=1.12
-dataclasses
 dill
 lxml
-numpy
 pg8000
 protobuf
 shapely
