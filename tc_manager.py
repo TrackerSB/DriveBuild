@@ -26,7 +26,7 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
     from util.xml import xpath
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
-            needed_environment = element.text
+            needed_environment = element.text.strip()
             found_env = False
             for stub in mapping_stubs:
                 if needed_environment == stub.filename:
