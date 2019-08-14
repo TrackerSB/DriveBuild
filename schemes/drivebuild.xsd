@@ -298,24 +298,6 @@
         <xs:attribute name="speedLimit" type="xs:nonNegativeInteger"/>
     </xs:attributeGroup>
 
-    <!-- Connective dbtypes -->
-    <xs:complexType name="binaryOp">
-        <xs:sequence>
-            <xs:element ref="criterion" minOccurs="2" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:element name="connective" abstract="true"/>
-    <xs:element name="and" substitutionGroup="connective" type="binaryOp"/>
-    <xs:element name="or" substitutionGroup="connective" type="binaryOp"/>
-    <xs:element name="not" substitutionGroup="connective">
-        <xs:complexType>
-            <xs:all>
-                <xs:element ref="criterion"/>
-            </xs:all>
-        </xs:complexType>
-    </xs:element>
-
     <!-- Criterion dbtypes -->
     <xs:complexType name="stateCondition">
         <xs:attribute name="participant" use="required">
@@ -343,9 +325,26 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+    <!-- Connective dbtypes -->
+    <xs:complexType name="binaryOp">
+        <xs:sequence>
+            <xs:element ref="criterion" minOccurs="2" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:element name="criterion" abstract="true"/>
     <xs:element name="stateCondition" substitutionGroup="criterion" type="stateCondition" abstract="true"/>
     <xs:element name="validationConstraint" substitutionGroup="criterion" type="validationConstraint" abstract="true"/>
+    <xs:element name="connective" substitutionGroup="criterion" abstract="true"/>
+    <xs:element name="and" substitutionGroup="connective" type="binaryOp"/>
+    <xs:element name="or" substitutionGroup="connective" type="binaryOp"/>
+    <xs:element name="not" substitutionGroup="connective">
+        <xs:complexType>
+            <xs:all>
+                <xs:element ref="criterion"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
 
     <xs:complexType name="criterion">
         <xs:choice>
