@@ -260,7 +260,7 @@ class Simulation:
                 new_content.append("renderPriority = \"10\";\n")
                 new_content.append("textureLength = \"2.5\";\n")
                 new_content.append("distanceFade = \"1000 1000\";\n")
-                new_content.append("drivability = \"1\";")
+                new_content.append("drivability = \"1\";\n")
             elif material in ["line_white", "line_yellow"]:
                 new_content.append("renderPriority = \"9\";\n")
                 new_content.append("textureLength = \"16\";\n")
