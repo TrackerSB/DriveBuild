@@ -445,7 +445,7 @@ class Simulation:
             for wp in wps:
                 if wp.id is not None:  # FIXME Not all waypoints are added
                     waypoints.add(wp.id)
-        self._add_lap_config(waypoints)  # NOTE This call just solves an error showing up in the console of BeamNG
+        self._add_lap_config(waypoints)
 
         bng_instance.open(launch=True)
         bng_instance.load_scenario(bng_scenario)
