@@ -104,7 +104,7 @@ class ScenarioBuilder:
             initial_state = participant.initial_state
             scenario.add_vehicle(vehicle,
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
-                                 rot=(0, 0, -initial_state.orientation))
+                                 rot=(0, 0, initial_state.orientation - 90))
 
     def add_waypoints_to_scenario(self, scenario: Scenario) -> None:
         """
