@@ -75,7 +75,7 @@ class Simulation:
                 while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
                     remaining_waypoints.append(remaining_waypoints[-1])
                 ser_remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, remaining_waypoints)) + "'}"
-                ai_path_command = "    sh.setAiPath({vehicleName = '" + participant.id + "', " \
+                ai_path_command = "    sh.setAiPath({driveInLane = 'off', vehicleName = '" + participant.id + "', " \
                                   + "waypoints = " + ser_remaining_waypoints
                 speed_limit = remaining_waypoints[0].speed_limit
                 target_speed = remaining_waypoints[0].target_speed
