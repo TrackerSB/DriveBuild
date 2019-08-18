@@ -317,8 +317,10 @@ class Simulation:
                 message = self.send_message_to_sim_node(b"requestAiFor", [self.serialized_sid, vid.SerializeToString()])
                 print(message)
                 # FIXME Continue...
+            elif mode == MovementMode.MANUAL:
+                pass  # No AI to request
             elif not mode:
-                eprint("There is current MovementMode set.")
+                eprint("There is no current MovementMode set.")
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
