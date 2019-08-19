@@ -412,9 +412,7 @@ if __name__ == "__main__":
             try:
                 _attach_request_data(data_response.data[rid], sid, vid, rid)
             except ValueError:
-                error = DataResponse.Error()
-                error.message = "There is no request with ID \"" + rid + "\"."
-                data_response[rid] = error
+                data_response.data[rid].error.message = "There is no request with ID \"" + rid + "\"."
         print("ai_request_data: leave for " + vid.vid)
         return data_response
 
