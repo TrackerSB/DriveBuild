@@ -64,29 +64,38 @@ class Simulation:
     def _generate_lua_av_command(self, participant: Participant, idx: int, next_mode: MovementMode,
                                  current_mode: Optional[MovementMode] = None) -> List[str]:
         """
-        NOTE When using this function the lua file where you include this command has to include the following line:
+        NOTE When using this function the lua file where you include this command has to include the following lines:
         local sh = require('ge/extensions/scenario/scenariohelper')
+        local ve = ...
+        local ai = ...
         NOTE Pass -1 as idx when passing mode of the initial state of the participant
         """
+        from dbtypes.scheme import WayPoint
         lua_av_command = []
         if next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
             if current_mode not in [MovementMode.MANUAL, MovementMode.TRAINING]:
                 remaining_waypoints = participant.movement[idx + 1:]
                 while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
                     remaining_waypoints.append(remaining_waypoints[-1])
-                ser_remaining_waypoints = "{'" + "', '".join(map(lambda w: w.id, remaining_waypoints)) + "'}"
-                ai_path_command = "    sh.setAiPath({driveInLane = 'off', vehicleName = '" + participant.id + "', " \
-                                  + "waypoints = " + ser_remaining_waypoints
+
+                def _waypoint_to_tuple(waypoint: WayPoint) -> str:
+                    return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
+                ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
+                """
+                NOTE sh.setAiPath(...) and sh.setAiRoute(...) require to place waypoints in the middle of the lanes
+                otherwise BeamNG may show an error (on the GUI -> So hud needs to be enabled) that "There is no path
+                from X to Y". 
+                """
+                # NOTE setAiPath/setAiRoute: BeamNG allows to EITHER set a target speed or a speed limit
+                # NOTE sh.setAiLine(...) is a custom function introduced into BeamNG
+                ai_path_command = "    sh.setAiLine('" + participant.id + "', {line=" + ai_line + "})"
+                # FIXME Recognize speed values
                 speed_limit = remaining_waypoints[0].speed_limit
                 target_speed = remaining_waypoints[0].target_speed
-                # NOTE BeamNG allows to EITHER set a target speed or a speed limit
                 if speed_limit:
-                    ai_path_command = ai_path_command + ", routeSpeed = " + str(speed_limit) + ", " \
-                                      + "routeSpeedMode = 'limit'"
+                    pass
                 elif target_speed:
-                    ai_path_command = ai_path_command + ", routeSpeed = " + str(speed_limit) + ", " \
-                                      + "routeSpeedMode = 'set'"
-                ai_path_command = ai_path_command + "})"
+                    pass
                 lua_av_command.extend([ai_path_command])
         else:
             lua_av_command.extend([
@@ -170,7 +179,7 @@ class Simulation:
         lua_file = open(self._get_lua_path(), "w")
         lua_file.writelines([  # FIXME Is this needed somehow?
             "local M = {}\n",
-            "local sh = require('ge/extensions/scenario/scenariohelper')",
+            "local sh = require('ge/extensions/scenario/scenariohelper')\n",
             "\n",
             "local function onRaceStart()\n",
         ])
