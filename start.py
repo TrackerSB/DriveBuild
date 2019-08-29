@@ -1,9 +1,22 @@
 import copyreg
+from socket import socket
+from threading import Thread
+from typing import Dict, Optional, Tuple, List, Any
 
+from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, VehicleID, Num, \
+    TestResult, MaySimulationIDs, User, SimStateResponse, Control, DataResponse, DataRequest, SimulationNodeID
+from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests
+from drivebuildclient.db_handler import get_connection
 from lxml.etree import _Element
 
 
 # Register pickler for _Element
+from config import SIM_NODE_PORT, MAIN_APP_HOST, MAIN_APP_PORT
+from dbtypes import SimulationData, AIStatus
+from dbtypes.scheme import MovementMode
+from sim_controller import Simulation
+
+
 def element_unpickler(data: bytes) -> _Element:
     from io import BytesIO
     from lxml.etree import parse
@@ -18,18 +31,6 @@ def element_pickler(element: _Element):
 copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
-    from common.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
-        VehicleID, Num, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, MaySimulationIDs
-    from common import eprint, create_client, process_requests, accept_at_server, create_server
-    from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT
-    from threading import Thread
-    from dbtypes import AIStatus, SimulationData
-    from dbtypes.scheme import MovementMode
-    from typing import Optional, List, Tuple, Dict, Any
-    from socket import socket
-    from common.db_handler import get_connection
-    from sim_controller import Simulation
-
     _all_tasks: Dict[Simulation, SimulationData] = {}
     _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
     _dbms_connection = get_connection()
@@ -70,7 +71,7 @@ if __name__ == "__main__":
 
 
     def _handle_sim_node_message(conn: socket, _: Tuple[str, int]) -> None:
-        from common import process_request
+        from drivebuildclient.common import process_request
         print("_handle_sim_node_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
@@ -141,7 +142,7 @@ if __name__ == "__main__":
 
 
     def _handle_simulation_message(conn: socket, _: Tuple[str, int]) -> None:
-        from common import process_requests
+        from drivebuildclient.common import process_requests
         print("_handle_simulation_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
@@ -222,7 +223,6 @@ if __name__ == "__main__":
 
 
     def _status(sid: SimulationID) -> SimStateResponse:
-        from common.aiExchangeMessages_pb2 import TestResult
         sim = _get_simulation(sid)
         sim_state = SimStateResponse()
         if sim:
@@ -283,7 +283,6 @@ if __name__ == "__main__":
 
     def store_data(data: SimulationData) -> Any:
         from lxml.etree import tostring
-        from common.aiExchangeMessages_pb2 import TestResult
         result = data.simulation_task.get_state()
         if result is TestResult.Result.SUCCEEDED:
             successful_value = "TRUE"
