@@ -7,7 +7,7 @@ from beamngpy import Scenario
 from dataclasses import dataclass
 from lxml.etree import _ElementTree
 
-from aiExchangeMessages_pb2 import TestResult, User
+from common.aiExchangeMessages_pb2 import TestResult, User
 
 
 class AIStatus(Enum):

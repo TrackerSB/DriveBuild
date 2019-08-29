@@ -18,7 +18,7 @@ def element_pickler(element: _Element):
 copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
-    from aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
+    from common.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, SimulationNodeID, \
         VehicleID, Num, SimStateResponse, TestResult, Control, DataRequest, DataResponse, User, MaySimulationIDs
     from common import eprint, create_client, process_requests, accept_at_server, create_server
     from config import MAIN_APP_PORT, MAIN_APP_HOST, SIM_NODE_PORT
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     from dbtypes.scheme import MovementMode
     from typing import Optional, List, Tuple, Dict, Any
     from socket import socket
-    from db_handler import get_connection
+    from common.db_handler import get_connection
     from sim_controller import Simulation
 
     _all_tasks: Dict[Simulation, SimulationData] = {}
@@ -222,7 +222,7 @@ if __name__ == "__main__":
 
 
     def _status(sid: SimulationID) -> SimStateResponse:
-        from aiExchangeMessages_pb2 import TestResult
+        from common.aiExchangeMessages_pb2 import TestResult
         sim = _get_simulation(sid)
         sim_state = SimStateResponse()
         if sim:
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
     def store_data(data: SimulationData) -> Any:
         from lxml.etree import tostring
-        from aiExchangeMessages_pb2 import TestResult
+        from common.aiExchangeMessages_pb2 import TestResult
         result = data.simulation_task.get_state()
         if result is TestResult.Result.SUCCEEDED:
             successful_value = "TRUE"
