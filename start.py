@@ -352,7 +352,7 @@ if __name__ == "__main__":
             _control_sim(sid, control.simCommand.command, True)
         elif command_type == "avCommand":
             sim = _get_simulation(sid)
-            if sim and sim.get_current_movement_mode(vid.vid) is MovementMode.MANUAL:
+            if sim and sim.get_current_movement_mode(vid.vid) is MovementMode.AUTONOMOUS:
                 _control_av(sid, vid, control.avCommand)
         else:
             raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
