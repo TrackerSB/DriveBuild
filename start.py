@@ -193,10 +193,10 @@ if __name__ == "__main__":
 
 
     # Actions to be requested by main application
-    def _run_tests(file_content: bytes, user: User) -> MaySimulationIDs:
+    def _run_tests(file_content: bytes, user: User) -> SubmissionResult:
         from tc_manager import run_tests
         from warnings import warn
-        may_sids = MaySimulationIDs()
+        submission_result = SubmissionResult()
         try:
             new_tasks = run_tests(file_content)
             if isinstance(new_tasks, Dict):
@@ -205,21 +205,21 @@ if __name__ == "__main__":
                         if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
                             warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
                             _all_tasks.pop(_get_simulation(sim.sid))
-                        may_sids.sids.sids.append(sim.sid.sid)
+                        submission_result.result.submissions[sim.test_name].sid = sim.sid.sid
                         sim.start_server(_handle_simulation_message)
                         data.user = user
                         _all_tasks[sim] = data
                 else:
-                    may_sids.message.message = "There were no valid tests to run."
+                    submission_result.message.message = "There were no valid tests to run."
             elif isinstance(new_tasks, str):
-                may_sids.message.message = new_tasks
+                submission_result.message.message = new_tasks
             else:
                 eprint("Can not handle a _run_tests(...) result of type " + str(type(new_tasks)) + ".")
         except Exception as e:
             eprint("_run_tests(...) errored:")
             eprint(e)
-            may_sids.message.message = str(e)
-        return may_sids
+            submission_result.message.message = str(e)
+        return submission_result
 
 
     def _status(sid: SimulationID) -> SimStateResponse:
@@ -427,14 +427,14 @@ if __name__ == "__main__":
         return result
 
 
-    def _get_running_tests(user: User) -> MaySimulationIDs:
-        may_sids = MaySimulationIDs()
+    def _get_running_tests(user: User) -> SubmissionResult:
+        submission_result = SubmissionResult()
         for sim, data in _all_tasks.items():
             if _is_simulation_running(sim.sid) and data.user.username == user.username:
-                may_sids.sids.sids.append(sim.sid.sid)
-        if not may_sids.sids.sids:  # Avoid an empty message
-            may_sids.message.message = "No simulations running"
-        return may_sids
+                submission_result.result.submissions[sim.test_name].sid = sim.sid.sid
+        if not submission_result.result.submissions:  # Avoid an empty message
+            submission_result.message.message = "No simulations running"
+        return submission_result
 
 
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:

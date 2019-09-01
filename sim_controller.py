@@ -14,9 +14,12 @@ from drivebuildclient.common import static_vars
 
 class Simulation:
     def __init__(self, sid: SimulationID, pickled_test_case: bytes, port: int):
+        import dill as pickle
         self.sid = sid
         self.serialized_sid = sid.SerializeToString()
         self.pickled_test_case = pickled_test_case
+        test_case = pickle.loads(pickled_test_case)
+        self.test_name = test_case.name
         self.port = port
         self._sim_server_socket = None
         self._sim_node_client_socket = None

@@ -23,6 +23,7 @@ def transform(mappings: List[ScenarioMapping]) -> List[Tuple[TestCase, _ElementT
         environment = mapping.environment
         environment_author = get_author(environment)
         for crit_def in mapping.crit_defs:
+            test_name = xpath(crit_def, "db:name")[0].text
             ai_frequency = int(xpath(crit_def, "db:aiFrequency")[0].text)
             steps_per_second = int(xpath(crit_def, "db:stepsPerSecond")[0].text)
             participants_node = xpath(crit_def, "db:participants")[0]
@@ -33,7 +34,7 @@ def transform(mappings: List[ScenarioMapping]) -> List[Tuple[TestCase, _ElementT
             if crit_def_author not in authors:
                 authors.append(crit_def_author)
             test_cases.append(
-                (TestCase(builder, precondition, success, failure, steps_per_second, ai_frequency, authors),
+                (TestCase(test_name, builder, precondition, success, failure, steps_per_second, ai_frequency, authors),
                  crit_def, environment)
             )
     return test_cases

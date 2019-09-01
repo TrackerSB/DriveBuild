@@ -411,6 +411,7 @@ CriteriaFunction = Callable[[Scenario], Evaluable]
 @dataclass
 class TestCase:
     from generator import ScenarioBuilder
+    name: str
     scenario: ScenarioBuilder
     precondition_fct: CriteriaFunction
     success_fct: CriteriaFunction
