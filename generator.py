@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 from beamngpy import BeamNGpy
 from lxml.etree import _ElementTree, _Element
 
-from common import static_vars
+from drivebuildclient.common import static_vars
 
 
 class ScenarioBuilder:
@@ -72,7 +72,7 @@ class ScenarioBuilder:
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
         from dbtypes.scheme import Cone, Cube, Cylinder, Bump
-        from common import eprint
+        from drivebuildclient.common import eprint
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
             height = obstacle.height
@@ -131,7 +131,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
-    from common import eprint, static_vars
+    from drivebuildclient.common import eprint, static_vars
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
         LidarRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest
 

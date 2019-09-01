@@ -115,7 +115,7 @@ class CameraRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         from beamngpy.sensors import Camera
         from cmath import pi
-        from common import eprint
+        from drivebuildclient.common import eprint
         # NOTE rotation range: -pi to pi
         # NOTE Reference point is the point of the model
         # NOTE First rotate camera, then shift based on rotated axis of the camera

@@ -4,12 +4,12 @@ from typing import List, Set, Optional, Tuple, Callable
 
 from beamngpy import Scenario
 
-from common.aiExchangeMessages_pb2 import SimulationID
+from drivebuildclient.aiExchangeMessages_pb2 import SimulationID
 from dbtypes import ExtThread
 from dbtypes.beamng import DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue, CriteriaFunction
 from dbtypes.scheme import Participant, MovementMode
-from common import static_vars
+from drivebuildclient.common import static_vars
 
 
 class Simulation:
@@ -23,7 +23,7 @@ class Simulation:
 
     def start_server(self, handle_simulation_message: Callable[[socket, Tuple[str, int]], None]) -> None:
         from threading import Thread
-        from common import accept_at_server, create_server
+        from drivebuildclient.common import accept_at_server, create_server
         if self._sim_server_socket:
             raise ValueError("The simulation already started a server at " + str(self.port))
         else:
@@ -34,7 +34,7 @@ class Simulation:
             simulation_sim_node_com_server.start()
 
     def send_message_to_sim_node(self, action: bytes, data: List[bytes]) -> bytes:
-        from common import send_request, create_client
+        from drivebuildclient.common import send_request, create_client
         if not self._sim_node_client_socket:
             self._sim_node_client_socket = create_client("localhost", self.port)
         return send_request(self._sim_node_client_socket, action, data)
@@ -316,8 +316,8 @@ class Simulation:
         prefab_file.close()
 
     def _request_control_avs(self, vids: List[str]) -> None:
-        from common import eprint
-        from common.aiExchangeMessages_pb2 import VehicleID
+        from drivebuildclient.common import eprint
+        from drivebuildclient.aiExchangeMessages_pb2 import VehicleID
         for v in vids:
             mode = self.get_current_movement_mode(v)
             if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING]:
@@ -384,13 +384,13 @@ class Simulation:
         return test_case.precondition_fct, test_case.failure_fct, test_case.success_fct
 
     def _run_runtime_verification(self, ai_frequency: int) -> None:
-        from common.aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num
+        from drivebuildclient.aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num
         from config import TIMEOUT
         from datetime import datetime
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
-            from common.aiExchangeMessages_pb2 import VerificationResult
-            from common import eprint
+            from drivebuildclient.aiExchangeMessages_pb2 import VerificationResult
+            from drivebuildclient.common import eprint
             # FIXME Determine appropriate timeout
             response = self.send_message_to_sim_node(b"verify", [self.serialized_sid])
             if response:
@@ -486,7 +486,7 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]
     """
     import dill as pickle
     from shutil import rmtree
-    from common import create_client, send_request
+    from drivebuildclient.common import create_client, send_request
     from config import SIM_NODE_PORT, FIRST_SIM_PORT
     sid = SimulationID()
     response = send_request(create_client("localhost", SIM_NODE_PORT), b"generateSid", [])

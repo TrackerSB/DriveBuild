@@ -1,13 +1,12 @@
 from datetime import datetime
 from enum import Enum
-from socket import socket
 from threading import Thread
 
 from beamngpy import Scenario
 from dataclasses import dataclass
 from lxml.etree import _ElementTree
 
-from common.aiExchangeMessages_pb2 import TestResult, User
+from drivebuildclient.aiExchangeMessages_pb2 import TestResult, User
 
 
 class AIStatus(Enum):

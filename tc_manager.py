@@ -22,7 +22,7 @@ def extract_test_cases(zip_content: bytes) -> str:
 
 def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
         -> List[ScenarioMapping]:
-    from common import eprint
+    from drivebuildclient.common import eprint
     from util.xml import xpath
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
@@ -44,7 +44,7 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
 
 def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     import os
-    from common import eprint
+    from drivebuildclient.common import eprint
     from util import is_dbe, is_dbc
     from util.xml import validate
     scenario_mapping_stubs = list()

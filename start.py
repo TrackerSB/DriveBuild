@@ -4,9 +4,9 @@ from threading import Thread
 from typing import Dict, Optional, Tuple, List, Any
 
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, VehicleID, Num, \
-    TestResult, MaySimulationIDs, User, SimStateResponse, Control, DataResponse, DataRequest, SimulationNodeID
+    TestResult, SubmissionResult, User, SimStateResponse, Control, DataResponse, DataRequest, SimulationNodeID
 from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests
-from drivebuildclient.db_handler import get_connection
+from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
 
@@ -33,7 +33,7 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 if __name__ == "__main__":
     _all_tasks: Dict[Simulation, SimulationData] = {}
     _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
-    _dbms_connection = get_connection()
+    _dbms_connection = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
 
 
     def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
