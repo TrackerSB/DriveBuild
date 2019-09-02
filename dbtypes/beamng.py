@@ -27,7 +27,7 @@ class DBVehicle(Vehicle):
         """
         The return type depends on the return type of the appropriate AIRequest.
         """
-        from common import eprint
+        from drivebuildclient.common import eprint
         if rid in self.requests:
             return self.requests[rid].read_sensor_cache_of(self)
         else:
