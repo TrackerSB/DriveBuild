@@ -288,6 +288,7 @@
             <xs:enumeration value="MANUAL"/>
             <xs:enumeration value="AUTONOMOUS"/>
             <xs:enumeration value="TRAINING"/>
+            <xs:enumeration value="_BEAMNG"/> <!-- For development purpose use only! -->
         </xs:restriction>
     </xs:simpleType>
 

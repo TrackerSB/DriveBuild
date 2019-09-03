@@ -73,12 +73,27 @@ class Simulation:
         local ai = ...
         NOTE Pass -1 as idx when passing mode of the initial state of the participant
         """
+        """
+        NOTE sh.setAiPath(...) and sh.setAiRoute(...) require to place waypoints in the middle of the lanes
+        otherwise BeamNG may show an error (on the GUI -> So hud needs to be enabled) that "There is no path
+        from X to Y". 
+        """
+        # NOTE setAiPath/setAiRoute: BeamNG allows to EITHER set a target speed or a speed limit
+        # NOTE sh.setAiLine(...) is a custom function introduced into BeamNG
         from drivebuildclient.common import eprint
         from dbtypes.scheme import WayPoint
         lua_av_command = []
-        if next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
+        remaining_waypoints = participant.movement[idx + 1:]
+        if next_mode == MovementMode._BEAMNG:
+            # FIXME Enable stay-on-lane
+            # FIXME Recognize speeds
+            serialized_waypoints = "{'" + "', '".join([wp.id for wp in remaining_waypoints]) + "'}"
+            lua_av_command.append(
+                "    sh.setAiPath({vehicleName='" + participant.id + "', waypoints=" + serialized_waypoints
+                + ", driveInLane='on'})"
+            )
+        elif next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
             if current_mode not in [MovementMode.MANUAL, MovementMode.TRAINING]:
-                remaining_waypoints = participant.movement[idx + 1:]
                 while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
                     remaining_waypoints.append(remaining_waypoints[-1])
 
@@ -86,13 +101,6 @@ class Simulation:
                     return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
 
                 ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
-                """
-                NOTE sh.setAiPath(...) and sh.setAiRoute(...) require to place waypoints in the middle of the lanes
-                otherwise BeamNG may show an error (on the GUI -> So hud needs to be enabled) that "There is no path
-                from X to Y". 
-                """
-                # NOTE setAiPath/setAiRoute: BeamNG allows to EITHER set a target speed or a speed limit
-                # NOTE sh.setAiLine(...) is a custom function introduced into BeamNG
                 ai_path_command = "    sh.setAiLine('" + participant.id + "', {line=" + ai_line + "})"
                 # FIXME Recognize speed values
                 speed_limit = remaining_waypoints[0].speed_limit

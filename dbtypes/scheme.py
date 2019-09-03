@@ -9,6 +9,7 @@ class MovementMode(Enum):
     MANUAL = "MANUAL"
     AUTONOMOUS = "AUTONOMOUS"
     TRAINING = "TRAINING"
+    _BEAMNG = "_BEAMNG"
 
 
 class CarModel(Enum):
