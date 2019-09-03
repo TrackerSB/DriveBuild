@@ -73,6 +73,7 @@ class Simulation:
         local ai = ...
         NOTE Pass -1 as idx when passing mode of the initial state of the participant
         """
+        from drivebuildclient.common import eprint
         from dbtypes.scheme import WayPoint
         lua_av_command = []
         if next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
@@ -101,10 +102,12 @@ class Simulation:
                 elif target_speed:
                     pass
                 lua_av_command.extend([ai_path_command])
-        else:
+        elif next_mode == MovementMode.AUTONOMOUS:
             lua_av_command.extend([
                 "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
             ])
+        else:
+            eprint("Can not handle MovementMode " + str(next_mode) + ".")
         lua_av_command.extend([
             "    local modeFile = io.open('" + self._get_movement_mode_file_path(participant.id, True) + "', 'w')",
             "    modeFile:write('" + next_mode.value + "')",
