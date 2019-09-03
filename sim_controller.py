@@ -83,6 +83,7 @@ class Simulation:
 
                 def _waypoint_to_tuple(waypoint: WayPoint) -> str:
                     return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
+
                 ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
                 """
                 NOTE sh.setAiPath(...) and sh.setAiRoute(...) require to place waypoints in the middle of the lanes
