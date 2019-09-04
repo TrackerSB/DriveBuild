@@ -232,7 +232,7 @@ class CarToLaneAngleRequest(AiRequest):
 
     def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[str, float]:
         from shapely.geometry import Point, LineString
-        from numpy import rad2deg, arctan2
+        from numpy import rad2deg, arctan2, array
         x, y, _ = vehicle.state["pos"]
         car_pos = Point(x, y)
         x_dir, y_dir, _ = vehicle.state["dir"]
@@ -248,7 +248,7 @@ class CarToLaneAngleRequest(AiRequest):
                 cur_dist = cur_line.distance(car_pos)
                 if not min_dist or cur_dist < min_dist:
                     min_dist = cur_dist
-                    diff = next_coord - cur_coord
+                    diff = array(next_coord) - array(cur_coord)
                     cur_angle = rad2deg(arctan2(diff[1], diff[0]))
                     angle_diff = car_angle - cur_angle
                     lane_id = cur_lane_id

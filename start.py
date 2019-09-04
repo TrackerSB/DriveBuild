@@ -364,7 +364,7 @@ if __name__ == "__main__":
 
     def _attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
-            DamageRequest, LaneCenterDistanceRequest
+            DamageRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest
         from PIL import Image
         from io import BytesIO
         vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
@@ -394,6 +394,8 @@ if __name__ == "__main__":
             elif request_type is LaneCenterDistanceRequest:
                 data.lane_center_distance.lane_id = sensor_data[0]
                 data.lane_center_distance.distance = sensor_data[1]
+            elif request_type is CarToLaneAngleRequest:
+                data.car_to_lane_angle.angle = float(sensor_data[0])
             # elif request_type is LightRequest:
             # response = DataResponse.Data.Light()
             # FIXME Add DataResponse.Data.Light
