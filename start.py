@@ -198,22 +198,23 @@ if __name__ == "__main__":
         from lxml.etree import tostring
         test_result = data.simulation_task.get_state()
         args = {
-            "environment": tostring(data.environment) if data.environment else "NULL",
-            "criteria": tostring(data.criteria) if data.criteria else "NULL",
-            "result": TestResult.Result.Name(test_result) if test_result else "NULL",
-            "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S") if data.start_time else "NULL",
-            "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S") if data.end_time else "NULL",
-            "username": data.user.username if data.user else "NULL"
+            "environment": tostring(data.environment) if data.environment else None,
+            "criteria": tostring(data.criteria) if data.criteria else None,
+            "result": TestResult.Result.Name(test_result) if test_result else None,
+            "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S") if data.start_time else None,
+            "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S") if data.end_time else None,
+            "username": data.user.username if data.user else None,
+            "sid": int(data.sid.sid)
         }
         _DB_CONNECTION.run_query("""
         UPDATE tests
-        SET 'environment' = :environment,
-            'criteria' = :criteria,
-            'result' = :finalState,
-            'started' = :started,
-            'finished' = :finished,
-            'username' = :username
-        WHERE 'sid' = :sid
+        SET "environment" = :environment,
+            "criteria" = :criteria,
+            "result" = :result,
+            "started" = :started,
+            "finished" = :finished,
+            "username" = :username
+        WHERE "sid" = :sid
         """, args)
 
 
@@ -227,7 +228,6 @@ if __name__ == "__main__":
             if isinstance(new_tasks, Dict):
                 if new_tasks:
                     for sim, data in new_tasks.items():
-                        _update_test_data(data)
                         if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
                             warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
                             _all_tasks.pop(_get_simulation(sim.sid))
@@ -235,6 +235,7 @@ if __name__ == "__main__":
                         sim.start_server(_handle_simulation_message)
                         data.user = user
                         _all_tasks[sim] = data
+                        _update_test_data(data)
                 else:
                     submission_result.message.message = "There were no valid tests to run."
             elif isinstance(new_tasks, str):
