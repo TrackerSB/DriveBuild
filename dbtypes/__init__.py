@@ -6,7 +6,7 @@ from beamngpy import Scenario
 from dataclasses import dataclass
 from lxml.etree import _ElementTree
 
-from drivebuildclient.aiExchangeMessages_pb2 import TestResult, User
+from drivebuildclient.aiExchangeMessages_pb2 import TestResult, User, SimulationID
 
 
 class AIStatus(Enum):
@@ -60,7 +60,7 @@ class SimulationData:
     simulation_task: ExtThread
     criteria: _ElementTree
     environment: _ElementTree
+    sid: SimulationID
     start_time: datetime = None
     end_time: datetime = None
-    result: TestResult.Result = None
     user: User = None

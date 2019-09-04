@@ -9,6 +9,7 @@ from drivebuildclient.common import accept_at_server, create_server, eprint, cre
 from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
+_DB_CONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
 
 # Register pickler for _Element
 from config import SIM_NODE_PORT, MAIN_APP_HOST, MAIN_APP_PORT
@@ -33,7 +34,6 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 if __name__ == "__main__":
     _all_tasks: Dict[Simulation, SimulationData] = {}
     _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
-    _dbms_connection = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
 
 
     def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
@@ -60,14 +60,16 @@ if __name__ == "__main__":
 
     # Actions to be requested by the SimNode itself (not a simulation)
     def _generate_sid() -> SimulationID:
-        from random import randint
-        while True:  # Pseudo "do-while"-loop
-            sid = prefix + "_sim_" + str(randint(0, 10000))
-            sid_obj = SimulationID()
-            sid_obj.sid = sid
-            if _get_simulation(sid_obj) is None:
-                break
-        return sid_obj
+        sid_cursor = _DB_CONNECTION.run_query("""
+        INSERT INTO tests VALUES (DEFAULT, NULL, NULL, NULL, NULL, NULL, NULL) RETURNING sid;
+        """)
+        if sid_cursor:
+            result = sid_cursor.fetchall()
+            sid = SimulationID()
+            sid.sid = str(result[0][0])
+            return sid
+        else:
+            eprint("Generation of sid failed.")
 
 
     def _handle_sim_node_message(conn: socket, _: Tuple[str, int]) -> None:
@@ -192,6 +194,29 @@ if __name__ == "__main__":
         process_requests(conn, _handle_message)
 
 
+    def _update_test_data(data: SimulationData) -> None:
+        from lxml.etree import tostring
+        test_result = data.simulation_task.get_state()
+        args = {
+            "environment": tostring(data.environment) if data.environment else "NULL",
+            "criteria": tostring(data.criteria) if data.criteria else "NULL",
+            "result": TestResult.Result.Name(test_result) if test_result else "NULL",
+            "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S") if data.start_time else "NULL",
+            "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S") if data.end_time else "NULL",
+            "username": data.user.username if data.user else "NULL"
+        }
+        _DB_CONNECTION.run_query("""
+        UPDATE tests
+        SET 'environment' = :environment,
+            'criteria' = :criteria,
+            'result' = :finalState,
+            'started' = :started,
+            'finished' = :finished,
+            'username' = :username
+        WHERE 'sid' = :sid
+        """, args)
+
+
     # Actions to be requested by main application
     def _run_tests(file_content: bytes, user: User) -> SubmissionResult:
         from tc_manager import run_tests
@@ -202,6 +227,7 @@ if __name__ == "__main__":
             if isinstance(new_tasks, Dict):
                 if new_tasks:
                     for sim, data in new_tasks.items():
+                        _update_test_data(data)
                         if sim.sid.sid in [s.sid.sid for s in _all_tasks.keys()]:
                             warn("The simulation ID " + sim.sid.sid + " already exists and is getting overwritten.")
                             _all_tasks.pop(_get_simulation(sim.sid))
@@ -281,35 +307,6 @@ if __name__ == "__main__":
         vehicle.control(throttle=command.accelerate, steering=command.steer, brake=command.brake, parkingbrake=0)
 
 
-    def store_data(data: SimulationData) -> Any:
-        from lxml.etree import tostring
-        result = data.simulation_task.get_state()
-        if result is TestResult.Result.SUCCEEDED:
-            successful_value = "TRUE"
-        elif result is TestResult.Result.FAILED:
-            successful_value = "FALSE"
-        elif result is TestResult.Result.SKIPPED:
-            successful_value = "NULL"
-        else:
-            eprint("SimulationData can not be stored (data.simulation_task.state() = " + str(result) + ").")
-            successful_value = None
-        if successful_value:
-            args = {
-                "environment": tostring(data.environment.getroot()),
-                "criteria": tostring(data.criteria),
-                "successful": successful_value,
-                "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "username": data.user.username
-            }
-            _dbms_connection.run_query("""
-            INSERT INTO tests VALUES
-                (DEFAULT, :environment, :criteria, :successful, :started, :finished, :username)
-            """, args)
-            print(id)
-        return None
-
-
     def _control_sim(sid: SimulationID, command: int, direct: bool) -> None:
         """
         Stops a simulation and sets its associated test result.
@@ -338,7 +335,7 @@ if __name__ == "__main__":
 
         data.scenario.bng.close()
         data.end_time = datetime.now()
-        store_data(data)
+        _update_test_data(data)
 
         # Make sure there is no inference with following tests
         sim = _get_simulation(sid)

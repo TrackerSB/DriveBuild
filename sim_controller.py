@@ -16,6 +16,7 @@ class Simulation:
     def __init__(self, sid: SimulationID, pickled_test_case: bytes, port: int):
         import dill as pickle
         self.sid = sid
+        self._sim_name = "drivebuild_" + sid.sid
         self.serialized_sid = sid.SerializeToString()
         self.pickled_test_case = pickled_test_case
         test_case = pickle.loads(pickled_test_case)
@@ -126,13 +127,13 @@ class Simulation:
     def get_user_path(self) -> str:
         from config import BEAMNG_USER_PATH
         import os
-        return os.path.join(BEAMNG_USER_PATH, self.sid.sid)
+        return os.path.join(BEAMNG_USER_PATH, self._sim_name)
 
     def _get_lua_path(self) -> str:
         import os
         return os.path.join(
             self._get_scenario_dir_path(),
-            self.sid.sid + ".lua"
+            self._sim_name + ".lua"
         )
 
     def _get_scenario_dir_path(self) -> str:
@@ -149,14 +150,14 @@ class Simulation:
         import os
         return os.path.join(
             self._get_scenario_dir_path(),
-            self.sid.sid + ".prefab"
+            self._sim_name + ".prefab"
         )
 
     def _get_json_path(self) -> str:
         import os
         return os.path.join(
             self._get_scenario_dir_path(),
-            self.sid.sid + ".json"
+            self._sim_name + ".json"
         )
 
     def _add_to_prefab_file(self, new_content: List[str]) -> None:
@@ -413,7 +414,7 @@ class Simulation:
                 verification.ParseFromString(response)
                 return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
             else:
-                eprint("Verification of criteria at simulation " + self.sid.sid + " timed out.")
+                eprint("Verification of criteria at simulation " + self._sim_name + " timed out.")
                 return KPValue.UNKNOWN, KPValue.UNKNOWN, KPValue.UNKNOWN
 
         # FIXME Wait for simulation to be registered at the simulation node?
@@ -456,7 +457,7 @@ class Simulation:
             Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
         bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
         authors = ", ".join(test_case.authors)
-        bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self.sid.sid, authors=authors)
+        bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self._sim_name, authors=authors)
 
         test_case.scenario.add_all(bng_scenario)
         bng_scenario.make(bng_instance)
@@ -493,7 +494,7 @@ class Simulation:
 
 
 @static_vars(counter=0)
-def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]:
+def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread, SimulationID]:
     """
     This method starts the actual simulation in a separate thread.
     Additionally it already calculates and attaches all information that is need by this node and the separate
@@ -512,4 +513,4 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread]
     rmtree(sim.get_user_path(), ignore_errors=True)
     bng_scenario, thread = sim._start_simulation(test_case)
 
-    return sim, bng_scenario, thread
+    return sim, bng_scenario, thread, sid

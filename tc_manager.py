@@ -74,8 +74,8 @@ def run_tests(zip_file_content: bytes) -> Union[Dict[Simulation, SimulationData]
         simulations = {}
         test_cases = transform(mapping)
         for test_case, crit_def, env_def in test_cases:
-            sim, bng_scenario, thread = run_test_case(test_case)
-            data = SimulationData(bng_scenario, thread, crit_def, env_def)
+            sim, bng_scenario, thread, sid = run_test_case(test_case)
+            data = SimulationData(bng_scenario, thread, crit_def, env_def, sid)
             data.start_time = datetime.now()
             simulations[sim] = data
         return simulations
