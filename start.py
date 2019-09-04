@@ -214,7 +214,7 @@ if __name__ == "__main__":
             "started" = :started,
             "finished" = :finished,
             "username" = :username
-        WHERE "sid" = :sid
+        WHERE "sid" = :sid;
         """, args)
 
 
