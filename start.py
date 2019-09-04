@@ -61,7 +61,7 @@ if __name__ == "__main__":
     # Actions to be requested by the SimNode itself (not a simulation)
     def _generate_sid() -> SimulationID:
         sid_cursor = _DB_CONNECTION.run_query("""
-        INSERT INTO tests VALUES (DEFAULT, NULL, NULL, NULL, NULL, NULL, NULL) RETURNING sid;
+        INSERT INTO tests VALUES (DEFAULT, NULL, NULL, NULL, NULL, NULL, NULL, NULL) RETURNING sid;
         """)
         if sid_cursor:
             result = sid_cursor.fetchall()
@@ -212,6 +212,7 @@ if __name__ == "__main__":
             "environment": tostring(data.environment) if data.environment else None,
             "criteria": tostring(data.criteria) if data.criteria else None,
             "result": TestResult.Result.Name(_result(data.sid)),
+            "status": SimStateResponse.SimState.Name(_status(data.sid)),
             "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S") if data.start_time else None,
             "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S") if data.end_time else None,
             "username": data.user.username if data.user else None,
@@ -222,6 +223,7 @@ if __name__ == "__main__":
         SET "environment" = :environment,
             "criteria" = :criteria,
             "result" = :result,
+            "status" = :status,
             "started" = :started,
             "finished" = :finished,
             "username" = :username
