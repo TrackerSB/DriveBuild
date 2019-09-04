@@ -208,11 +208,10 @@ if __name__ == "__main__":
 
     def _update_test_data(data: SimulationData) -> None:
         from lxml.etree import tostring
-        test_result = data.simulation_task.get_state()
         args = {
             "environment": tostring(data.environment) if data.environment else None,
             "criteria": tostring(data.criteria) if data.criteria else None,
-            "result": TestResult.Result.Name(test_result) if test_result else None,
+            "result": TestResult.Result.Name(_result(data.sid)),
             "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S") if data.start_time else None,
             "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S") if data.end_time else None,
             "username": data.user.username if data.user else None,
