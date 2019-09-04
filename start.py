@@ -108,6 +108,18 @@ if __name__ == "__main__":
         if _is_simulation_running(sid):
             for vehicle in vehicles:
                 _get_data(sid).scenario.bng.poll_sensors(vehicle)
+                vid = VehicleID()
+                vid.vid = vehicle.vid
+                request = DataRequest()
+                request.request_ids.extend(vehicle.requests)
+                data = _request_data(sid, vid, request)
+                args = {
+                    "sid": sid.sid,
+                    "vid": vid.vid,
+                    "tick": _get_data(sid).scenario.bng.current_tick,
+                    "data": data.SerializeToString()
+                }
+                _DB_CONNECTION.run_query("""INSERT INTO traces VALUES(:sid, :vid, :tick, :data);""", args)
             void.message = "Polled all registered sensors of simulation " + sid.sid + "."
         else:
             void.message = "Skipped polling sensors since simulation " + sid.sid + " is not running anymore."
