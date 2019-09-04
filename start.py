@@ -206,6 +206,38 @@ if __name__ == "__main__":
         process_requests(conn, _handle_message)
 
 
+    def _status(sid: SimulationID) -> SimStateResponse:
+        sim = _get_simulation(sid)
+        sim_state = SimStateResponse()
+        if sim:
+            scenario = _get_data(sid).scenario
+            if scenario.bng is None:
+                task = _get_data(sid).simulation_task
+                if task.get_state() is TestResult.Result.SUCCEEDED \
+                        or task.get_state() is TestResult.Result.FAILED:
+                    sim_state.state = SimStateResponse.SimState.FINISHED
+                elif task.get_state() is TestResult.Result.SKIPPED:
+                    sim_state.state = SimStateResponse.SimState.CANCELED
+                else:
+                    sim_state.state = SimStateResponse.SimState.TIMEOUT
+            else:
+                sim_state.state = SimStateResponse.SimState.RUNNING
+        else:
+            sim_state.state = SimStateResponse.SimState.UNKNOWN
+        return sim_state
+
+
+    def _result(sid: SimulationID) -> TestResult:
+        result = TestResult()
+        data = _get_data(sid)
+        if data:
+            state = data.simulation_task.get_state()
+            result.result = state if state else TestResult.Result.UNKNOWN
+        else:
+            result.result = TestResult.Result.UNKNOWN
+        return result
+
+
     def _update_test_data(data: SimulationData) -> None:
         from lxml.etree import tostring
         args = {
@@ -260,27 +292,6 @@ if __name__ == "__main__":
             eprint(e)
             submission_result.message.message = str(e)
         return submission_result
-
-
-    def _status(sid: SimulationID) -> SimStateResponse:
-        sim = _get_simulation(sid)
-        sim_state = SimStateResponse()
-        if sim:
-            scenario = _get_data(sid).scenario
-            if scenario.bng is None:
-                task = _get_data(sid).simulation_task
-                if task.get_state() is TestResult.Result.SUCCEEDED \
-                        or task.get_state() is TestResult.Result.FAILED:
-                    sim_state.state = SimStateResponse.SimState.FINISHED
-                elif task.get_state() is TestResult.Result.SKIPPED:
-                    sim_state.state = SimStateResponse.SimState.CANCELED
-                else:
-                    sim_state.state = SimStateResponse.SimState.TIMEOUT
-            else:
-                sim_state.state = SimStateResponse.SimState.RUNNING
-        else:
-            sim_state.state = SimStateResponse.SimState.UNKNOWN
-        return sim_state
 
 
     def _wait_for_simulator_request(sid: SimulationID, vid: VehicleID) -> SimStateResponse:
@@ -429,17 +440,6 @@ if __name__ == "__main__":
         return data_response
 
 
-    def _result(sid: SimulationID) -> TestResult:
-        result = TestResult()
-        data = _get_data(sid)
-        if data:
-            state = data.simulation_task.get_state()
-            result.result = state if state else TestResult.Result.UNKNOWN
-        else:
-            result.result = TestResult.Result.UNKNOWN
-        return result
-
-
     def _get_running_tests(user: User) -> SubmissionResult:
         submission_result = SubmissionResult()
         for sim, data in _all_tasks.items():
@@ -455,10 +455,6 @@ if __name__ == "__main__":
             user = User()
             user.ParseFromString(data[1])
             result = _run_tests(data[0], user)
-        elif action == b"status":
-            sid = SimulationID()
-            sid.ParseFromString(data[0])
-            result = _status(sid)
         elif action == b"waitForSimulatorRequest":
             sid = SimulationID()
             sid.ParseFromString(data[0])
@@ -481,10 +477,6 @@ if __name__ == "__main__":
             request = DataRequest()
             request.ParseFromString(data[2])
             result = _request_data(sid, vid, request)
-        elif action == b"result":
-            sid = SimulationID()
-            sid.ParseFromString(data[0])
-            result = _result(sid)
         elif action == b"requestSocket":
             client = create_client(MAIN_APP_HOST, MAIN_APP_PORT)
             client_thread = Thread(target=process_requests, args=(client, _handle_main_app_message))
