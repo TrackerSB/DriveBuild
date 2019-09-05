@@ -336,7 +336,7 @@ class Simulation:
         from drivebuildclient.aiExchangeMessages_pb2 import VehicleID
         for v in vids:
             mode = self.get_current_movement_mode(v)
-            if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING]:
+            if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING, MovementMode._BEAMNG]:
                 vid = VehicleID()
                 vid.vid = v
                 message = self.send_message_to_sim_node(b"requestAiFor", [self.serialized_sid, vid.SerializeToString()])
