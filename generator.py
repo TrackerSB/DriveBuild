@@ -19,7 +19,7 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
-    @static_vars(line_width=0.3, num_nodes=100, smoothness=1000)
+    @static_vars(line_width=0.3, num_nodes=100, smoothness=0)
     def add_lanes_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         from shapely.geometry import LineString
