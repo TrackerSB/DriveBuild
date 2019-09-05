@@ -243,8 +243,8 @@ if __name__ == "__main__":
         args = {
             "environment": tostring(data.environment) if data.environment else None,
             "criteria": tostring(data.criteria) if data.criteria else None,
-            "result": TestResult.Result.Name(_result(data.sid)),
-            "status": SimStateResponse.SimState.Name(_status(data.sid)),
+            "result": TestResult.Result.Name(_result(data.sid).result),
+            "status": SimStateResponse.SimState.Name(_status(data.sid).state),
             "started": data.start_time.strftime("%Y-%m-%d %H:%M:%S") if data.start_time else None,
             "finished": data.end_time.strftime("%Y-%m-%d %H:%M:%S") if data.end_time else None,
             "username": data.user.username if data.user else None,
