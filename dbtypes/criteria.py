@@ -157,14 +157,13 @@ class SCLane(StateCondition):
         self.lane = lane
 
     def _create_requests(self) -> List[AiRequest]:
-        from requests import PositionRequest
-        return [PositionRequest(self._generate_rid())]
+        from requests import BoundingBoxRequest
+        return [BoundingBoxRequest(self._generate_rid())]
 
     def eval(self) -> KPValue:
         from typing import Dict
-        from shapely.geometry import Polygon, Point
-        x, y = self._poll_request_data()[0]
-        point = Point(x, y)
+        from shapely.geometry import Polygon
+        bbox = self._poll_request_data()[0]
 
         def _to_polygon(road_edges: List[Dict[str, float]]) -> Polygon:
             points = [p["left"][0:2] for p in road_edges]
@@ -178,7 +177,7 @@ class SCLane(StateCondition):
             for road in self.scenario.roads:
                 edges = self.scenario.bng.get_road_edges(road.rid)
                 polygon = _to_polygon(edges)
-                if polygon.contains(point):
+                if polygon.intersects(bbox):
                     is_offroad = KPValue.FALSE
                     break
             return is_offroad
@@ -186,7 +185,7 @@ class SCLane(StateCondition):
             for road in self.scenario.roads:
                 edges = self.scenario.bng.get_road_edges(road.rid)
                 polygon = _to_polygon(edges)
-                return KPValue.TRUE if polygon.contains(point) else KPValue.FALSE
+                return KPValue.TRUE if polygon.intersects(bbox) else KPValue.FALSE
 
 
 class SCSpeed(StateCondition):
