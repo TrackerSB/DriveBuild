@@ -167,11 +167,11 @@ class SCLane(StateCondition):
         point = Point(x, y)
 
         def _to_polygon(road_edges: List[Dict[str, float]]) -> Polygon:
-            points = [p["left"] for p in road_edges]
-            right_edge_points = [p["right"] for p in road_edges]
+            points = [p["left"][0:2] for p in road_edges]
+            right_edge_points = [p["right"][0:2] for p in road_edges]
             right_edge_points.reverse()
             points.extend(right_edge_points)
-            return Polygon()
+            return Polygon(shell=points)
 
         if self.lane == "offroad":
             is_offroad = KPValue.TRUE
