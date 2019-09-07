@@ -1,9 +1,9 @@
 from abc import ABC
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple, Callable
 
 from beamngpy import Scenario
-from dataclasses import dataclass
 
 
 class KPValue(Enum):
