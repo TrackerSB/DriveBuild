@@ -386,9 +386,10 @@ if __name__ == "__main__":
 
     def _attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
-            DamageRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest
+            DamageRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
         from PIL import Image
         from io import BytesIO
+        from shapely.geometry import mapping
         vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
         sensor_data = vehicle.poll_request(rid)
         if rid in vehicle.requests:
@@ -418,6 +419,11 @@ if __name__ == "__main__":
                 data.lane_center_distance.distance = sensor_data[1]
             elif request_type is CarToLaneAngleRequest:
                 data.car_to_lane_angle.angle = float(sensor_data[0])
+            elif request_type is BoundingBoxRequest:
+                points = mapping(sensor_data[0])["coordinates"][0]
+                for point in points:
+                    data.bounding_box.points.append(point[0])
+                    data.bounding_box.points.append(point[1])
             # elif request_type is LightRequest:
             # response = DataResponse.Data.Light()
             # FIXME Add DataResponse.Data.Light

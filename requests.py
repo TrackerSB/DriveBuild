@@ -36,6 +36,21 @@ class PositionRequest(AiRequest):
         return x, y
 
 
+class BoundingBoxRequest(AiRequest):
+    from beamngpy import Vehicle
+    from shapely.geometry import Polygon
+
+    def add_sensor_to(self, vehicle: Vehicle) -> None:
+        pass
+
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Polygon:
+        from shapely.geometry import Polygon
+        bbox_points = vehicle.get_bbox()
+        shell = tuple(map(lambda pos: bbox_points[pos][0:2],
+                          ["near_bottom_left", "far_bottom_left", "far_bottom_right", "near_bottom_right"]))
+        return Polygon(shell=shell)
+
+
 class DamageRequest(AiRequest):
     from beamngpy import Vehicle
 
