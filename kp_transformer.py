@@ -15,7 +15,7 @@ sc_options: Dict[str, Callable[[_Element], Callable[[Scenario], AnyStateConditio
                                                            float(node.get("y")), float(node.get("tolerance"))),
     "scArea": lambda node: lambda scenario: SCArea(
         scenario, node.get("participant"), string_to_shape(node.get("points"))),
-    "scLane": lambda node: lambda scenario: SCLane(scenario, node.get("participant"), node.get("lane")),
+    "scLane": lambda node: lambda scenario: SCLane(scenario, node.get("participant"), node.get("onLane")),
     "scSpeed": lambda node: lambda scenario: SCSpeed(scenario, node.get("participant"), float(node.get("limit"))),
     "scDamage": lambda node: lambda scenario: SCDamage(scenario, node.get("participant")),
     "scDistance": lambda node: lambda scenario: SCDistance(
