@@ -86,7 +86,6 @@ class Simulation:
         lua_av_command = []
         remaining_waypoints = participant.movement[idx + 1:]
         if next_mode == MovementMode._BEAMNG:
-            # FIXME Enable stay-on-lane
             # FIXME Recognize speeds
             serialized_waypoints = "{'" + "', '".join([wp.id for wp in remaining_waypoints]) + "'}"
             lua_av_command.append(
