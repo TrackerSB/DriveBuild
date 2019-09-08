@@ -37,14 +37,17 @@ class Simulation:
             simulation_sim_node_com_server.daemon = True
             simulation_sim_node_com_server.start()
 
-    @static_vars(lock=Lock())
     def send_message_to_sim_node(self, action: bytes, data: List[bytes]) -> bytes:
-        from drivebuildclient.common import send_request, create_client
-        Simulation.send_message_to_sim_node.lock.acquire()
-        if not self._sim_node_client_socket:
-            self._sim_node_client_socket = create_client("localhost", self.port)
+        from drivebuildclient.common import send_request, create_client, eprint
+        from time import sleep
+        while not self._sim_node_client_socket:
+            try:
+                self._sim_node_client_socket = create_client("localhost", self.port)
+            except ConnectionRefusedError:
+                retry_delay = 5
+                eprint("Retry creating client connection in " + str(retry_delay) + " seconds.")
+                sleep(retry_delay)
         result = send_request(self._sim_node_client_socket, action, data)
-        Simulation.send_message_to_sim_node.lock.release()
         return result
 
     def _get_movement_mode_file_path(self, pid: str, in_lua: bool) -> str:
