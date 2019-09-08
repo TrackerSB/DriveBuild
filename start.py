@@ -155,8 +155,10 @@ if __name__ == "__main__":
         _init_registered_ais(sid, vid)
         num_sim_ready, num_ai_ready = _registered_ais[sid.sid][vid.vid]
         _registered_ais[sid.sid][vid.vid] = (num_sim_ready + 1, num_ai_ready)
+        print(sid.sid + ":" + vid.vid + " after raf: " + str(_registered_ais[sid.sid][vid.vid]))
         _registered_ais_lock.release()
         while _registered_ais[sid.sid][vid.vid][1] < _registered_ais[sid.sid][vid.vid][0]:
+            print(sid.sid + ":" + vid.vid + " wait for ai ready")
             sleep(5)
             pass  # Wait for all being ready
         print("sim_request_ai_for: leave for " + sid.sid + ":" + vid.vid)
@@ -330,7 +332,7 @@ if __name__ == "__main__":
                 raise NotImplementedError("Handling the TestResult state " + task.state() + " is not implemented, yet.")
         else:
             response.state = SimStateResponse.SimState.RUNNING
-        print("ai_wait_for_simulator_request: leave for " + vid.vid)
+        print("_wait_for_simulator_request: leave for " + sid.sid + ":" + vid.vid)
         return response
 
 
@@ -448,14 +450,14 @@ if __name__ == "__main__":
 
 
     def _request_data(sid: SimulationID, vid: VehicleID, request: DataRequest) -> DataResponse:
-        print("ai_request_data: enter for " + vid.vid)
+        # print("ai_request_data: enter for " + vid.vid)
         data_response = DataResponse()
         for rid in request.request_ids:
             try:
                 _attach_request_data(data_response.data[rid], sid, vid, rid)
             except ValueError:
                 data_response.data[rid].error.message = "There is no request with ID \"" + rid + "\"."
-        print("ai_request_data: leave for " + vid.vid)
+        # print("ai_request_data: leave for " + vid.vid)
         return data_response
 
 

@@ -31,6 +31,7 @@ class Simulation:
         if self._sim_server_socket:
             raise ValueError("The simulation already started a server at " + str(self.port))
         else:
+            # print("Create server at " + str(self.port))
             self._sim_server_socket = create_server(self.port)
             simulation_sim_node_com_server = Thread(target=accept_at_server,
                                                     args=(self._sim_server_socket, handle_simulation_message))
@@ -341,6 +342,7 @@ class Simulation:
         from drivebuildclient.common import eprint
         from drivebuildclient.aiExchangeMessages_pb2 import VehicleID
         for v in vids:
+            # print(self.sid.sid + ": Request control for " + v)
             mode = self.get_current_movement_mode(v)
             if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING, MovementMode._BEAMNG]:
                 vid = VehicleID()
@@ -428,12 +430,12 @@ class Simulation:
         response = self.send_message_to_sim_node(b"vids", [self.serialized_sid])
         vids = VehicleIDs()
         vids.ParseFromString(response)
-        print("vids: " + str(vids.vids))
+        # print(self.sid.sid + ": vids: " + str(vids.vids))
         test_case_result: TestResult.Result = TestResult.Result.UNKNOWN
         start_time = datetime.now()
         while test_case_result is TestResult.Result.UNKNOWN and (datetime.now() - start_time).seconds < TIMEOUT:
             self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
-            print("Polled sensors")
+            # print(self.sid.sid + ": Polled sensors")
             precondition, failure, success = _get_verification()
             if precondition is KPValue.FALSE:
                 test_case_result = TestResult.Result.SKIPPED
