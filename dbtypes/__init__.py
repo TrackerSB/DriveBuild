@@ -9,12 +9,6 @@ from lxml.etree import _ElementTree
 from drivebuildclient.aiExchangeMessages_pb2 import TestResult, User, SimulationID
 
 
-class AIStatus(Enum):
-    READY = "READY"
-    WAITING = "WAITING"
-    REQUESTED = "REQUESTED"
-
-
 class ExtThread:
     """
     Wraps a Thread such that this object can be serialized and allows to set the returned status manually.

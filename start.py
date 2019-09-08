@@ -1,6 +1,6 @@
 import copyreg
 from socket import socket
-from threading import Thread
+from threading import Thread, Lock
 from typing import Dict, Optional, Tuple, List, Any
 
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, VehicleID, Num, \
@@ -13,7 +13,7 @@ _DB_CONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst",
 
 # Register pickler for _Element
 from config import SIM_NODE_PORT, MAIN_APP_HOST, MAIN_APP_PORT
-from dbtypes import SimulationData, AIStatus
+from dbtypes import SimulationData
 from dbtypes.scheme import MovementMode
 from sim_controller import Simulation
 
@@ -33,7 +33,9 @@ copyreg.pickle(_Element, element_pickler, element_unpickler)
 
 if __name__ == "__main__":
     _all_tasks: Dict[Simulation, SimulationData] = {}
-    _registered_ais: Dict[str, Dict[str, AIStatus]] = {}
+    # sid --> (vid --> (numSimReady, numAiReady))
+    _registered_ais: Dict[str, Dict[str, Tuple[int, int]]] = {}
+    _registered_ais_lock = Lock()
 
 
     def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
@@ -139,17 +141,25 @@ if __name__ == "__main__":
         return verification
 
 
+    def _init_registered_ais(sid: SimulationID, vid: VehicleID) -> None:
+        if sid.sid not in _registered_ais:
+            _registered_ais[sid.sid] = {}
+        if vid.vid not in _registered_ais[sid.sid]:
+            _registered_ais[sid.sid][vid.vid] = (0, 0)
+
+
     def _request_ai_for(sid: SimulationID, vid: VehicleID) -> Void:
-        print("sim_request_ai_for: enter for " + vid.vid)
-        while sid.sid not in _registered_ais \
-                or vid.vid not in _registered_ais[sid.sid] \
-                or _registered_ais[sid.sid][vid.vid] is not AIStatus.WAITING:
-            pass
-        _registered_ais[sid.sid][vid.vid] = AIStatus.REQUESTED
-        print("sim_request_ai_for: requested for " + vid.vid)
-        while _registered_ais[sid.sid][vid.vid] is AIStatus.REQUESTED:
-            pass
-        print("sim_request_ai_for: leave for " + vid.vid)
+        from time import sleep
+        print("sim_request_ai_for: enter for " + sid.sid + ":" + vid.vid)
+        _registered_ais_lock.acquire()
+        _init_registered_ais(sid, vid)
+        num_sim_ready, num_ai_ready = _registered_ais[sid.sid][vid.vid]
+        _registered_ais[sid.sid][vid.vid] = (num_sim_ready + 1, num_ai_ready)
+        _registered_ais_lock.release()
+        while _registered_ais[sid.sid][vid.vid][1] < _registered_ais[sid.sid][vid.vid][0]:
+            sleep(5)
+            pass  # Wait for all being ready
+        print("sim_request_ai_for: leave for " + sid.sid + ":" + vid.vid)
         void = Void()
         void.message = "Simulation " + sid.sid + " finished requesting vehicle " + vid.vid + "."
         return void
@@ -295,13 +305,16 @@ if __name__ == "__main__":
 
 
     def _wait_for_simulator_request(sid: SimulationID, vid: VehicleID) -> SimStateResponse:
-        print("ai_wait_for_simulator_request: enter for " + vid.vid)
-        if sid.sid not in _registered_ais:
-            _registered_ais[sid.sid] = {}
-        _registered_ais[sid.sid][vid.vid] = AIStatus.WAITING
-
-        while _is_simulation_running(sid) and _registered_ais[sid.sid][vid.vid] is AIStatus.WAITING:
-            pass
+        from time import sleep
+        print("_wait_for_simulator_request: enter for " + sid.sid + ":" + vid.vid)
+        _registered_ais_lock.acquire()
+        _init_registered_ais(sid, vid)
+        num_sim_ready, num_ai_ready = _registered_ais[sid.sid][vid.vid]
+        _registered_ais[sid.sid][vid.vid] = (num_sim_ready, num_ai_ready + 1)
+        _registered_ais_lock.release()
+        while _registered_ais[sid.sid][vid.vid][0] < _registered_ais[sid.sid][vid.vid][1]:
+            sleep(5)
+            pass  # Wait all being ready
         response = SimStateResponse()
         data = _get_data(sid)
         scenario = data.scenario
