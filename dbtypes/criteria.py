@@ -163,6 +163,7 @@ class SCLane(StateCondition):
     def eval(self) -> KPValue:
         from typing import Dict
         from shapely.geometry import Polygon
+        from drivebuildclient.common import eprint
         bbox = self._poll_request_data()[0]
 
         def _to_polygon(road_edges: List[Dict[str, float]]) -> Polygon:
@@ -175,11 +176,14 @@ class SCLane(StateCondition):
         if self.lane == "offroad":
             is_offroad = KPValue.TRUE
             for road in self.scenario.roads:
-                edges = self.scenario.bng.get_road_edges(road.rid)
-                polygon = _to_polygon(edges)
-                if polygon.intersects(bbox):
-                    is_offroad = KPValue.FALSE
-                    break
+                if road.rid:
+                    edges = self.scenario.bng.get_road_edges(road.rid)
+                    polygon = _to_polygon(edges)
+                    if polygon.intersects(bbox):
+                        is_offroad = KPValue.FALSE
+                        break
+                else:
+                    eprint("SCLane can not consider roads without ID.")
             return is_offroad
         else:
             for road in self.scenario.roads:
