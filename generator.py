@@ -51,12 +51,12 @@ class ScenarioBuilder:
             main_road.nodes.extend(main_nodes)
             scenario.add_road(main_road)
             if lane.markings:
-                center_line = Road('line_yellow')
+                center_line = Road('line_yellow', rid=lane.lid + "_center_line")
                 center_line.nodes.extend(
                     [(x, y, z, self.add_lanes_to_scenario.line_width) for x, y, z, _ in main_nodes])
                 scenario.add_road(center_line)
                 for side in ["right", "left"]:
-                    side_line = Road('line_white')
+                    side_line = Road('line_white', rid=lane.lid + "_" + side + "_line")
                     # FIXME Recognize changing widths
                     side_line_coords = LineString(zip(new_x_vals, new_y_vals)) \
                         .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width,
