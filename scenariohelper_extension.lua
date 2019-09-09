@@ -1,4 +1,5 @@
 -- This function has to be integrated into the file %BeamNGHome%/lua/ge/extensions/scenario/scenariohelper.lua of BeamNG
+-- Don't forget to add it to the module to make it visisble!
 local function setAiLine(vehicleName, arg)
   local nodes = arg['line']
   local fauxPath = {}
