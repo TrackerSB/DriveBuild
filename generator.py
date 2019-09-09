@@ -43,6 +43,7 @@ class ScenarioBuilder:
             old_x_vals = [node.position[0] for node in lane.nodes]
             old_y_vals = [node.position[1] for node in lane.nodes]
             old_width_vals = [node.width for node in lane.nodes]
+            # FIXME Set interpolate=False for all roads?
             main_road = Road('road_rubber_sticky', rid=lane.lid)
             new_x_vals, new_y_vals, z_vals, new_width_vals \
                 = _interpolate_nodes(old_x_vals, old_y_vals, old_width_vals, self.add_lanes_to_scenario.num_nodes)
