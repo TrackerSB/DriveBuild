@@ -157,7 +157,8 @@ if __name__ == "__main__":
         _registered_ais[sid.sid][vid.vid] = (num_sim_ready + 1, num_ai_ready)
         print(sid.sid + ":" + vid.vid + " after raf: " + str(_registered_ais[sid.sid][vid.vid]))
         _registered_ais_lock.release()
-        while _registered_ais[sid.sid][vid.vid][1] < _registered_ais[sid.sid][vid.vid][0]:
+        while _registered_ais[sid.sid][vid.vid][1] < _registered_ais[sid.sid][vid.vid][0] \
+                and _is_simulation_running(sid):
             print(sid.sid + ":" + vid.vid + " wait for ai ready")
             sleep(5)
             pass  # Wait for all being ready
@@ -314,7 +315,8 @@ if __name__ == "__main__":
         num_sim_ready, num_ai_ready = _registered_ais[sid.sid][vid.vid]
         _registered_ais[sid.sid][vid.vid] = (num_sim_ready, num_ai_ready + 1)
         _registered_ais_lock.release()
-        while _registered_ais[sid.sid][vid.vid][0] < _registered_ais[sid.sid][vid.vid][1]:
+        while _registered_ais[sid.sid][vid.vid][0] < _registered_ais[sid.sid][vid.vid][1] \
+                and _is_simulation_running(sid):
             sleep(5)
             pass  # Wait all being ready
         response = SimStateResponse()
