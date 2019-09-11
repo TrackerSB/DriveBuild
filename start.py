@@ -452,14 +452,15 @@ if __name__ == "__main__":
 
 
     def _request_data(sid: SimulationID, vid: VehicleID, request: DataRequest) -> DataResponse:
-        # print("ai_request_data: enter for " + vid.vid)
         data_response = DataResponse()
         for rid in request.request_ids:
             try:
-                _attach_request_data(data_response.data[rid], sid, vid, rid)
+                if _is_simulation_running(sid):
+                    _attach_request_data(data_response.data[rid], sid, vid, rid)
+                else:
+                    data_response.data[rid].error.message = "The simulation does not run anymore."
             except ValueError:
                 data_response.data[rid].error.message = "There is no request with ID \"" + rid + "\"."
-        # print("ai_request_data: leave for " + vid.vid)
         return data_response
 
 
