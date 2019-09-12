@@ -280,6 +280,7 @@ if __name__ == "__main__":
     def _run_tests(file_content: bytes, user: User) -> SubmissionResult:
         from tc_manager import run_tests
         from warnings import warn
+        from traceback import format_exc
         submission_result = SubmissionResult()
         try:
             new_tasks = run_tests(file_content)
@@ -302,7 +303,7 @@ if __name__ == "__main__":
                 eprint("Can not handle a _run_tests(...) result of type " + str(type(new_tasks)) + ".")
         except Exception as e:
             eprint("_run_tests(...) errored:")
-            eprint(e)
+            eprint(format_exc(e))
             submission_result.message.message = str(e)
         return submission_result
 
