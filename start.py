@@ -435,7 +435,8 @@ if __name__ == "__main__":
                 data.lane_center_distance.lane_id = sensor_data[0]
                 data.lane_center_distance.distance = sensor_data[1]
             elif request_type is CarToLaneAngleRequest:
-                data.car_to_lane_angle.angle = float(sensor_data[0])
+                data.car_to_lane_angle.lane_id = sensor_data[0]
+                data.car_to_lane_angle.angle = float(sensor_data[1])
             elif request_type is BoundingBoxRequest:
                 points = mapping(sensor_data[0])["coordinates"][0]
                 for point in points:
