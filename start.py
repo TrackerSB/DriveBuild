@@ -424,7 +424,8 @@ if __name__ == "__main__":
                 def _convert(image: Image) -> bytes:
                     bytes_arr = BytesIO()
                     image.save(bytes_arr, format="PNG")
-                    return bytes_arr.getvalue()
+                    bytes_arr.seek(0)
+                    return bytes_arr.read()
 
                 data.camera.color = _convert(sensor_data[0])
                 data.camera.annotated = _convert(sensor_data[1])
