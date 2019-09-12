@@ -176,7 +176,7 @@
 
     <!-- Request data/sensors -->
     <xs:complexType name="aiData">
-        <xs:attribute name="id" type="xs:string" use="required"/> <!-- FIXME Force different names within one participant -->
+        <xs:attribute name="id" type="xs:ID" use="required"/>
     </xs:complexType>
     <xs:element name="aiData" abstract="true" type="aiData"/>
     <xs:element name="position" substitutionGroup="aiData">
