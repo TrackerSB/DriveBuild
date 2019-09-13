@@ -15,11 +15,15 @@ NAMESPACES = {
 
 def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
     from util import is_dbe, is_dbc
+    from lxml.etree import XMLSyntaxError
     valid: bool = False
     parsed: Optional[_ElementTree] = None
-    parsed = etree.parse(path, PARSER)  # May throw XMLSyntaxException
-    if is_dbe(parsed) or is_dbc(parsed):
-        valid = SCHEMA.validate(parsed)
+    try:
+        parsed = etree.parse(path, PARSER)  # May throw XMLSyntaxException
+        if is_dbe(parsed) or is_dbc(parsed):
+            valid = SCHEMA.validate(parsed)
+    except XMLSyntaxError:
+        valid = False
     return valid, parsed
 
 
