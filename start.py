@@ -331,20 +331,7 @@ if __name__ == "__main__":
             sleep(5)
             pass  # Wait all being ready
         response = SimStateResponse()
-        data = _get_data(sid)
-        scenario = data.scenario
-        if scenario.bng is None:
-            task = data.simulation_task
-            if task.get_state() is TestResult.Result.SUCCEEDED or task.get_state() is TestResult.Result.FAILED:
-                response.state = SimStateResponse.SimState.FINISHED
-            elif task.get_state() is TestResult.Result.SKIPPED:
-                response.state = SimStateResponse.SimState.CANCELED
-            elif TestResult.Result.UNKNOWN:
-                response.state = SimStateResponse.SimState.TIMEOUT
-            else:
-                raise NotImplementedError("Handling the TestResult state " + task.state() + " is not implemented, yet.")
-        else:
-            response.state = SimStateResponse.SimState.RUNNING
+        response.state = _status(sid)
         print("_wait_for_simulator_request: leave for " + sid.sid + ":" + vid.vid)
         return response
 
