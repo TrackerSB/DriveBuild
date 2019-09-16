@@ -461,6 +461,7 @@ class Simulation:
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from threading import Thread
         from config import BEAMNG_INSTALL_FOLDER, BEAMNG_LEVEL_NAME
+        from drivebuildclient.common import eprint
 
         home_path = BEAMNG_INSTALL_FOLDER
         user_path = self.get_user_path()
@@ -487,14 +488,17 @@ class Simulation:
                     waypoints.add(wp.id)
         self._add_lap_config(waypoints)
 
-        bng_instance.open(launch=True)
-        bng_instance.load_scenario(bng_scenario)
-        bng_instance.set_steps_per_second(test_case.stepsPerSecond)
-        bng_instance.set_deterministic()
-        test_case.scenario.set_time_of_day_to(bng_instance)
-        bng_instance.hide_hud()
-        bng_instance.start_scenario()
-        bng_instance.pause()
+        try:
+            bng_instance.open(launch=True)
+            bng_instance.load_scenario(bng_scenario)
+            bng_instance.set_steps_per_second(test_case.stepsPerSecond)
+            bng_instance.set_deterministic()
+            test_case.scenario.set_time_of_day_to(bng_instance)
+            bng_instance.hide_hud()
+            bng_instance.start_scenario()
+            bng_instance.pause()
+        except OSError:
+            eprint("The start of a BeamNG instance failed (Port: " + str(Simulation._start_simulation.port) + ").")
         Simulation._start_simulation.lock.release()
 
         runtime_thread = Thread(target=Simulation._run_runtime_verification, args=(self, test_case.aiFrequency))
