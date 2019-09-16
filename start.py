@@ -129,15 +129,19 @@ if __name__ == "__main__":
 
 
     def _verify(sid: SimulationID) -> VerificationResult:
-        precondition_fct, failure_fct, success_fct = _get_simulation(sid).get_verification()
-        scenario = _get_data(sid).scenario
-        precondition = precondition_fct(scenario).eval()
-        failure = failure_fct(scenario).eval()
-        success = success_fct(scenario).eval()
+        from dbtypes.criteria import KPValue
         verification = VerificationResult()
-        verification.precondition = precondition.name
-        verification.failure = failure.name
-        verification.success = success.name
+        if _is_simulation_running(sid):
+            precondition_fct, failure_fct, success_fct = _get_simulation(sid).get_verification()
+            scenario = _get_data(sid).scenario
+            precondition = precondition_fct(scenario).eval()
+            failure = failure_fct(scenario).eval()
+            success = success_fct(scenario).eval()
+            verification.precondition = precondition.name
+            verification.failure = failure.name
+            verification.success = success.name
+        else:
+            verification.precondition = verification.failure = verification.success = KPValue.UNKNOWN.name
         return verification
 
 
