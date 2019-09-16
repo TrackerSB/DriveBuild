@@ -380,7 +380,8 @@ if __name__ == "__main__":
         else:
             task.set_state(command)
 
-        data.scenario.bng.close()
+        if _is_simulation_running(sid):
+            data.scenario.bng.close()
         data.end_time = datetime.now()
         _update_test_data(data)
 
