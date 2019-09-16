@@ -457,7 +457,7 @@ class Simulation:
         result.result = test_case_result
         self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()])
 
-    @static_vars(port=64256, lock=Lock())
+    @static_vars(port=50000, lock=Lock())
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from threading import Thread
         from config import BEAMNG_INSTALL_FOLDER, BEAMNG_LEVEL_NAME
