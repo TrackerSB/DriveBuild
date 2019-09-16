@@ -177,7 +177,13 @@ if __name__ == "__main__":
         print("_handle_simulation_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
-            if action == b"vids":
+            from drivebuildclient.aiExchangeMessages_pb2 import Bool
+            if action == b"isRunning":
+                sid = SimulationID()
+                sid.ParseFromString(data[0])
+                result = Bool()
+                result.value = _is_simulation_running(sid)
+            elif action == b"vids":
                 sid = SimulationID()
                 sid.ParseFromString(data[0])
                 result = _get_vids(sid)

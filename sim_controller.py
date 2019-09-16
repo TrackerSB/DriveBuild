@@ -408,7 +408,7 @@ class Simulation:
         return test_case.precondition_fct, test_case.failure_fct, test_case.success_fct
 
     def _run_runtime_verification(self, ai_frequency: int) -> None:
-        from drivebuildclient.aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num
+        from drivebuildclient.aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num, Bool
         from config import TIMEOUT
         from datetime import datetime
 
@@ -434,20 +434,25 @@ class Simulation:
         test_case_result: TestResult.Result = TestResult.Result.UNKNOWN
         start_time = datetime.now()
         while test_case_result is TestResult.Result.UNKNOWN and (datetime.now() - start_time).seconds < TIMEOUT:
-            self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
-            # print(self.sid.sid + ": Polled sensors")
-            precondition, failure, success = _get_verification()
-            if precondition is KPValue.FALSE:
-                test_case_result = TestResult.Result.SKIPPED
-            elif failure is KPValue.TRUE:
-                test_case_result = TestResult.Result.FAILED
-            elif success is KPValue.TRUE:
-                test_case_result = TestResult.Result.SUCCEEDED
+            is_running = Bool()
+            is_running.ParseFromString(self.send_message_to_sim_node(b"isRunning", [self.serialized_sid]))
+            if is_running.value:
+                self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
+                # print(self.sid.sid + ": Polled sensors")
+                precondition, failure, success = _get_verification()
+                if precondition is KPValue.FALSE:
+                    test_case_result = TestResult.Result.SKIPPED
+                elif failure is KPValue.TRUE:
+                    test_case_result = TestResult.Result.FAILED
+                elif success is KPValue.TRUE:
+                    test_case_result = TestResult.Result.SUCCEEDED
+                else:
+                    self._request_control_avs(vids.vids)
+                    freq = Num()
+                    freq.num = ai_frequency
+                    self.send_message_to_sim_node(b"steps", [self.serialized_sid, freq.SerializeToString()])
             else:
-                self._request_control_avs(vids.vids)
-                freq = Num()
-                freq.num = ai_frequency
-                self.send_message_to_sim_node(b"steps", [self.serialized_sid, freq.SerializeToString()])
+                break
         result = TestResult()
         result.result = test_case_result
         self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()])
