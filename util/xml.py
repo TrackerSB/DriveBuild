@@ -25,7 +25,7 @@ def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
         if is_dbe(parsed) or is_dbc(parsed):
             valid = SCHEMA.validate(parsed)
     except XMLSyntaxError as ex:
-        eprint(format_exc(ex))
+        eprint(ex)
         valid = False
     return valid, parsed
 
