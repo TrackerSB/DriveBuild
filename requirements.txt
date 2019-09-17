@@ -1,3 +1,4 @@
+drivebuild-client
 numpy
 scipy
 beamngpy>=1.12
