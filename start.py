@@ -330,8 +330,7 @@ if __name__ == "__main__":
                 and _is_simulation_running(sid):
             sleep(5)
             pass  # Wait all being ready
-        response = SimStateResponse()
-        response.state = _status(sid)
+        response = _status(sid)
         print("_wait_for_simulator_request: leave for " + sid.sid + ":" + vid.vid)
         return response
 
