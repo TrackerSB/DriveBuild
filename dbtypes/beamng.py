@@ -8,7 +8,7 @@ class DBBeamNGpy(BeamNGpy):
 
     def step(self, count, wait=True):
         super().step(count, wait)
-        self.current_tick += 1
+        self.current_tick += count
 
 
 class DBVehicle(Vehicle):
