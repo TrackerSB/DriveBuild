@@ -16,7 +16,8 @@ class DBBeamNGpy(BeamNGpy):
 
     def poll_sensors(self, vehicle):
         self.instance_lock.acquire()
-        super().poll_sensors(vehicle)
+        if self.skt:
+            super().poll_sensors(vehicle)
         self.instance_lock.release()
 
     def close(self):
