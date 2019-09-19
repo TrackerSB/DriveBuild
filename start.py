@@ -313,8 +313,7 @@ if __name__ == "__main__":
             else:
                 eprint("Can not handle a _run_tests(...) result of type " + str(type(new_tasks)) + ".")
         except Exception as e:
-            eprint("_run_tests(...) errored:")
-            eprint(format_exc(e))
+            eprint("_run_tests(...) errored with " + str(e))
             submission_result.message.message = str(e)
         return submission_result
 
