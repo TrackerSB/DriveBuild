@@ -5,7 +5,8 @@ from typing import Dict, Optional, Tuple, List
 
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, VehicleID, Num, \
     TestResult, SubmissionResult, User, SimStateResponse, Control, DataResponse, DataRequest, SimulationNodeID
-from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests
+from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests, \
+    static_vars
 from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
