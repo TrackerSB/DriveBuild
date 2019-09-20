@@ -21,12 +21,11 @@ class DBBeamNGpy(BeamNGpy):
         self.instance_lock.release()
 
     def close(self):
-        from msgpack import ExtraData
         from drivebuildclient.common import eprint
         self.instance_lock.acquire()
         try:
             super().close()
-        except ExtraData as ex:
+        except Exception as ex:
             eprint("The close call to BeamNG errored with \"" + str(ex) + "\".")
         self.instance_lock.release()
 
