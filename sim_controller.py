@@ -91,7 +91,11 @@ class Simulation:
         # NOTE sh.setAiLine(...) is a custom function introduced into BeamNG
         from drivebuildclient.common import eprint
         from dbtypes.scheme import WayPoint
-        lua_av_command = []
+        lua_av_command = [
+            "    local modeFile = io.open('" + self._get_movement_mode_file_path(participant.id, True) + "', 'w')",
+            "    modeFile:write('" + next_mode.value + "')",
+            "    modeFile:close()"
+        ]
         remaining_waypoints = participant.movement[idx + 1:]
         if next_mode == MovementMode._BEAMNG:
             # FIXME Recognize speeds
@@ -124,11 +128,6 @@ class Simulation:
             ])
         else:
             eprint("Can not handle MovementMode " + str(next_mode) + ".")
-        lua_av_command.extend([
-            "    local modeFile = io.open('" + self._get_movement_mode_file_path(participant.id, True) + "', 'w')",
-            "    modeFile:write('" + next_mode.value + "')",
-            "    modeFile:close()"
-        ])
         return lua_av_command
 
     def get_user_path(self) -> str:
