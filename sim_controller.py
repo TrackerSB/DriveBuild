@@ -357,7 +357,8 @@ class Simulation:
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
-        Adds a dummy lapConfig attribute to the scenario json to avoid nil value exceptions.
+        Adds a dummy lapConfig attribute to the scenario json to avoid nil value exceptions. This call makes waypoints
+        visible.
         """
         if not waypoint_ids == set():
             self._add_to_json_file([
@@ -481,12 +482,12 @@ class Simulation:
         self._annotate_objects()
         self._add_waypoints_to_scenario(test_case.scenario.participants)
         self._enable_participant_movements(test_case.scenario.participants)
-        waypoints = set()
-        for wps in [p.movement for p in test_case.scenario.participants]:
-            for wp in wps:
-                if wp.id is not None:  # FIXME Not all waypoints are added
-                    waypoints.add(wp.id)
-        self._add_lap_config(waypoints)
+        # waypoints = set()
+        # for wps in [p.movement for p in test_case.scenario.participants]:
+        #     for wp in wps:
+        #         if wp.id is not None:  # FIXME Waypoints are added in wrong order
+        #             waypoints.add(wp.id)
+        # self._add_lap_config(waypoints)
 
         try:
             bng_instance.open(launch=True)
