@@ -5,8 +5,7 @@ from typing import Dict, Optional, Tuple, List
 
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, VehicleID, Num, \
     TestResult, SubmissionResult, User, SimStateResponse, Control, DataResponse, DataRequest, SimulationNodeID
-from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests, \
-    static_vars
+from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests
 from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
@@ -291,7 +290,6 @@ if __name__ == "__main__":
     def _run_tests(file_content: bytes, user: User) -> SubmissionResult:
         from tc_manager import run_tests
         from warnings import warn
-        from traceback import format_exc
         submission_result = SubmissionResult()
         try:
             new_tasks = run_tests(file_content)
