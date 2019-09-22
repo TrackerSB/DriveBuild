@@ -26,6 +26,7 @@ class ScenarioBuilder:
         from scipy.interpolate import splev, splprep
         from numpy.ma import arange
         from numpy import repeat
+        from collections import defaultdict
 
         def _interpolate_nodes(old_x_vals: List[float], old_y_vals: List[float], old_width_vals: List[float],
                                num_nodes: int) -> Tuple[List[float], List[float], List[float], List[float]]:
@@ -40,8 +41,16 @@ class ScenarioBuilder:
             return new_x_vals, new_y_vals, z_vals, new_width_vals
 
         for lane in self.lanes:
-            old_x_vals = [node.position[0] for node in lane.nodes]
-            old_y_vals = [node.position[1] for node in lane.nodes]
+            unique_nodes = []
+            node_pos_tracker = defaultdict(lambda: list())
+            for node in lane.nodes:
+                x = node.position[0]
+                y = node.position[1]
+                if x not in node_pos_tracker or y not in node_pos_tracker[x]:
+                    unique_nodes.append(node)
+                    node_pos_tracker[x].append(y)
+            old_x_vals = [node.position[0] for node in unique_nodes]
+            old_y_vals = [node.position[1] for node in unique_nodes]
             old_width_vals = [node.width for node in lane.nodes]
             # FIXME Set interpolate=False for all roads?
             main_road = Road('road_rubber_sticky', rid=lane.lid)
@@ -59,7 +68,7 @@ class ScenarioBuilder:
                     side_line = Road('line_white', rid=lane.lid + "_" + side + "_line")
                     # FIXME Recognize changing widths
                     side_line_coords = LineString(zip(new_x_vals, new_y_vals)) \
-                        .parallel_offset(lane.nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width,
+                        .parallel_offset(unique_nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width,
                                          side=side) \
                         .coords.xy
                     # NOTE The parallel LineString may have a different number of points than initially given
