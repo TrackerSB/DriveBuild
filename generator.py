@@ -74,11 +74,12 @@ class ScenarioBuilder:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
         from dbtypes.scheme import Cone, Cube, Cylinder, Bump
         from drivebuildclient.common import eprint
+        from scipy import deg2rad
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
             height = obstacle.height
             pos = (obstacle.x, obstacle.y, height / 2.0)
-            rot = (obstacle.x_rot, obstacle.y_rot, obstacle.z_rot)
+            rot = (deg2rad(obstacle.x_rot), deg2rad(obstacle.y_rot), deg2rad(obstacle.z_rot - 90))
             name = obstacle.oid
             if obstacle_type is Cube:
                 mesh = ProceduralCube(pos, rot, (obstacle.length, obstacle.width, height), name=name)
@@ -93,6 +94,7 @@ class ScenarioBuilder:
                 eprint("Obstacles of type " + str(obstacle_type) + " are not supported by the generation, yet.")
                 mesh = None
             if mesh:
+                # NOTE Procedural meshes use radians for rotation
                 scenario.add_procedural_mesh(mesh)
 
     def add_participants_to_scenario(self, scenario: Scenario) -> None:
@@ -103,6 +105,7 @@ class ScenarioBuilder:
             for request in participant.ai_requests:
                 vehicle.apply_request(request)
             initial_state = participant.initial_state
+            # NOTE Participants use degrees for rotation
             scenario.add_vehicle(vehicle,
                                  pos=(initial_state.position[0], initial_state.position[1], 0),
                                  rot=(0, 0, -initial_state.orientation - 90))
