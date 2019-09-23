@@ -340,9 +340,13 @@ class Simulation:
     def _request_control_avs(self, vids: List[str]) -> None:
         from drivebuildclient.common import eprint
         from drivebuildclient.aiExchangeMessages_pb2 import VehicleID
+        import dill as pickle
         for v in vids:
             # print(self.sid.sid + ": Request control for " + v)
             mode = self.get_current_movement_mode(v)
+            if not mode:  # If there is no movement mode file assume participant is still in mode of initial state
+                test_case = pickle.loads(self.pickled_test_case)
+                mode = [p.initial_state.mode for p in test_case.scenario.participants if p.id == v][0]
             if mode in [MovementMode.AUTONOMOUS, MovementMode.TRAINING, MovementMode._BEAMNG]:
                 vid = VehicleID()
                 vid.vid = v
