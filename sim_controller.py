@@ -351,8 +351,8 @@ class Simulation:
                 # FIXME Continue...
             elif mode == MovementMode.MANUAL:
                 pass  # No AI to request
-            elif not mode:
-                eprint("There is no current MovementMode set.")
+            else:
+                eprint(self.sid.sid + ":" + v + ": Can not handle movement mode " + (mode.name if mode else "None"))
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
