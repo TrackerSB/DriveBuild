@@ -108,7 +108,10 @@ class StateCondition(Criterion, ABC):
         return self.scenario.bng is not None
 
     def eval(self) -> KPValue:
-        return self._eval_impl() if self._is_simulation_running() else KPValue.UNKNOWN
+        if self._is_simulation_running():
+            return self._eval_impl()
+        else:
+            return KPValue.UNKNOWN
 
     @abstractmethod
     def _eval_impl(self) -> KPValue:
