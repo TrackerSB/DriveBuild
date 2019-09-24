@@ -462,8 +462,11 @@ class Simulation:
                     cycle_start_timestamp.num = int(datetime.timestamp(cycle_start_time))
                     cycle_end_timestamp = Num()
                     cycle_end_timestamp.num = int(datetime.timestamp(cycle_end_time))
-                    self.send_message_to_sim_node(b"storeVerificationCycle",
-                                                  [self.serialized_sid, cycle_start_timestamp, cycle_end_timestamp])
+                    self.send_message_to_sim_node(b"storeVerificationCycle", [
+                        self.serialized_sid,
+                        cycle_start_timestamp.SerializeToString(),
+                        cycle_end_timestamp.SerializeToString()
+                    ])
                     self.send_message_to_sim_node(b"steps", [self.serialized_sid, serialized_frequency])
             else:
                 break
