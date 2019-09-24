@@ -1,4 +1,5 @@
 import copyreg
+from datetime import datetime
 from socket import socket
 from threading import Thread, Lock
 from typing import Dict, Optional, Tuple, List
@@ -104,24 +105,16 @@ if __name__ == "__main__":
         return vids
 
 
+    def _time_to_string(time: datetime) -> str:
+        return time.strftime("%Y-%m-%d %H:%M:%S")
+
+
     def _poll_sensors(sid: SimulationID) -> Void:
         vehicles = _get_data(sid).scenario.vehicles.keys()
         void = Void()
         if _is_simulation_running(sid):
             for vehicle in vehicles:
                 _get_data(sid).scenario.bng.poll_sensors(vehicle)
-                vid = VehicleID()
-                vid.vid = vehicle.vid
-                request = DataRequest()
-                request.request_ids.extend(vehicle.requests)
-                data = _request_data(sid, vid, request)
-                args = {
-                    "sid": sid.sid,
-                    "vid": vid.vid,
-                    "tick": _get_data(sid).scenario.bng.current_tick,
-                    "data": data.SerializeToString()
-                }
-                _DB_CONNECTION.run_query("""INSERT INTO traces VALUES(:sid, :vid, :tick, :data);""", args)
             void.message = "Polled all registered sensors of simulation " + sid.sid + "."
         else:
             void.message = "Skipped polling sensors since simulation " + sid.sid + " is not running anymore."
@@ -172,6 +165,35 @@ if __name__ == "__main__":
         return void
 
 
+    def _store_verification_cycle(sid: SimulationID, started: datetime, finished: datetime) -> Void:
+        vehicles = _get_data(sid).scenario.vehicles.keys()
+        void = Void()
+        if _is_simulation_running(sid):
+            for vehicle in vehicles:
+                vid = VehicleID()
+                vid.vid = vehicle.vid
+                request = DataRequest()
+                request.request_ids.extend(vehicle.requests)
+                data = _request_data(sid, vid, request)
+                args = {
+                    "sid": sid.sid,
+                    "vid": vid.vid,
+                    "tick": _get_data(sid).scenario.bng.current_tick,
+                    "data": data.SerializeToString(),
+                    "started": _time_to_string(started),
+                    "finished": _time_to_string(finished)
+                }
+                _DB_CONNECTION.run_query("""
+                INSERT INTO verificationcycles VALUES
+                (:sid, :vid, :tick, :data, :started, :finished);
+                """, args)
+            void.message = "Stored data of the current runtime verification cycle of simulation " + sid.sid + "."
+        else:
+            void.message = "Skipped storing the data of the current runtime verification cycle since simulation "\
+                           + sid.sid + " does not run anymore."
+        return void
+
+
     def _handle_simulation_message(conn: socket, _: Tuple[str, int]) -> None:
         from drivebuildclient.common import process_requests
         print("_handle_simulation_message --> " + str(conn.getsockname()))
@@ -201,6 +223,15 @@ if __name__ == "__main__":
                 vid = VehicleID()
                 vid.ParseFromString(data[1])
                 result = _request_ai_for(sid, vid)
+            elif action == b"storeVerificationCycle":
+                sid = SimulationID()
+                sid.ParseFromString(data[0])
+                started = Num()
+                started.ParseFromString(data[1])
+                finished = Num()
+                finished.ParseFromString(data[2])
+                result = _store_verification_cycle(sid, datetime.fromtimestamp(started.num),
+                                                   datetime.fromtimestamp(finished.num))
             elif action == b"steps":
                 sid = SimulationID()
                 sid.ParseFromString(data[0])
