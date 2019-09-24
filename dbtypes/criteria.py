@@ -56,14 +56,14 @@ class UnknownEvaluable(Evaluable):
         return KPValue.UNKNOWN
 
 
-class Criteria(Evaluable, ABC):
+class Criterion(Evaluable, ABC):
     def __init__(self, scenario: Scenario) -> None:
         self.scenario = scenario
 
 
 # State conditions
 # FIXME Recognize "any" participant
-class StateCondition(Criteria, ABC):
+class StateCondition(Criterion, ABC):
     """
     NOTE: A StateCondition does never call Vehicle::update_vehicle() which has to be called before every evaluation.
     """
@@ -103,6 +103,16 @@ class StateCondition(Criteria, ABC):
                 break
         return rid
 
+    def _is_simulation_running(self) -> bool:
+        return self.scenario.bng is not None
+
+    def eval(self) -> KPValue:
+        return self._eval_impl() if self._is_simulation_running() else KPValue.UNKNOWN
+
+    @abstractmethod
+    def _eval_impl(self) -> KPValue:
+        pass
+
     @abstractmethod
     def _create_requests(self) -> List[AiRequest]:
         pass
@@ -123,7 +133,7 @@ class SCPosition(StateCondition):
         from requests import PositionRequest
         return [PositionRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         from numpy import array
         from numpy.linalg import norm
         x, y = self._poll_request_data()[0]
@@ -142,7 +152,7 @@ class SCArea(StateCondition):
         from requests import PositionRequest
         return [PositionRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         from shapely.geometry import Point
         x, y = self._poll_request_data()[0]
         return KPValue.TRUE if self.polygon.contains(Point(x, y)) else KPValue.FALSE
@@ -160,7 +170,7 @@ class SCLane(StateCondition):
         from requests import BoundingBoxRequest
         return [BoundingBoxRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         from typing import Dict
         from shapely.geometry import Polygon
         from drivebuildclient.common import eprint
@@ -205,7 +215,7 @@ class SCSpeed(StateCondition):
         from requests import SpeedRequest
         return [SpeedRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         return KPValue.TRUE if self._poll_request_data()[0] > self.speed_limit else KPValue.FALSE
 
 
@@ -219,7 +229,7 @@ class SCDamage(StateCondition):
         from requests import DamageRequest
         return [DamageRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         return KPValue.TRUE if self._poll_request_data()[0] else KPValue.FALSE
 
 
@@ -238,7 +248,7 @@ class SCDistance(StateCondition):
         from requests import PositionRequest
         return [PositionRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         from numpy import array
         from numpy.linalg import norm
         x1, y1 = self._poll_request_data()[0]
@@ -259,7 +269,7 @@ class SCLight(StateCondition):
         from requests import LightRequest
         return [LightRequest(self._generate_rid())]
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         # FIXME Implement light criterion
         print(self._poll_request_data()[0])
         return KPValue.UNKNOWN
@@ -276,13 +286,13 @@ class SCWaypoint(StateCondition):
     def _create_requests(self) -> List[AiRequest]:
         return []
 
-    def eval(self) -> KPValue:
+    def _eval_impl(self) -> KPValue:
         # FIXME Implement waypoint criterion
         return KPValue.UNKNOWN
 
 
 # Validation constraints
-class ValidationConstraint(Criteria, ABC):
+class ValidationConstraint(Criterion, ABC):
     from abc import abstractmethod
 
     def __init__(self, scenario: Scenario, inner: Evaluable) -> None:
@@ -343,7 +353,7 @@ class VCTime(ValidationConstraint):
         from dbtypes.beamng import DBBeamNGpy
         from warnings import warn
         bng = self.scenario.bng
-        if type(bng) is DBBeamNGpy:
+        if bng and type(bng) is DBBeamNGpy:
             # FIXME from_step/to_step inclusive/exclusive?
             return KPValue.TRUE if self.from_tick <= bng.current_tick <= self.to_tick else KPValue.FALSE
         else:
