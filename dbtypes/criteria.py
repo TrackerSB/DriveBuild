@@ -82,7 +82,8 @@ class StateCondition(Criterion, ABC):
             vehicle = self._get_vehicle()
             request.add_sensor_to(vehicle)
             # Make sure vehicle sensor_cache is not empty
-            scenario.bng.poll_sensors(vehicle)
+            if self._is_simulation_running():
+                scenario.bng.poll_sensors(vehicle)
 
     def _get_vehicle(self) -> Vehicle:
         return self.scenario.get_vehicle(self.participant)
