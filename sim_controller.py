@@ -434,6 +434,9 @@ class Simulation:
         response = self.send_message_to_sim_node(b"vids", [self.serialized_sid])
         vids = VehicleIDs()
         vids.ParseFromString(response)
+        freq = Num()
+        freq.num = ai_frequency
+        serialized_frequency = freq.SerializeToString()
         # print(self.sid.sid + ": vids: " + str(vids.vids))
         test_case_result: TestResult.Result = TestResult.Result.UNKNOWN
         start_time = datetime.now()
@@ -452,9 +455,7 @@ class Simulation:
                     test_case_result = TestResult.Result.SUCCEEDED
                 else:
                     self._request_control_avs(vids.vids)
-                    freq = Num()
-                    freq.num = ai_frequency
-                    self.send_message_to_sim_node(b"steps", [self.serialized_sid, freq.SerializeToString()])
+                    self.send_message_to_sim_node(b"steps", [self.serialized_sid, serialized_frequency])
             else:
                 break
         result = TestResult()
