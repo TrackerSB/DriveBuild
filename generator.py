@@ -29,6 +29,8 @@ class ScenarioBuilder:
 
         def _interpolate_nodes(old_x_vals: List[float], old_y_vals: List[float], old_width_vals: List[float],
                                num_nodes: int) -> Tuple[List[float], List[float], List[float], List[float]]:
+            assert len(old_x_vals) == len(old_y_vals) == len(old_width_vals), \
+                "The lists for the interpolation must have the same length."
             k = 1 if len(old_x_vals) <= 3 else 3
             pos_tck, pos_u = splprep([old_x_vals, old_y_vals], s=self.add_lanes_to_scenario.smoothness, k=k)
             step_size = 1 / num_nodes
@@ -50,7 +52,7 @@ class ScenarioBuilder:
                     node_pos_tracker[x].append(y)
             old_x_vals = [node.position[0] for node in unique_nodes]
             old_y_vals = [node.position[1] for node in unique_nodes]
-            old_width_vals = [node.width for node in lane.nodes]
+            old_width_vals = [node.width for node in unique_nodes]
             # FIXME Set interpolate=False for all roads?
             main_road = Road('road_rubber_sticky', rid=lane.lid)
             new_x_vals, new_y_vals, z_vals, new_width_vals \
