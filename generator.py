@@ -1,9 +1,8 @@
 from typing import List, Tuple, Optional
 
 from beamngpy import BeamNGpy
-from lxml.etree import _ElementTree, _Element
-
 from drivebuildclient.common import static_vars
+from lxml.etree import _ElementTree, _Element
 
 
 class ScenarioBuilder:
