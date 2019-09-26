@@ -361,7 +361,8 @@ class Simulation:
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
         Adds a dummy lapConfig attribute to the scenario json to avoid nil value exceptions. This call makes waypoints
-        visible.
+        visible. Without adding a lapConfig calls to functions like setAiPath(...) fail at least when called during
+        onRaceStart(...).
         """
         if not waypoint_ids == set():
             self._add_to_json_file([
