@@ -416,6 +416,7 @@ class Simulation:
         from drivebuildclient.aiExchangeMessages_pb2 import TestResult, VehicleIDs, Num, Bool
         from config import TIMEOUT
         from datetime import datetime
+        from threading import Thread
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
             from drivebuildclient.aiExchangeMessages_pb2 import VerificationResult
@@ -430,6 +431,39 @@ class Simulation:
                 eprint("Verification of criteria at simulation " + self._sim_name + " timed out.")
                 return KPValue.UNKNOWN, KPValue.UNKNOWN, KPValue.UNKNOWN
 
+        def _run_verification_cycles() -> None:
+            while test_case_result is TestResult.Result.UNKNOWN and (
+                    datetime.now() - test_start_time).seconds < TIMEOUT:
+                is_running = Bool()
+                is_running.ParseFromString(self.send_message_to_sim_node(b"isRunning", [self.serialized_sid]))
+                if is_running.value:
+                    cycle_start_time = datetime.now()
+                    self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
+                    # print(self.sid.sid + ": Polled sensors")
+                    precondition, failure, success = _get_verification()
+                    if precondition is KPValue.FALSE:
+                        test_case_result = TestResult.Result.SKIPPED
+                    elif failure is KPValue.TRUE:
+                        test_case_result = TestResult.Result.FAILED
+                    elif success is KPValue.TRUE:
+                        test_case_result = TestResult.Result.SUCCEEDED
+                    else:
+                        # TODO Measure AI time start here?
+                        self._request_control_avs(vids.vids)
+                        cycle_end_time = datetime.now()
+                        cycle_start_timestamp = Num()
+                        cycle_start_timestamp.num = int(datetime.timestamp(cycle_start_time))
+                        cycle_end_timestamp = Num()
+                        cycle_end_timestamp.num = int(datetime.timestamp(cycle_end_time))
+                        self.send_message_to_sim_node(b"storeVerificationCycle", [
+                            self.serialized_sid,
+                            cycle_start_timestamp.SerializeToString(),
+                            cycle_end_timestamp.SerializeToString()
+                        ])
+                        self.send_message_to_sim_node(b"steps", [self.serialized_sid, serialized_frequency])
+                else:
+                    break
+
         # FIXME Wait for simulation to be registered at the simulation node?
         # FIXME Use is_simulation_running?
         response = self.send_message_to_sim_node(b"vids", [self.serialized_sid])
@@ -439,38 +473,11 @@ class Simulation:
         freq.num = ai_frequency
         serialized_frequency = freq.SerializeToString()
         # print(self.sid.sid + ": vids: " + str(vids.vids))
+        cycles_thread = Thread(target=_run_verification_cycles, args=())
         test_case_result: TestResult.Result = TestResult.Result.UNKNOWN
         test_start_time = datetime.now()
-        while test_case_result is TestResult.Result.UNKNOWN and (datetime.now() - test_start_time).seconds < TIMEOUT:
-            is_running = Bool()
-            is_running.ParseFromString(self.send_message_to_sim_node(b"isRunning", [self.serialized_sid]))
-            if is_running.value:
-                cycle_start_time = datetime.now()
-                self.send_message_to_sim_node(b"pollSensors", [self.serialized_sid])
-                # print(self.sid.sid + ": Polled sensors")
-                precondition, failure, success = _get_verification()
-                if precondition is KPValue.FALSE:
-                    test_case_result = TestResult.Result.SKIPPED
-                elif failure is KPValue.TRUE:
-                    test_case_result = TestResult.Result.FAILED
-                elif success is KPValue.TRUE:
-                    test_case_result = TestResult.Result.SUCCEEDED
-                else:
-                    # TODO Measure AI time start here?
-                    self._request_control_avs(vids.vids)
-                    cycle_end_time = datetime.now()
-                    cycle_start_timestamp = Num()
-                    cycle_start_timestamp.num = int(datetime.timestamp(cycle_start_time))
-                    cycle_end_timestamp = Num()
-                    cycle_end_timestamp.num = int(datetime.timestamp(cycle_end_time))
-                    self.send_message_to_sim_node(b"storeVerificationCycle", [
-                        self.serialized_sid,
-                        cycle_start_timestamp.SerializeToString(),
-                        cycle_end_timestamp.SerializeToString()
-                    ])
-                    self.send_message_to_sim_node(b"steps", [self.serialized_sid, serialized_frequency])
-            else:
-                break
+        cycles_thread.start()
+        cycles_thread.join(TIMEOUT)
         result = TestResult()
         result.result = test_case_result
         self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()])
