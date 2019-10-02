@@ -379,7 +379,7 @@ if __name__ == "__main__":
             vehicle.control(throttle=command.accelerate, steering=command.steer, brake=command.brake, parkingbrake=0)
         except Exception as ex:
             eprint("Controlling a vehicle failed.")
-            print_exc(ex)
+            eprint(str(ex))
 
 
     def _control_sim(sid: SimulationID, command: int, direct: bool) -> None:
