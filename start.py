@@ -419,18 +419,21 @@ if __name__ == "__main__":
 
     def _control(sid: SimulationID, vid: VehicleID, control: Control) -> Void:
         print("ai_control: enter for " + vid.vid)
-        command_type = control.WhichOneof("command")
-        if command_type == "simCommand":
-            _control_sim(sid, control.simCommand.command, True)
-        elif command_type == "avCommand":
-            sim = _get_simulation(sid)
-            if sim and sim.get_current_movement_mode(vid.vid) is MovementMode.AUTONOMOUS:
-                _control_av(sid, vid, control.avCommand)
-        else:
-            raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
-        print("ai_control: leave for " + vid.vid)
         result = Void()
-        result.message = "Controlled vehicle " + vid.vid + " in simulation " + sid.sid + "."
+        if _is_simulation_running(sid):
+            command_type = control.WhichOneof("command")
+            if command_type == "simCommand":
+                _control_sim(sid, control.simCommand.command, True)
+            elif command_type == "avCommand":
+                sim = _get_simulation(sid)
+                if sim and sim.get_current_movement_mode(vid.vid) is MovementMode.AUTONOMOUS:
+                    _control_av(sid, vid, control.avCommand)
+            else:
+                raise NotImplementedError("Interpreting commands of type " + command_type + " is not implemented, yet.")
+            result.message = "Controlled vehicle " + vid.vid + " in simulation " + sid.sid + "."
+        else:
+            result.message = "Simulation " + sid.sid + " does not run."
+        print("ai_control: leave for " + vid.vid)
         return result
 
 
