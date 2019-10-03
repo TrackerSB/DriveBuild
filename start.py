@@ -189,7 +189,7 @@ if __name__ == "__main__":
                 """, args)
             void.message = "Stored data of the current runtime verification cycle of simulation " + sid.sid + "."
         else:
-            void.message = "Skipped storing the data of the current runtime verification cycle since simulation "\
+            void.message = "Skipped storing the data of the current runtime verification cycle since simulation " \
                            + sid.sid + " does not run anymore."
         return void
 
