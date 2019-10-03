@@ -15,9 +15,13 @@ class DBBeamNGpy(BeamNGpy):
         self.current_tick += count
 
     def poll_sensors(self, vehicle):
+        from dbtypes.beamngpy import BeamNGpyException
         self.instance_lock.acquire()
         if self.skt:
-            super().poll_sensors(vehicle)
+            try:
+                super().poll_sensors(vehicle)
+            except Exception as ex:
+                raise BeamNGpyException("Polling sensors failed") from ex
         self.instance_lock.release()
 
     def close(self):

@@ -1,0 +1,2 @@
+class BeamNGpyException(RuntimeWarning):
+    pass

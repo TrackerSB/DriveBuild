@@ -373,13 +373,12 @@ if __name__ == "__main__":
         :param steer: The steering angle (Range -1.0 to 1.0) # FIXME Negative/Positive left/right?
         :param brake: The brake intensity (Range 0.0 to 1.0)
         """
-        from traceback import print_exc
+        from dbtypes.beamngpy import BeamNGpyException
         vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
         try:
             vehicle.control(throttle=command.accelerate, steering=command.steer, brake=command.brake, parkingbrake=0)
         except Exception as ex:
-            eprint("Controlling a vehicle failed.")
-            eprint(str(ex))
+            raise BeamNGpyException("Controlling a vehicle failed.") from ex
 
 
     def _control_sim(sid: SimulationID, command: int, direct: bool) -> None:
