@@ -22,7 +22,10 @@ class DBBeamNGpy(BeamNGpy):
                 super().poll_sensors(vehicle)
             except Exception as ex:
                 raise BeamNGpyException("Polling sensors failed") from ex
-        self.instance_lock.release()
+            finally:
+                self.instance_lock.release()
+        else:
+            self.instance_lock.release()
 
     def close(self):
         from drivebuildclient.common import eprint
