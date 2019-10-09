@@ -27,6 +27,7 @@ class ScenarioBuilder:
         from numpy import repeat, linspace
         from collections import defaultdict
 
+        @static_vars(rounding_precision=3)
         def _interpolate_nodes(old_x_vals: List[float], old_y_vals: List[float], old_width_vals: List[float],
                                num_nodes: int) -> Tuple[List[float], List[float], List[float], List[float]]:
             assert len(old_x_vals) == len(old_y_vals) == len(old_width_vals), \
@@ -39,7 +40,10 @@ class ScenarioBuilder:
             z_vals = repeat(0.01, len(unew))
             width_tck, width_u = splprep([pos_u, old_width_vals], s=self.add_roads_to_scenario.smoothness, k=k)
             _, new_width_vals = splev(unew, width_tck)
-            return new_x_vals, new_y_vals, z_vals, new_width_vals
+            # Reduce floating point rounding errors otherwise these may cause problems with calculating parallel_offset
+            return [round(v, _interpolate_nodes.rounding_precision) for v in new_x_vals], \
+                   [round(v, _interpolate_nodes.rounding_precision) for v in new_y_vals], \
+                   z_vals, new_width_vals
 
         for road in self.roads:
             unique_nodes = []
@@ -65,7 +69,8 @@ class ScenarioBuilder:
             if road.markings:
                 def _calculate_parallel_coords(offset: float, line_width: float) \
                         -> List[Tuple[float, float, float, float]]:
-                    coords = LineString(zip(new_x_vals, new_y_vals)).parallel_offset(offset).coords.xy
+                    offset_line = LineString(zip(new_x_vals, new_y_vals)).parallel_offset(offset)
+                    coords = offset_line.coords.xy
                     # NOTE The parallel LineString may have a different number of points than initially given
                     num_coords = len(coords[0])
                     z_vals = repeat(0.01, num_coords)
