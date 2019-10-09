@@ -32,8 +32,8 @@
                                     </xs:sequence>
                                     <xs:attribute name="id" type="xs:ID"/> <!-- FIXME Exclude offroad as ID -->
                                     <xs:attribute name="markings" type="xs:boolean" default="true"/>
-                                    <xs:attribute name="leftLanes" type="xs:nonNegativeInteger" use="required"/>
-                                    <xs:attribute name="rightLanes" type="xs:positiveInteger" use="required"/>
+                                    <xs:attribute name="leftLanes" type="xs:nonNegativeInteger" default="0"/>
+                                    <xs:attribute name="rightLanes" type="xs:positiveInteger" default="1"/>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
