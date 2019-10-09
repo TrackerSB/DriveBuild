@@ -63,7 +63,8 @@ class ScenarioBuilder:
             # FIXME Recognize changing widths
             road_width = unique_nodes[0].width
             if road.markings:
-                def _calculate_parallel_coords(offset: float, line_width: float) -> List[Tuple[float, float, float, float]]:
+                def _calculate_parallel_coords(offset: float, line_width: float) \
+                        -> List[Tuple[float, float, float, float]]:
                     coords = LineString(zip(new_x_vals, new_y_vals)).parallel_offset(offset).coords.xy
                     # NOTE The parallel LineString may have a different number of points than initially given
                     num_coords = len(coords[0])
