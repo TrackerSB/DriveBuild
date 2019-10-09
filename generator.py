@@ -18,7 +18,7 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
-    @static_vars(line_width=0.3, num_nodes=100, smoothness=0)
+    @static_vars(line_width=0.15, num_nodes=100, smoothness=0)
     def add_roads_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         from shapely.geometry import LineString
@@ -63,12 +63,12 @@ class ScenarioBuilder:
             # FIXME Recognize changing widths
             road_width = unique_nodes[0].width
             if road.markings:
-                def _calculate_parallel_coords(offset: float) -> List[Tuple[float, float, float, float]]:
+                def _calculate_parallel_coords(offset: float, line_width: float) -> List[Tuple[float, float, float, float]]:
                     coords = LineString(zip(new_x_vals, new_y_vals)).parallel_offset(offset).coords.xy
                     # NOTE The parallel LineString may have a different number of points than initially given
                     num_coords = len(coords[0])
                     z_vals = repeat(0.01, num_coords)
-                    marking_widths = repeat(self.add_roads_to_scenario.line_width, num_coords)
+                    marking_widths = repeat(line_width, num_coords)
                     return list(zip(coords[0], coords[1], z_vals, marking_widths))
 
                 # Draw side lines
@@ -76,17 +76,20 @@ class ScenarioBuilder:
                 initial_line_offsets = [d - (road_width / 2) for d in linspace(0, road_width, num=num_lines)]
                 side_line_offset = 1.5 * self.add_roads_to_scenario.line_width
                 left_side_line = Road('line_white', rid=road.rid + "_left_line")
-                left_side_line.nodes.extend(_calculate_parallel_coords(initial_line_offsets[0] + side_line_offset))
+                left_side_line.nodes.extend(_calculate_parallel_coords(
+                    initial_line_offsets[0] + side_line_offset, self.add_roads_to_scenario.line_width))
                 scenario.add_road(left_side_line)
                 right_side_line = Road('line_white', rid=road.rid + "_right_line")
-                right_side_line.nodes.extend(_calculate_parallel_coords(initial_line_offsets[-1] - side_line_offset))
+                right_side_line.nodes.extend(_calculate_parallel_coords(
+                    initial_line_offsets[-1] - side_line_offset, self.add_roads_to_scenario.line_width))
                 scenario.add_road(right_side_line)
 
                 # Draw line separating left from right lanes
                 if road.left_lanes > 0 and road.right_lanes > 0:
                     offset = initial_line_offsets[road.left_lanes]
                     left_right_divider = Road("line_yellow_double", rid=road.rid + "_left_right_divider")
-                    left_right_divider.nodes.extend(_calculate_parallel_coords(offset))
+                    left_right_divider.nodes.extend(_calculate_parallel_coords(
+                        offset, 2 * self.add_roads_to_scenario.line_width))
                     scenario.add_road(left_right_divider)
 
                 # Draw lines separating left and right lanes from each other
@@ -98,7 +101,8 @@ class ScenarioBuilder:
                 for index in offset_indices:
                     offset = initial_line_offsets[index]
                     lane_separation_line = Road('line_dashed_short', rid=road.rid + "_separator_" + str(index))
-                    lane_separation_line.nodes.extend(_calculate_parallel_coords(offset))
+                    lane_separation_line.nodes.extend(_calculate_parallel_coords(
+                        offset, self.add_roads_to_scenario.line_width))
                     scenario.add_road(lane_separation_line)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
