@@ -195,7 +195,9 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 lambda n: RoadNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
                 road_segment_nodes
             )
-        ), node.get("markings", "true").lower() == "true", int(node.get("leftLanes")), int(node.get("rightLanes")),
+        ), node.get("markings", "true").lower() == "true",
+            int(node.get("leftLanes", "0")),
+            int(node.get("rightLanes", "1")),
             node.get("id", _generate_road_id()))
         roads.append(road)
 
