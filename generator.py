@@ -7,44 +7,45 @@ from lxml.etree import _ElementTree, _Element
 
 class ScenarioBuilder:
     from beamngpy import Scenario
-    from dbtypes.scheme import Lane, Obstacle, Participant
+    from dbtypes.scheme import Road, Obstacle, Participant
 
-    def __init__(self, lanes: List[Lane], obstacles: List[Obstacle], participants: List[Participant],
+    def __init__(self, lanes: List[Road], obstacles: List[Obstacle], participants: List[Participant],
                  time_of_day: Optional[float]):
         if participants is None:
             participants = list()
-        self.lanes = lanes
+        self.roads = lanes
         self.obstacles = obstacles
         self.participants = participants
         self.time_of_day = time_of_day
 
     @static_vars(line_width=0.3, num_nodes=100, smoothness=0)
-    def add_lanes_to_scenario(self, scenario: Scenario) -> None:
+    def add_roads_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         from shapely.geometry import LineString
         from scipy.interpolate import splev, splprep
         from numpy.ma import arange
-        from numpy import repeat
+        from numpy import repeat, linspace
         from collections import defaultdict
+        from array import ArrayType
 
         def _interpolate_nodes(old_x_vals: List[float], old_y_vals: List[float], old_width_vals: List[float],
                                num_nodes: int) -> Tuple[List[float], List[float], List[float], List[float]]:
             assert len(old_x_vals) == len(old_y_vals) == len(old_width_vals), \
                 "The lists for the interpolation must have the same length."
             k = 1 if len(old_x_vals) <= 3 else 3
-            pos_tck, pos_u = splprep([old_x_vals, old_y_vals], s=self.add_lanes_to_scenario.smoothness, k=k)
+            pos_tck, pos_u = splprep([old_x_vals, old_y_vals], s=self.add_roads_to_scenario.smoothness, k=k)
             step_size = 1 / num_nodes
             unew = arange(0, 1 + step_size, step_size)
             new_x_vals, new_y_vals = splev(unew, pos_tck)
             z_vals = repeat(0.01, len(unew))
-            width_tck, width_u = splprep([pos_u, old_width_vals], s=self.add_lanes_to_scenario.smoothness, k=k)
+            width_tck, width_u = splprep([pos_u, old_width_vals], s=self.add_roads_to_scenario.smoothness, k=k)
             _, new_width_vals = splev(unew, width_tck)
             return new_x_vals, new_y_vals, z_vals, new_width_vals
 
-        for lane in self.lanes:
+        for road in self.roads:
             unique_nodes = []
             node_pos_tracker = defaultdict(lambda: list())
-            for node in lane.nodes:
+            for node in road.nodes:
                 x = node.position[0]
                 y = node.position[1]
                 if x not in node_pos_tracker or y not in node_pos_tracker[x]:
@@ -54,31 +55,52 @@ class ScenarioBuilder:
             old_y_vals = [node.position[1] for node in unique_nodes]
             old_width_vals = [node.width for node in unique_nodes]
             # FIXME Set interpolate=False for all roads?
-            main_road = Road('road_rubber_sticky', rid=lane.lid)
+            main_road = Road('road_rubber_sticky', rid=road.rid)
             new_x_vals, new_y_vals, z_vals, new_width_vals \
-                = _interpolate_nodes(old_x_vals, old_y_vals, old_width_vals, self.add_lanes_to_scenario.num_nodes)
+                = _interpolate_nodes(old_x_vals, old_y_vals, old_width_vals, self.add_roads_to_scenario.num_nodes)
             main_nodes = list(zip(new_x_vals, new_y_vals, z_vals, new_width_vals))
             main_road.nodes.extend(main_nodes)
             scenario.add_road(main_road)
-            if lane.markings:
-                center_line = Road('line_yellow', rid=lane.lid + "_center_line")
-                center_line.nodes.extend(
-                    [(x, y, z, self.add_lanes_to_scenario.line_width) for x, y, z, _ in main_nodes])
-                scenario.add_road(center_line)
-                for side in ["right", "left"]:
-                    side_line = Road('line_white', rid=lane.lid + "_" + side + "_line")
-                    # FIXME Recognize changing widths
-                    side_line_coords = LineString(zip(new_x_vals, new_y_vals)) \
-                        .parallel_offset(unique_nodes[0].width / 2 - 1.5 * self.add_lanes_to_scenario.line_width,
-                                         side=side) \
-                        .coords.xy
+            # FIXME Recognize changing widths
+            road_width = unique_nodes[0].width
+            if road.markings:
+                def _calculate_parallel_coords(offset: float) -> List[Tuple[float, float, float, float]]:
+                    coords = LineString(zip(new_x_vals, new_y_vals)).parallel_offset(offset).coords.xy
                     # NOTE The parallel LineString may have a different number of points than initially given
-                    num_side_line_nodes = len(side_line_coords[0])
-                    z_vals = repeat(0.01, num_side_line_nodes)
-                    marking_widths = repeat(self.add_lanes_to_scenario.line_width, num_side_line_nodes)
-                    side_line_nodes = zip(side_line_coords[0], side_line_coords[1], z_vals, marking_widths)
-                    side_line.nodes.extend(side_line_nodes)
-                    scenario.add_road(side_line)
+                    num_coords = len(coords[0])
+                    z_vals = repeat(0.01, num_coords)
+                    marking_widths = repeat(self.add_roads_to_scenario.line_width, num_coords)
+                    return list(zip(coords[0], coords[1], z_vals, marking_widths))
+
+                # Draw side lines
+                num_lines = road.left_lanes + road.right_lanes + 1
+                initial_line_offsets = [d - (road_width / 2) for d in linspace(0, road_width, num=num_lines)]
+                side_line_offset = 1.5 * self.add_roads_to_scenario.line_width
+                left_side_line = Road('line_white', rid=road.rid + "_left_line")
+                left_side_line.nodes.extend(_calculate_parallel_coords(initial_line_offsets[0] + side_line_offset))
+                scenario.add_road(left_side_line)
+                right_side_line = Road('line_white', rid=road.rid + "_right_line")
+                right_side_line.nodes.extend(_calculate_parallel_coords(initial_line_offsets[-1] - side_line_offset))
+                scenario.add_road(right_side_line)
+
+                # Draw line separating left from right lanes
+                if road.left_lanes > 0 and road.right_lanes > 0:
+                    offset = initial_line_offsets[road.left_lanes]
+                    left_right_divider = Road("line_yellow_double", rid=road.rid + "_left_right_divider")
+                    left_right_divider.nodes.extend(_calculate_parallel_coords(offset))
+                    scenario.add_road(left_right_divider)
+
+                # Draw lines separating left and right lanes from each other
+                offset_indices = []
+                if road.left_lanes > 1:
+                    offset_indices.extend(range(1, road.left_lanes))
+                if road.right_lanes > 1:
+                    offset_indices.extend(range(road.left_lanes + 1, len(initial_line_offsets) - 1))
+                for index in offset_indices:
+                    offset = initial_line_offsets[index]
+                    lane_separation_line = Road('line_dashed_short', rid=road.rid + "_separator_" + str(index))
+                    lane_separation_line.nodes.extend(_calculate_parallel_coords(offset))
+                    scenario.add_road(lane_separation_line)
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
@@ -134,7 +156,7 @@ class ScenarioBuilder:
 
     def add_all(self, scenario: Scenario) -> None:
         # NOTE time_of_day has to be called on the BeamNG instance not on a scenario
-        self.add_lanes_to_scenario(scenario)
+        self.add_roads_to_scenario(scenario)
         self.add_obstacles_to_scenario(scenario)
         self.add_participants_to_scenario(scenario)
         self.add_waypoints_to_scenario(scenario)
@@ -142,35 +164,36 @@ class ScenarioBuilder:
 
 def generate_scenario(env: _ElementTree, participants_node: _Element) -> ScenarioBuilder:
     from lxml.etree import _Element
-    from dbtypes.scheme import LaneNode, Lane, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
+    from dbtypes.scheme import RoadNode, Road, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
     from drivebuildclient.common import eprint, static_vars
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
-        LidarRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
+        LidarRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
 
-    lanes: List[Lane] = list()
+    roads: List[Road] = list()
 
-    @static_vars(prefix="lane_", counter=0)
-    def _generate_lane_id() -> str:
+    @static_vars(prefix="road_", counter=0)
+    def _generate_road_id() -> str:
         while True:  # Pseudo "do-while"-loop
-            lid = _generate_lane_id.prefix + str(_generate_lane_id.counter)
-            if lid in map(lambda l: l.lid, lanes):
-                _generate_lane_id.counter += 1
+            rid = _generate_road_id.prefix + str(_generate_road_id.counter)
+            if rid in map(lambda l: l.rid, roads):
+                _generate_road_id.counter += 1
             else:
                 break
-        return lid
+        return rid
 
-    lane_nodes = xpath(env, "db:lanes/db:lane")
-    for node in lane_nodes:
-        lane_segment_nodes = xpath(node, "db:laneSegment")
-        lane = Lane(list(
+    road_nodes = xpath(env, "db:lanes/db:lane")
+    for node in road_nodes:
+        road_segment_nodes = xpath(node, "db:laneSegment")
+        road = Road(list(
             map(
-                lambda n: LaneNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
-                lane_segment_nodes
+                lambda n: RoadNode((float(n.get("x")), float(n.get("y"))), float(n.get("width"))),
+                road_segment_nodes
             )
-        ), node.get("markings", "false").lower() == "true", node.get("id", _generate_lane_id()))
-        lanes.append(lane)
+        ), node.get("markings", "true").lower() == "true", int(node.get("leftLanes")), int(node.get("rightLanes")),
+            node.get("id", _generate_road_id()))
+        roads.append(road)
 
     def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, float, Optional[str]]:
         """
@@ -250,10 +273,10 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             elif tag == "lidar":
                 radius = int(req_node.get("radius"))
                 ai_requests.append(LidarRequest(rid, radius))
-            elif tag == "laneCenterDistance":
-                ai_requests.append(LaneCenterDistanceRequest(rid, lanes))
+            elif tag == "roadCenterDistance":
+                ai_requests.append(RoadCenterDistanceRequest(rid, roads))
             elif tag == "carToLaneAngle":
-                ai_requests.append(CarToLaneAngleRequest(rid, lanes))
+                ai_requests.append(CarToLaneAngleRequest(rid, roads))
             elif tag == "boundingBox":
                 ai_requests.append(BoundingBoxRequest(rid))
             else:
@@ -275,4 +298,4 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     time_of_day_elements = xpath(env, "db:timeOfDay")
     time_of_day = float(time_of_day_elements[0].text) if time_of_day_elements else None
 
-    return ScenarioBuilder(lanes, obstacles, participants, time_of_day)
+    return ScenarioBuilder(roads, obstacles, participants, time_of_day)

@@ -109,16 +109,18 @@ class Participant:
 
 
 @dataclass
-class LaneNode:
+class RoadNode:
     position: Position
     width: float
 
 
 @dataclass
-class Lane:
-    nodes: List[LaneNode]
+class Road:
+    nodes: List[RoadNode]
     markings: bool
-    lid: Optional[str] = None
+    left_lanes: int
+    right_lanes: int
+    rid: Optional[str] = None
 
 
 @dataclass

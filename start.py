@@ -439,7 +439,7 @@ if __name__ == "__main__":
 
     def _attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
-            DamageRequest, LaneCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
+            DamageRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
         from PIL import Image
         from io import BytesIO
         from shapely.geometry import mapping
@@ -468,9 +468,9 @@ if __name__ == "__main__":
                 data.camera.depth = _convert(sensor_data[2])
             elif request_type is DamageRequest:
                 data.damage.is_damaged = sensor_data
-            elif request_type is LaneCenterDistanceRequest:
-                data.lane_center_distance.lane_id = sensor_data[0]
-                data.lane_center_distance.distance = sensor_data[1]
+            elif request_type is RoadCenterDistanceRequest:
+                data.road_center_distance.road_id = sensor_data[0]
+                data.road_center_distance.distance = sensor_data[1]
             elif request_type is CarToLaneAngleRequest:
                 data.car_to_lane_angle.lane_id = sensor_data[0]
                 data.car_to_lane_angle.angle = float(sensor_data[1])

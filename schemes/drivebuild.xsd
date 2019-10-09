@@ -250,7 +250,7 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
-    <xs:element name="laneCenterDistance" substitutionGroup="aiData">
+    <xs:element name="roadCenterDistance" substitutionGroup="aiData">
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="aiData"/>
