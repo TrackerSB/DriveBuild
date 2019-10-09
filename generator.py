@@ -26,7 +26,6 @@ class ScenarioBuilder:
         from numpy.ma import arange
         from numpy import repeat, linspace
         from collections import defaultdict
-        from array import ArrayType
 
         def _interpolate_nodes(old_x_vals: List[float], old_y_vals: List[float], old_width_vals: List[float],
                                num_nodes: int) -> Tuple[List[float], List[float], List[float], List[float]]:
