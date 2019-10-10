@@ -3,13 +3,13 @@ from threading import Lock
 from typing import List, Set, Optional, Tuple, Callable
 
 from beamngpy import Scenario
-
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID
+from drivebuildclient.common import static_vars
+
 from dbtypes import ExtThread
 from dbtypes.beamng import DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue, CriteriaFunction
 from dbtypes.scheme import Participant, MovementMode
-from drivebuildclient.common import static_vars
 
 
 class Simulation:
