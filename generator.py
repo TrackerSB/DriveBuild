@@ -71,14 +71,14 @@ class ScenarioBuilder:
             road_width = unique_nodes[0].width
             if road.markings:
                 def _calculate_parallel_coords(offset: float, line_width: float) \
-                        -> List[Tuple[float, float, float, float]]:
+                        -> Optional[List[Tuple[float, float, float, float]]]:
                     original_line = LineString(zip(new_x_vals, new_y_vals))
                     offset_line = original_line.parallel_offset(offset)
                     try:
                         coords = offset_line.coords.xy
                     except NotImplementedError:
                         _logger.exception("Creating an offset line for lane markings failed")
-                        coords = original_line.coords.xy
+                        return None
                     # NOTE The parallel LineString may have a different number of points than initially given
                     num_coords = len(coords[0])
                     z_vals = repeat(0.01, num_coords)
@@ -90,21 +90,33 @@ class ScenarioBuilder:
                 initial_line_offsets = [d - (road_width / 2) for d in linspace(0, road_width, num=num_lines)]
                 side_line_offset = 1.5 * self.add_roads_to_scenario.line_width
                 left_side_line = Road('line_white', rid=road.rid + "_left_line")
-                left_side_line.nodes.extend(_calculate_parallel_coords(
-                    initial_line_offsets[0] + side_line_offset, self.add_roads_to_scenario.line_width))
-                scenario.add_road(left_side_line)
+                left_side_line_nodes = _calculate_parallel_coords(
+                    initial_line_offsets[0] + side_line_offset, self.add_roads_to_scenario.line_width)
+                if left_side_line_nodes:
+                    left_side_line.nodes.extend(left_side_line_nodes)
+                    scenario.add_road(left_side_line)
+                else:
+                    _logger.warning("Could not create left side line")
                 right_side_line = Road('line_white', rid=road.rid + "_right_line")
-                right_side_line.nodes.extend(_calculate_parallel_coords(
-                    initial_line_offsets[-1] - side_line_offset, self.add_roads_to_scenario.line_width))
-                scenario.add_road(right_side_line)
+                right_side_line_nodes = _calculate_parallel_coords(
+                    initial_line_offsets[-1] - side_line_offset, self.add_roads_to_scenario.line_width)
+                if right_side_line_nodes:
+                    right_side_line.nodes.extend(right_side_line_nodes)
+                    scenario.add_road(right_side_line)
+                else:
+                    _logger.warning("Could not create right side line")
 
                 # Draw line separating left from right lanes
                 if road.left_lanes > 0 and road.right_lanes > 0:
                     offset = initial_line_offsets[road.left_lanes]
                     left_right_divider = Road("line_yellow_double", rid=road.rid + "_left_right_divider")
-                    left_right_divider.nodes.extend(_calculate_parallel_coords(
-                        offset, 2 * self.add_roads_to_scenario.line_width))
-                    scenario.add_road(left_right_divider)
+                    left_right_divider_nodes \
+                        = _calculate_parallel_coords(offset, 2 * self.add_roads_to_scenario.line_width)
+                    if left_right_divider_nodes:
+                        left_right_divider.nodes.extend(left_right_divider_nodes)
+                        scenario.add_road(left_right_divider)
+                    else:
+                        _logger.warning("Could not create line separating lanes having different directions")
 
                 # Draw lines separating left and right lanes from each other
                 offset_indices = []
@@ -115,9 +127,13 @@ class ScenarioBuilder:
                 for index in offset_indices:
                     offset = initial_line_offsets[index]
                     lane_separation_line = Road('line_dashed_short', rid=road.rid + "_separator_" + str(index))
-                    lane_separation_line.nodes.extend(_calculate_parallel_coords(
-                        offset, self.add_roads_to_scenario.line_width))
-                    scenario.add_road(lane_separation_line)
+                    lane_separation_line_nodes \
+                        = _calculate_parallel_coords(offset, self.add_roads_to_scenario.line_width)
+                    if lane_separation_line_nodes:
+                        lane_separation_line.nodes.extend(lane_separation_line_nodes)
+                        scenario.add_road(lane_separation_line)
+                    else:
+                        _logger.warning("Could not create line separating lanes having the same direction")
 
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
