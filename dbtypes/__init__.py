@@ -1,12 +1,10 @@
+from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 from threading import Thread
 
 from beamngpy import Scenario
-from dataclasses import dataclass
-from lxml.etree import _ElementTree
-
 from drivebuildclient.aiExchangeMessages_pb2 import TestResult, User, SimulationID
+from lxml.etree import _ElementTree
 
 
 class ExtThread:
