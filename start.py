@@ -10,14 +10,15 @@ from drivebuildclient.common import accept_at_server, create_server, eprint, cre
 from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
-_DB_CONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
-
-# Register pickler for _Element
 from config import SIM_NODE_PORT, MAIN_APP_HOST, MAIN_APP_PORT
 from dbtypes import SimulationData
 from dbtypes.scheme import MovementMode
 from sim_controller import Simulation
 
+_DB_CONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
+
+
+# Register pickler for _Element
 
 def element_unpickler(data: bytes) -> _Element:
     from io import BytesIO
