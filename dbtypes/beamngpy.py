@@ -3,7 +3,7 @@ from os.path import join, exists
 from queue import Queue
 from threading import Lock
 
-from beamngpy import BeamNGpy, Path
+from beamngpy import BeamNGpy
 
 from config import BEAMNG_USER_PATH, BEAMNG_INSTALL_FOLDER
 
