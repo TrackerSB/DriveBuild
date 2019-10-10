@@ -1,40 +1,4 @@
-from beamngpy import BeamNGpy, Vehicle
-from threading import Lock
-
-
-class DBBeamNGpy(BeamNGpy):
-    def __init__(self, host, port, home=None, user=None):
-        super().__init__(host, port, home, user)
-        self.current_tick = 0
-        self.instance_lock = Lock()
-
-    def step(self, count, wait=True):
-        self.instance_lock.acquire()
-        super().step(count, wait)
-        self.instance_lock.release()
-        self.current_tick += count
-
-    def poll_sensors(self, vehicle):
-        from dbtypes.beamngpy import BeamNGpyException
-        self.instance_lock.acquire()
-        if self.skt:
-            try:
-                super().poll_sensors(vehicle)
-            except Exception as ex:
-                raise BeamNGpyException("Polling sensors failed") from ex
-            finally:
-                self.instance_lock.release()
-        else:
-            self.instance_lock.release()
-
-    def close(self):
-        from drivebuildclient.common import eprint
-        self.instance_lock.acquire()
-        try:
-            super().close()
-        except Exception as ex:
-            eprint("The close call to BeamNG errored with \"" + str(ex) + "\".")
-        self.instance_lock.release()
+from beamngpy import Vehicle
 
 
 class DBVehicle(Vehicle):

@@ -7,7 +7,7 @@ from drivebuildclient.aiExchangeMessages_pb2 import SimulationID
 from drivebuildclient.common import static_vars
 
 from dbtypes import ExtThread
-from dbtypes.beamng import DBBeamNGpy
+from dbtypes.beamngpy import DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue, CriteriaFunction
 from dbtypes.scheme import Participant, MovementMode
 
@@ -131,9 +131,7 @@ class Simulation:
         return lua_av_command
 
     def get_user_path(self) -> str:
-        from config import BEAMNG_USER_PATH
-        import os
-        return os.path.join(BEAMNG_USER_PATH, self._sim_name)
+        return self._bng_instance.user.as_posix()
 
     def _get_lua_path(self) -> str:
         import os
@@ -488,21 +486,18 @@ class Simulation:
     @static_vars(port=50000, lock=Lock())
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from threading import Thread
-        from config import BEAMNG_INSTALL_FOLDER, BEAMNG_LEVEL_NAME
+        from config import BEAMNG_LEVEL_NAME
         from drivebuildclient.common import eprint
-
-        home_path = BEAMNG_INSTALL_FOLDER
-        user_path = self.get_user_path()
 
         Simulation._start_simulation.lock.acquire()
         while not Simulation._is_port_available(Simulation._start_simulation.port):
             Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
-        bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port, home=home_path, user=user_path)
+        self._bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port)
         authors = ", ".join(test_case.authors)
         bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self._sim_name, authors=authors)
 
         test_case.scenario.add_all(bng_scenario)
-        bng_scenario.make(bng_instance)
+        bng_scenario.make(self._bng_instance)
 
         # Make manual changes to the scenario files
         self._make_lanes_visible()
@@ -517,14 +512,14 @@ class Simulation:
         self._add_lap_config(waypoints)
 
         try:
-            bng_instance.open(launch=True)
-            bng_instance.load_scenario(bng_scenario)
-            bng_instance.set_steps_per_second(test_case.stepsPerSecond)
-            bng_instance.set_deterministic()
-            test_case.scenario.set_time_of_day_to(bng_instance)
-            bng_instance.hide_hud()
-            bng_instance.start_scenario()
-            bng_instance.pause()
+            self._bng_instance.open(launch=True)
+            self._bng_instance.load_scenario(bng_scenario)
+            self._bng_instance.set_steps_per_second(test_case.stepsPerSecond)
+            self._bng_instance.set_deterministic()
+            test_case.scenario.set_time_of_day_to(self._bng_instance)
+            self._bng_instance.hide_hud()
+            self._bng_instance.start_scenario()
+            self._bng_instance.pause()
         except OSError:
             eprint("The start of a BeamNG instance failed (Port: " + str(Simulation._start_simulation.port) + ").")
         Simulation._start_simulation.lock.release()
@@ -555,7 +550,6 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread,
     sim = Simulation(sid, pickle.dumps(test_case), FIRST_SIM_PORT + run_test_case.counter)
     run_test_case.counter += 1  # FIXME Add a lock?
     # Make sure there is no folder of previous tests having the same sid that got not propery removed
-    rmtree(sim.get_user_path(), ignore_errors=True)
     bng_scenario, thread = sim._start_simulation(test_case)
 
     return sim, bng_scenario, thread, sid
