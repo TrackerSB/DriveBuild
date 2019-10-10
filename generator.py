@@ -72,8 +72,13 @@ class ScenarioBuilder:
             if road.markings:
                 def _calculate_parallel_coords(offset: float, line_width: float) \
                         -> List[Tuple[float, float, float, float]]:
-                    offset_line = LineString(zip(new_x_vals, new_y_vals)).parallel_offset(offset)
-                    coords = offset_line.coords.xy
+                    original_line = LineString(zip(new_x_vals, new_y_vals))
+                    offset_line = original_line.parallel_offset(offset)
+                    try:
+                        coords = offset_line.coords.xy
+                    except NotImplementedError:
+                        _logger.exception("Creating an offset line for lane markings failed")
+                        coords = original_line.coords.xy
                     # NOTE The parallel LineString may have a different number of points than initially given
                     num_coords = len(coords[0])
                     z_vals = repeat(0.01, num_coords)
