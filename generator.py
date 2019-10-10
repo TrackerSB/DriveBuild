@@ -266,6 +266,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             common_state_vals[1],
             common_state_vals[2]
         )
+        # Add data requests declared in the DBC
         ai_requests = list()
         request_nodes = xpath(node, "db:ai/*")
         for req_node in request_nodes:
@@ -294,6 +295,11 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 ai_requests.append(BoundingBoxRequest(rid))
             else:
                 _logger.warning("The tag " + tag + " is not supported, yet.")
+        # Add default data requests required for debugging and visualization
+        ai_requests.extend([
+            BoundingBoxRequest("visualizer_" + pid + "_boundingBox")
+        ])
+        # Extract the movement of the participant
         movements = list()
         waypoint_nodes = xpath(node, "db:movement/db:waypoint")
         for wp_node in waypoint_nodes:
