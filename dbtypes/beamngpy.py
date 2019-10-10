@@ -43,13 +43,12 @@ class DBBeamNGpy(BeamNGpy):
             self.instance_lock.release()
 
     def close(self):
-        from drivebuildclient.common import eprint
         self.instance_lock.acquire()
         try:
             super().close()
             DBBeamNGpy.user_path_pool.put(self.user)
         except Exception as ex:
-            eprint("The close call to BeamNG errored with \"" + str(ex) + "\".")
+            raise BeamNGpyException("Closing BeamNG failed") from ex
         self.instance_lock.release()
 
 
