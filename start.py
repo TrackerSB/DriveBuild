@@ -413,10 +413,6 @@ if __name__ == "__main__":
         data.end_time = datetime.now()
         _update_test_data(data)
 
-        # Make sure there is no inference with following tests
-        sim = _get_simulation(sid)
-        rmtree(sim.get_user_path(), ignore_errors=True)
-
 
     def _control(sid: SimulationID, vid: VehicleID, control: Control) -> Void:
         print("ai_control: enter for " + vid.vid)
