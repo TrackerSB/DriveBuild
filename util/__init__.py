@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from lxml.etree import _ElementTree
 
-from drivebuildclient.common import static_vars
+from drivebuildclient import static_vars
 from dbtypes.scheme import Position
 
 

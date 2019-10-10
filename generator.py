@@ -1,8 +1,11 @@
+from logging import getLogger
 from typing import List, Tuple, Optional
 
 from beamngpy import BeamNGpy
-from drivebuildclient.common import static_vars
+from drivebuildclient import static_vars
 from lxml.etree import _ElementTree, _Element
+
+_logger = getLogger("DriveBuild.SimNode.Generator")
 
 
 class ScenarioBuilder:
@@ -114,7 +117,6 @@ class ScenarioBuilder:
     def add_obstacles_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import ProceduralCone, ProceduralCube, ProceduralCylinder, ProceduralBump
         from dbtypes.scheme import Cone, Cube, Cylinder, Bump
-        from drivebuildclient.common import eprint
         from scipy import deg2rad
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
@@ -132,7 +134,8 @@ class ScenarioBuilder:
                 mesh = ProceduralBump(pos, rot, obstacle.width, obstacle.length, height, obstacle.upper_length,
                                       obstacle.upper_width)
             else:
-                eprint("Obstacles of type " + str(obstacle_type) + " are not supported by the generation, yet.")
+                _logger.warning(
+                    "Obstacles of type " + str(obstacle_type) + " are not supported by the generation, yet.")
                 mesh = None
             if mesh:
                 # NOTE Procedural meshes use radians for rotation
@@ -176,7 +179,6 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
     from dbtypes.scheme import RoadNode, Road, Participant, InitialState, MovementMode, CarModel, WayPoint, Cube, \
         Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
-    from drivebuildclient.common import eprint, static_vars
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
         LidarRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
 
@@ -291,7 +293,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             elif tag == "boundingBox":
                 ai_requests.append(BoundingBoxRequest(rid))
             else:
-                eprint("The tag " + tag + " is not supported, yet.")
+                _logger.warning("The tag " + tag + " is not supported, yet.")
         movements = list()
         waypoint_nodes = xpath(node, "db:movement/db:waypoint")
         for wp_node in waypoint_nodes:

@@ -1,3 +1,4 @@
+from logging import getLogger
 from typing import Tuple, List, Dict, Union
 
 from lxml.etree import _ElementTree
@@ -5,6 +6,8 @@ from lxml.etree import _ElementTree
 from dbtypes import SimulationData
 from dbtypes.scheme import ScenarioMapping
 from sim_controller import Simulation
+
+_logger = getLogger("DriveBuild.SimNode.TCManager")
 
 
 def extract_test_cases(zip_content: bytes) -> str:
@@ -22,7 +25,6 @@ def extract_test_cases(zip_content: bytes) -> str:
 
 def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List[_ElementTree]) \
         -> List[ScenarioMapping]:
-    from drivebuildclient.common import eprint
     from util.xml import xpath
     for criteria_def in criteria_defs:
         for element in xpath(criteria_def, "db:environment"):
@@ -35,16 +37,15 @@ def associate_criteria(mapping_stubs: List[ScenarioMapping], criteria_defs: List
                     break
             if not found_env:
                 if needed_environment:
-                    eprint("A criteria definition needs " + needed_environment
-                           + " but it is either not valid or not available")
+                    _logger.warning("A criteria definition needs " + needed_environment
+                                    + " but it is either not valid or not available")
                 else:
-                    eprint("A criteria definition is missing a declaration of an associated environment.")
+                    _logger.warning("A criteria definition is missing a declaration of an associated environment.")
     return [mapping for mapping in mapping_stubs if mapping.crit_defs]
 
 
 def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
     import os
-    from drivebuildclient.common import eprint
     from util import is_dbe, is_dbc
     from util.xml import validate
     scenario_mapping_stubs = list()
@@ -58,7 +59,7 @@ def get_valid(folder: str) -> Tuple[List[ScenarioMapping], List[_ElementTree]]:
             elif is_dbc(root):
                 valid_crit_defs.append(root)
             else:
-                eprint(filename + " is valid but can not be classified as DBE or DBC.")
+                _logger.warning(filename + " is valid but can not be classified as DBE or DBC.")
     return scenario_mapping_stubs, valid_crit_defs
 
 

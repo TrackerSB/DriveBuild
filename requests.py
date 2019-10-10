@@ -1,5 +1,8 @@
 from abc import ABC
 from enum import Enum
+from logging import getLogger
+
+_logger = getLogger("DriveBuild.SimNode.Requests")
 
 
 class AiRequest(ABC):
@@ -130,7 +133,6 @@ class CameraRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         from beamngpy.sensors import Camera
         from cmath import pi
-        from drivebuildclient.common import eprint
         # NOTE rotation range: -pi to pi
         # NOTE Reference point is the point of the model
         # NOTE First rotate camera, then shift based on rotated axis of the camera
@@ -172,7 +174,7 @@ class CameraRequest(AiRequest):
             y_rot = pi
             z_rot = 0
         else:
-            eprint("The camera direction " + str(self.direction.value) + " is not implemented.")
+            _logger.warning("The camera direction " + str(self.direction.value) + " is not implemented.")
             return
         vehicle.attach_sensor(self.rid,
                               Camera((x_pos, y_pos, z_pos), (x_rot, y_rot, z_rot), self.fov, (self.width, self.height),

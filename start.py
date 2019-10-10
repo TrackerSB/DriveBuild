@@ -1,12 +1,13 @@
 import copyreg
 from datetime import datetime
+from logging import getLogger
 from socket import socket
 from threading import Thread, Lock
 from typing import Dict, Optional, Tuple, List
 
+from drivebuildclient import accept_at_server, create_server, create_client, process_requests
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Void, VerificationResult, VehicleID, Num, \
     TestResult, SubmissionResult, User, SimStateResponse, Control, DataResponse, DataRequest, SimulationNodeID
-from drivebuildclient.common import accept_at_server, create_server, eprint, create_client, process_requests
 from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
@@ -16,6 +17,7 @@ from dbtypes.scheme import MovementMode
 from sim_controller import Simulation
 
 _DB_CONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
+_logger = getLogger("DriveBuild.SimNode.Start")
 
 
 # Register pickler for _Element
@@ -73,11 +75,11 @@ if __name__ == "__main__":
             sid.sid = str(result[0][0])
             return sid
         else:
-            eprint("Generation of sid failed.")
+            _logger.error("Generation of sid failed.")
 
 
     def _handle_sim_node_message(conn: socket, _: Tuple[str, int]) -> None:
-        from drivebuildclient.common import process_request
+        from drivebuildclient import process_request
         print("_handle_sim_node_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
@@ -85,7 +87,7 @@ if __name__ == "__main__":
                 result = _generate_sid()
             else:
                 message = "The action \"" + action.decode() + "\" is unknown."
-                eprint(message)
+                _logger.info(message)
                 result = Void()
                 result.message = message
             return result.SerializeToString()
@@ -196,7 +198,7 @@ if __name__ == "__main__":
 
 
     def _handle_simulation_message(conn: socket, _: Tuple[str, int]) -> None:
-        from drivebuildclient.common import process_requests
+        from drivebuildclient import process_requests
         print("_handle_simulation_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
@@ -253,7 +255,7 @@ if __name__ == "__main__":
                 result = Void()
             else:
                 message = "The action \"" + action.decode() + "\" is unknown."
-                eprint(message)
+                _logger.info(message)
                 result = Void()
                 result.message = message
             return result.SerializeToString()
@@ -342,10 +344,9 @@ if __name__ == "__main__":
             elif isinstance(new_tasks, str):
                 submission_result.message.message = new_tasks
             else:
-                eprint("Can not handle a _run_tests(...) result of type " + str(type(new_tasks)) + ".")
+                _logger.warning("Can not handle a _run_tests(...) result of type " + str(type(new_tasks)) + ".")
         except Exception as e:
-            eprint("_run_tests(...) errored:")
-            print_exc(e)
+            _logger.exception("Running submitted tests failed")
             submission_result.message.message = str(e)
         return submission_result
 
@@ -392,7 +393,6 @@ if __name__ == "__main__":
         directly. False only if the given command represents a TestResult.Result to be associated with the given
         simulation.
         """
-        from shutil import rmtree
         from datetime import datetime
         data = _get_data(sid)
         task = data.simulation_task
@@ -558,7 +558,7 @@ if __name__ == "__main__":
             result.message = "Stopped simulation " + sid.sid + "."
         else:
             message = "The action \"" + action.decode() + "\" is unknown."
-            eprint(message)
+            _logger.info(message)
             result = Void()
             result.message = message
         return result.SerializeToString()
@@ -569,7 +569,7 @@ if __name__ == "__main__":
     snid.ParseFromString(main_app_client.recv(1024))  # FIXME Determine appropriate value
     prefix = snid.snid
     if not prefix:
-        eprint("SimNode was no prefix assigned.")
+        _logger.error("SimNode was no prefix assigned.")
         main_app_client.close()
         exit(1)
     sim_node_main_app_com = Thread(target=process_requests, args=(main_app_client, _handle_main_app_message))

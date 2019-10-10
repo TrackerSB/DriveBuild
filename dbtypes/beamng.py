@@ -1,4 +1,7 @@
 from beamngpy import Vehicle
+from logging import getLogger
+
+_logger = getLogger("DriveBuild.SimNode.DBTypes.BeamNG")
 
 
 class DBVehicle(Vehicle):
@@ -17,8 +20,7 @@ class DBVehicle(Vehicle):
         """
         The return type depends on the return type of the appropriate AIRequest.
         """
-        from drivebuildclient.common import eprint
         if rid in self.requests:
             return self.requests[rid].read_sensor_cache_of(self)
         else:
-            eprint("The vehicle " + self.vid + " has no request called " + rid + " attached.")
+            _logger.warning("The vehicle " + self.vid + " has no request called " + rid + " attached.")

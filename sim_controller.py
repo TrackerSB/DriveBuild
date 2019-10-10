@@ -1,15 +1,18 @@
+from logging import getLogger
 from socket import socket
 from threading import Lock
 from typing import List, Set, Optional, Tuple, Callable
 
 from beamngpy import Scenario
+from drivebuildclient import static_vars
 from drivebuildclient.aiExchangeMessages_pb2 import SimulationID
-from drivebuildclient.common import static_vars
 
 from dbtypes import ExtThread
 from dbtypes.beamngpy import DBBeamNGpy
 from dbtypes.criteria import TestCase, KPValue, CriteriaFunction
 from dbtypes.scheme import Participant, MovementMode
+
+_logger = getLogger("DriveBuild.SimNode.SimController")
 
 
 class Simulation:
@@ -27,7 +30,7 @@ class Simulation:
 
     def start_server(self, handle_simulation_message: Callable[[socket, Tuple[str, int]], None]) -> None:
         from threading import Thread
-        from drivebuildclient.common import accept_at_server, create_server
+        from drivebuildclient import accept_at_server, create_server
         if self._sim_server_socket:
             raise ValueError("The simulation already started a server at " + str(self.port))
         else:
@@ -39,7 +42,7 @@ class Simulation:
             simulation_sim_node_com_server.start()
 
     def send_message_to_sim_node(self, action: bytes, data: List[bytes]) -> bytes:
-        from drivebuildclient.common import send_request, create_client, eprint
+        from drivebuildclient import send_request, create_client, eprint
         from time import sleep
         while not self._sim_node_client_socket:
             try:
@@ -336,7 +339,6 @@ class Simulation:
         prefab_file.close()
 
     def _request_control_avs(self, vids: List[str]) -> None:
-        from drivebuildclient.common import eprint
         from drivebuildclient.aiExchangeMessages_pb2 import VehicleID
         import dill as pickle
         for v in vids:
@@ -354,7 +356,8 @@ class Simulation:
             elif mode == MovementMode.MANUAL:
                 pass  # No AI to request
             else:
-                eprint(self.sid.sid + ":" + v + ": Can not handle movement mode " + (mode.name if mode else "None"))
+                _logger.warning(
+                    self.sid.sid + ":" + v + ": Can not handle movement mode " + (mode.name if mode else "None"))
 
     def _add_lap_config(self, waypoint_ids: Set[str]) -> None:
         """
@@ -419,7 +422,6 @@ class Simulation:
 
         def _get_verification() -> Tuple[KPValue, KPValue, KPValue]:
             from drivebuildclient.aiExchangeMessages_pb2 import VerificationResult
-            from drivebuildclient.common import eprint
             # FIXME Determine appropriate timeout
             response = self.send_message_to_sim_node(b"verify", [self.serialized_sid])
             if response:
@@ -427,7 +429,7 @@ class Simulation:
                 verification.ParseFromString(response)
                 return KPValue[verification.precondition], KPValue[verification.failure], KPValue[verification.success]
             else:
-                eprint("Verification of criteria at simulation " + self._sim_name + " timed out.")
+                _logger.warning("Verification of criteria at simulation " + self._sim_name + " timed out.")
                 return KPValue.UNKNOWN, KPValue.UNKNOWN, KPValue.UNKNOWN
 
         def _run_verification_cycles(result_queue: Queue) -> None:
@@ -487,7 +489,6 @@ class Simulation:
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from threading import Thread
         from config import BEAMNG_LEVEL_NAME
-        from drivebuildclient.common import eprint
 
         Simulation._start_simulation.lock.acquire()
         while not Simulation._is_port_available(Simulation._start_simulation.port):
@@ -521,7 +522,8 @@ class Simulation:
             self._bng_instance.start_scenario()
             self._bng_instance.pause()
         except OSError:
-            eprint("The start of a BeamNG instance failed (Port: " + str(Simulation._start_simulation.port) + ").")
+            _logger.exception(
+                "The start of a BeamNG instance failed (Port: " + str(Simulation._start_simulation.port) + ").")
         Simulation._start_simulation.lock.release()
 
         runtime_thread = Thread(target=Simulation._run_runtime_verification, args=(self, test_case.aiFrequency))
@@ -541,8 +543,7 @@ def run_test_case(test_case: TestCase) -> Tuple[Simulation, Scenario, ExtThread,
     thread before calling _start_simulation(...).
     """
     import dill as pickle
-    from shutil import rmtree
-    from drivebuildclient.common import create_client, send_request
+    from drivebuildclient import create_client, send_request
     from config import SIM_NODE_PORT, FIRST_SIM_PORT
     sid = SimulationID()
     response = send_request(create_client("localhost", SIM_NODE_PORT), b"generateSid", [])

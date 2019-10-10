@@ -1,9 +1,12 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
+from logging import getLogger
 from typing import List, Tuple, Callable
 
 from beamngpy import Scenario
+
+_logger = getLogger("DriveBuild.SimNode.DBTypes.Criteria")
 
 
 class KPValue(Enum):
@@ -69,9 +72,9 @@ class StateCondition(Criterion, ABC):
     """
     from abc import abstractmethod
     from requests import AiRequest
-    from util import static_vars
     from beamngpy import Vehicle
     from typing import Any
+    from drivebuildclient import static_vars
 
     def __init__(self, scenario: Scenario, participant: str) -> None:
         super().__init__(scenario)
@@ -177,7 +180,6 @@ class SCLane(StateCondition):
     def _eval_impl(self) -> KPValue:
         from typing import Dict
         from shapely.geometry import Polygon
-        from drivebuildclient.common import eprint
         bbox = self._poll_request_data()[0]
 
         def _to_polygon(road_edges: List[Dict[str, float]]) -> Polygon:
@@ -197,7 +199,7 @@ class SCLane(StateCondition):
                         is_offroad = KPValue.FALSE
                         break
                 else:
-                    eprint("SCLane can not consider roads without ID.")
+                    _logger.warning("SCLane can not consider roads without ID.")
             return is_offroad
         else:
             for road in self.scenario.roads:

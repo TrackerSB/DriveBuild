@@ -1,4 +1,5 @@
 import os
+from logging import getLogger
 from typing import Tuple, Union, List, Optional
 
 from lxml import etree
@@ -11,21 +12,20 @@ PARSER = etree.XMLParser(schema=SCHEMA, recover=False, remove_comments=True)
 NAMESPACES = {
     "db": "http://drivebuild.com"
 }
+_logger = getLogger("DriveBuild.SimNode.Util.XML")
 
 
 def validate(path: str) -> Tuple[bool, Optional[_ElementTree]]:
     from util import is_dbe, is_dbc
     from lxml.etree import XMLSyntaxError
-    from traceback import format_exc
-    from drivebuildclient.common import eprint
     valid: bool = False
     parsed: Optional[_ElementTree] = None
     try:
         parsed = etree.parse(path, PARSER)  # May throw XMLSyntaxException
         if is_dbe(parsed) or is_dbc(parsed):
             valid = SCHEMA.validate(parsed)
-    except XMLSyntaxError as ex:
-        eprint(ex)
+    except XMLSyntaxError:
+        _logger.exception("Parsing \"" + path + "\" failed")
         valid = False
     return valid, parsed
 
