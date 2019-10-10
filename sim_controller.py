@@ -42,14 +42,14 @@ class Simulation:
             simulation_sim_node_com_server.start()
 
     def send_message_to_sim_node(self, action: bytes, data: List[bytes]) -> bytes:
-        from drivebuildclient import send_request, create_client, eprint
+        from drivebuildclient import send_request, create_client
         from time import sleep
         while not self._sim_node_client_socket:
             try:
                 self._sim_node_client_socket = create_client("localhost", self.port)
             except ConnectionRefusedError:
                 retry_delay = 5
-                eprint("Retry creating client connection in " + str(retry_delay) + " seconds.")
+                _logger.debug("Retry creating client connection in " + str(retry_delay) + " seconds.")
                 sleep(retry_delay)
         result = send_request(self._sim_node_client_socket, action, data)
         return result
@@ -92,7 +92,6 @@ class Simulation:
         """
         # NOTE setAiPath/setAiRoute: BeamNG allows to EITHER set a target speed or a speed limit
         # NOTE sh.setAiLine(...) is a custom function introduced into BeamNG
-        from drivebuildclient.common import eprint
         from dbtypes.scheme import WayPoint
         lua_av_command = [
             "    local modeFile = io.open('" + self._get_movement_mode_file_path(participant.id, True) + "', 'w')",
@@ -130,7 +129,7 @@ class Simulation:
                 "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
             ])
         else:
-            eprint("Can not handle MovementMode " + str(next_mode) + ".")
+            _logger.warning("Can not handle MovementMode " + str(next_mode) + ".")
         return lua_av_command
 
     def get_user_path(self) -> str:
