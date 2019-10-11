@@ -250,24 +250,27 @@ class CarToLaneAngleRequest(AiRequest):
     def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[str, float]:
         from shapely.geometry import Point, LineString
         from numpy import rad2deg, arctan2, array
-        x, y, _ = vehicle.state["pos"]
-        car_pos = Point(x, y)
-        x_dir, y_dir, _ = vehicle.state["dir"]
-        car_angle = rad2deg(arctan2(y_dir, x_dir))
-        min_dist = None
-        angle_diff = None
-        road_id = None
-        for cur_road_id, cur_road in self.road_lines.items():
-            cur_coord = cur_road.coords[0]
-            for i in range(1, len(cur_road.coords)):
-                next_coord = cur_road.coords[i]
-                cur_line = LineString([cur_coord, next_coord])
-                cur_dist = cur_line.distance(car_pos)
-                if not min_dist or cur_dist < min_dist:
-                    min_dist = cur_dist
-                    diff = array(next_coord) - array(cur_coord)
-                    cur_angle = rad2deg(arctan2(diff[1], diff[0]))
-                    angle_diff = car_angle - cur_angle
-                    road_id = cur_road_id
-                cur_coord = next_coord
-        return road_id, angle_diff
+        if vehicle.state:
+            x, y, _ = vehicle.state["pos"]
+            car_pos = Point(x, y)
+            x_dir, y_dir, _ = vehicle.state["dir"]
+            car_angle = rad2deg(arctan2(y_dir, x_dir))
+            min_dist = None
+            angle_diff = None
+            road_id = None
+            for cur_road_id, cur_road in self.road_lines.items():
+                cur_coord = cur_road.coords[0]
+                for i in range(1, len(cur_road.coords)):
+                    next_coord = cur_road.coords[i]
+                    cur_line = LineString([cur_coord, next_coord])
+                    cur_dist = cur_line.distance(car_pos)
+                    if not min_dist or cur_dist < min_dist:
+                        min_dist = cur_dist
+                        diff = array(next_coord) - array(cur_coord)
+                        cur_angle = rad2deg(arctan2(diff[1], diff[0]))
+                        angle_diff = car_angle - cur_angle
+                        road_id = cur_road_id
+                    cur_coord = next_coord
+            return road_id, angle_diff
+        else:
+            return "Could not determine position of participant", 0
