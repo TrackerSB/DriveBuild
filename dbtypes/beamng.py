@@ -29,10 +29,12 @@ class DBVehicle(Vehicle):
         _logger.debug(self.vid + ": Try acquire lock for controlling")
         self._vehicle_lock.acquire()
         _logger.debug(self.vid + ": Acquired lock for controlling")
-        result = super().control(**options)
+        if self.skt:
+            super().control(**options)
+        else:
+            _logger.warning("The vehicle can not be controlled since it is not connected")
         _logger.debug(self.vid + ": Release lock for controlling")
         self._vehicle_lock.release()
-        return result
 
     def apply_request(self, request: AiRequest) -> None:
         self.requests[request.rid] = request
