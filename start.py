@@ -325,7 +325,6 @@ if __name__ == "__main__":
     def _run_tests(file_content: bytes, user: User) -> SubmissionResult:
         from tc_manager import run_tests
         from warnings import warn
-        from traceback import print_exc
         submission_result = SubmissionResult()
         try:
             new_tasks = run_tests(file_content)
