@@ -1,6 +1,7 @@
 from abc import ABC
 from enum import Enum
 from logging import getLogger
+from typing import Optional
 
 _logger = getLogger("DriveBuild.SimNode.Requests")
 
@@ -18,7 +19,7 @@ class AiRequest(ABC):
         pass
 
     @abstractmethod
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Any:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Any]:
         """
         This method returns the data the request represents. NOTE It does not call poll_sensors or similar!
         :param vehicle: The vehicle to read the cached sensor data from.
@@ -34,9 +35,12 @@ class PositionRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[float, float]:
-        x, y, _ = vehicle.state["pos"]
-        return x, y
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Tuple[float, float]]:
+        if vehicle.state:
+            x, y, _ = vehicle.state["pos"]
+            return x, y
+        else:
+            return None
 
 
 class BoundingBoxRequest(AiRequest):
@@ -72,11 +76,14 @@ class SteeringAngleRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> float:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[float]:
         from numpy import arctan2, rad2deg
-        # FIXME What´s the up vector?
-        direction = vehicle.state["dir"]  # FIXME This value is likely not what a user expects
-        return rad2deg(arctan2(direction[1], direction[0]))
+        if vehicle.state:
+            # FIXME What´s the up vector?
+            direction = vehicle.state["dir"]  # FIXME This value is likely not what a user expects
+            return rad2deg(arctan2(direction[1], direction[0]))
+        else:
+            return None
 
 
 class SpeedRequest(AiRequest):
@@ -88,9 +95,9 @@ class SpeedRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> float:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[float]:
         from numpy.linalg import norm
-        return norm(vehicle.state["vel"])
+        return norm(vehicle.state["vel"]) if vehicle.state else None
 
 
 class LidarRequest(AiRequest):
@@ -217,18 +224,21 @@ class RoadCenterDistanceRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[Optional[str], Optional[float]]:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Tuple[str, float]]:
         from shapely.geometry import Point
-        x, y, _ = vehicle.state["pos"]
-        car_pos = Point(x, y)
-        road_id = None
-        min_dist = None
-        for cur_road_id, cur_road in self.road_lines.items():
-            cur_dist = cur_road.distance(car_pos)
-            if not min_dist or cur_dist < min_dist:
-                road_id = cur_road_id
-                min_dist = cur_dist
-        return road_id, min_dist
+        if vehicle.state:
+            x, y, _ = vehicle.state["pos"]
+            car_pos = Point(x, y)
+            road_id = None
+            min_dist = None
+            for cur_road_id, cur_road in self.road_lines.items():
+                cur_dist = cur_road.distance(car_pos)
+                if not min_dist or cur_dist < min_dist:
+                    road_id = cur_road_id
+                    min_dist = cur_dist
+            return road_id, min_dist
+        else:
+            return None
 
 
 class CarToLaneAngleRequest(AiRequest):
@@ -247,7 +257,7 @@ class CarToLaneAngleRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[str, float]:
+    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Tuple[str, float]]:
         from shapely.geometry import Point, LineString
         from numpy import rad2deg, arctan2, array
         if vehicle.state:
@@ -273,4 +283,4 @@ class CarToLaneAngleRequest(AiRequest):
                     cur_coord = next_coord
             return road_id, angle_diff
         else:
-            return "Could not determine position of participant", 0
+            return None

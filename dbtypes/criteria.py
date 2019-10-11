@@ -143,8 +143,12 @@ class SCPosition(StateCondition):
     def _eval_impl(self) -> KPValue:
         from numpy import array
         from numpy.linalg import norm
-        x, y = self._poll_request_data()[0]
-        return KPValue.TRUE if norm(array((x, y)) - array((self.x, self.y))) <= self.tolerance else KPValue.FALSE
+        position = self._poll_request_data()[0]
+        if position:
+            x, y = position
+            return KPValue.TRUE if norm(array((x, y)) - array((self.x, self.y))) <= self.tolerance else KPValue.FALSE
+        else:
+            return KPValue.UNKNOWN
 
 
 class SCArea(StateCondition):
@@ -161,8 +165,12 @@ class SCArea(StateCondition):
 
     def _eval_impl(self) -> KPValue:
         from shapely.geometry import Point
-        x, y = self._poll_request_data()[0]
-        return KPValue.TRUE if self.polygon.contains(Point(x, y)) else KPValue.FALSE
+        position = self._poll_request_data()[0]
+        if position:
+            x, y = position
+            return KPValue.TRUE if self.polygon.contains(Point(x, y)) else KPValue.FALSE
+        else:
+            return KPValue.UNKNOWN
 
 
 class SCLane(StateCondition):
@@ -189,23 +197,26 @@ class SCLane(StateCondition):
             points.extend(right_edge_points)
             return Polygon(shell=points)
 
-        if self.lane == "offroad":
-            is_offroad = KPValue.TRUE
-            for road in self.scenario.roads:
-                if road.rid:
+        if bbox:
+            if self.lane == "offroad":
+                is_offroad = KPValue.TRUE
+                for road in self.scenario.roads:
+                    if road.rid:
+                        edges = self.scenario.bng.get_road_edges(road.rid)
+                        polygon = _to_polygon(edges)
+                        if polygon.intersects(bbox):
+                            is_offroad = KPValue.FALSE
+                            break
+                    else:
+                        _logger.warning("SCLane can not consider roads without ID.")
+                return is_offroad
+            else:
+                for road in self.scenario.roads:
                     edges = self.scenario.bng.get_road_edges(road.rid)
                     polygon = _to_polygon(edges)
-                    if polygon.intersects(bbox):
-                        is_offroad = KPValue.FALSE
-                        break
-                else:
-                    _logger.warning("SCLane can not consider roads without ID.")
-            return is_offroad
+                    return KPValue.TRUE if polygon.intersects(bbox) else KPValue.FALSE
         else:
-            for road in self.scenario.roads:
-                edges = self.scenario.bng.get_road_edges(road.rid)
-                polygon = _to_polygon(edges)
-                return KPValue.TRUE if polygon.intersects(bbox) else KPValue.FALSE
+            return KPValue.UNKNOWN
 
 
 class SCSpeed(StateCondition):
@@ -222,7 +233,11 @@ class SCSpeed(StateCondition):
         return [SpeedRequest(self._generate_rid())]
 
     def _eval_impl(self) -> KPValue:
-        return KPValue.TRUE if self._poll_request_data()[0] > self.speed_limit else KPValue.FALSE
+        speed = self._poll_request_data()[0]
+        if speed:
+            return KPValue.TRUE if speed > self.speed_limit else KPValue.FALSE
+        else:
+            return KPValue.UNKNOWN
 
 
 class SCDamage(StateCondition):
@@ -236,7 +251,11 @@ class SCDamage(StateCondition):
         return [DamageRequest(self._generate_rid())]
 
     def _eval_impl(self) -> KPValue:
-        return KPValue.TRUE if self._poll_request_data()[0] else KPValue.FALSE
+        damage = self._poll_request_data()[0]
+        if damage:
+            return KPValue.TRUE if damage else KPValue.FALSE
+        else:
+            return KPValue.UNKNOWN
 
 
 class SCDistance(StateCondition):
@@ -257,10 +276,16 @@ class SCDistance(StateCondition):
     def _eval_impl(self) -> KPValue:
         from numpy import array
         from numpy.linalg import norm
-        x1, y1 = self._poll_request_data()[0]
+        position1 = self._poll_request_data()[0]
         # FIXME This circumvents the request mechanism...
-        x2, y2, _ = self.scenario.get_vehicle(self.other_participant)["pos"]
-        return KPValue.FALSE if norm(array((x1, y1)) - array((x2, y2))) > self.max_distance else KPValue.TRUE
+        other_vehicle = self.scenario.get_vehicle(self.other_participant)
+        position2 = other_vehicle["pos"] if other_vehicle else None
+        if position1 and position2:
+            x1, y1 = position1
+            x2, y2, _ = position2
+            return KPValue.FALSE if norm(array((x1, y1)) - array((x2, y2))) > self.max_distance else KPValue.TRUE
+        else:
+            return KPValue.UNKNOWN
 
 
 class SCLight(StateCondition):

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from beamngpy import Vehicle
 from logging import getLogger
 
@@ -36,7 +38,7 @@ class DBVehicle(Vehicle):
         self.requests[request.rid] = request
         request.add_sensor_to(self)
 
-    def poll_request(self, rid: str) -> Any:
+    def poll_request(self, rid: str) -> Optional[Any]:
         """
         The return type depends on the return type of the appropriate AIRequest.
         """

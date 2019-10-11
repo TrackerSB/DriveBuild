@@ -441,47 +441,52 @@ if __name__ == "__main__":
         from io import BytesIO
         from shapely.geometry import mapping
         vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
-        sensor_data = vehicle.poll_request(rid)
         if rid in vehicle.requests:
-            request_type = type(vehicle.requests[rid])
-            if request_type is PositionRequest:
-                data.position.x = sensor_data[0]
-                data.position.y = sensor_data[1]
-            elif request_type is SpeedRequest:
-                data.speed.speed = sensor_data
-            elif request_type is SteeringAngleRequest:
-                data.angle.angle = sensor_data
-            elif request_type is LidarRequest:
-                data.lidar.points.extend(sensor_data)
-            elif request_type is CameraRequest:
-                def _convert(image: Image) -> bytes:
-                    bytes_arr = BytesIO()
-                    image.save(bytes_arr, format="PNG")
-                    bytes_arr.seek(0)
-                    return bytes_arr.read()
+            sensor_data = vehicle.poll_request(rid)
+            if sensor_data:
+                request_type = type(vehicle.requests[rid])
+                if request_type is PositionRequest:
+                    data.position.x = sensor_data[0]
+                    data.position.y = sensor_data[1]
+                elif request_type is SpeedRequest:
+                    data.speed.speed = sensor_data
+                elif request_type is SteeringAngleRequest:
+                    data.angle.angle = sensor_data
+                elif request_type is LidarRequest:
+                    data.lidar.points.extend(sensor_data)
+                elif request_type is CameraRequest:
+                    def _convert(image: Image) -> bytes:
+                        bytes_arr = BytesIO()
+                        image.save(bytes_arr, format="PNG")
+                        bytes_arr.seek(0)
+                        return bytes_arr.read()
 
-                data.camera.color = _convert(sensor_data[0])
-                data.camera.annotated = _convert(sensor_data[1])
-                data.camera.depth = _convert(sensor_data[2])
-            elif request_type is DamageRequest:
-                data.damage.is_damaged = sensor_data
-            elif request_type is RoadCenterDistanceRequest:
-                data.road_center_distance.road_id = sensor_data[0]
-                data.road_center_distance.distance = sensor_data[1]
-            elif request_type is CarToLaneAngleRequest:
-                data.car_to_lane_angle.lane_id = sensor_data[0]
-                data.car_to_lane_angle.angle = float(sensor_data[1])
-            elif request_type is BoundingBoxRequest:
-                points = mapping(sensor_data)["coordinates"][0]
-                for point in points:
-                    data.bounding_box.points.append(point[0])
-                    data.bounding_box.points.append(point[1])
-            # elif request_type is LightRequest:
-            # response = DataResponse.Data.Light()
-            # FIXME Add DataResponse.Data.Light
+                    data.camera.color = _convert(sensor_data[0])
+                    data.camera.annotated = _convert(sensor_data[1])
+                    data.camera.depth = _convert(sensor_data[2])
+                elif request_type is DamageRequest:
+                    data.damage.is_damaged = sensor_data
+                elif request_type is RoadCenterDistanceRequest:
+                    data.road_center_distance.road_id = sensor_data[0]
+                    data.road_center_distance.distance = sensor_data[1]
+                elif request_type is CarToLaneAngleRequest:
+                    data.car_to_lane_angle.lane_id = sensor_data[0]
+                    data.car_to_lane_angle.angle = float(sensor_data[1])
+                elif request_type is BoundingBoxRequest:
+                    points = mapping(sensor_data)["coordinates"][0]
+                    for point in points:
+                        data.bounding_box.points.append(point[0])
+                        data.bounding_box.points.append(point[1])
+                # elif request_type is LightRequest:
+                # response = DataResponse.Data.Light()
+                # FIXME Add DataResponse.Data.Light
+                else:
+                    raise NotImplementedError(
+                        "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
             else:
-                raise NotImplementedError(
-                    "The conversion from " + str(request_type) + " to DataResponse.Data is not implemented, yet.")
+                _logger.warning("Could not attach data for request \"" + rid
+                                + "\" of vehicle \"" + vid.vid
+                                + "\" in simulation \"" + str(sid.sid) + "\".")
         else:
             raise ValueError("There is no request called \"" + rid + "\".")
 
