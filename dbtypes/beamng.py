@@ -9,8 +9,28 @@ class DBVehicle(Vehicle):
     from typing import Any
 
     def __init__(self, vid: str, **options) -> None:
+        from threading import Lock
         super().__init__(vid, **options)
         self.requests = {}
+        self._vehicle_lock = Lock()
+
+    def poll_sensors(self, requests):
+        _logger.debug(self.vid + ": Try acquire lock for polling sensors")
+        self._vehicle_lock.acquire()
+        _logger.debug(self.vid + ": Acquired lock for polling sensors")
+        result = super().poll_sensors(requests)
+        _logger.debug(self.vid + ": Release lock for polling sensors")
+        self._vehicle_lock.release()
+        return result
+
+    def control(self, **options):
+        _logger.debug(self.vid + ": Try acquire lock for controlling")
+        self._vehicle_lock.acquire()
+        _logger.debug(self.vid + ": Acquired lock for controlling")
+        result = super().control(**options)
+        _logger.debug(self.vid + ": Release lock for controlling")
+        self._vehicle_lock.release()
+        return result
 
     def apply_request(self, request: AiRequest) -> None:
         self.requests[request.rid] = request
