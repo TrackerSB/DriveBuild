@@ -13,13 +13,13 @@ class DBBeamNGpy(BeamNGpy):
     num_created_user_paths = 0
 
     def __init__(self, host, port):
+        from pathlib import Path
         if DBBeamNGpy.user_path_pool.empty():
             user_path = join(BEAMNG_USER_PATH, "drivebuild_" + str(DBBeamNGpy.num_created_user_paths))
             DBBeamNGpy.num_created_user_paths = DBBeamNGpy.num_created_user_paths + 1
         else:
             user_path = DBBeamNGpy.user_path_pool.get().name
-        if not exists(user_path):
-            mkdir(user_path)
+        Path(user_path).mkdir(parents=True, exist_ok=True)
         super().__init__(host, port, BEAMNG_INSTALL_FOLDER, user_path)
         self.current_tick = 0
         self.instance_lock = Lock()
