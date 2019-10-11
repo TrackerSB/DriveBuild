@@ -1,6 +1,6 @@
 import copyreg
 from datetime import datetime
-from logging import getLogger
+from logging import getLogger, basicConfig, INFO
 from socket import socket
 from threading import Thread, Lock
 from typing import Dict, Optional, Tuple, List
@@ -40,6 +40,7 @@ if __name__ == "__main__":
     # sid --> (vid --> (numSimReady, numAiReady))
     _registered_ais: Dict[str, Dict[str, Tuple[int, int]]] = {}
     _registered_ais_lock = Lock()
+    basicConfig(format='%(asctime)s: %(levelname)s - %(message)s', level=INFO)
 
 
     def _get_simulation(sid: SimulationID) -> Optional[Simulation]:
@@ -80,7 +81,7 @@ if __name__ == "__main__":
 
     def _handle_sim_node_message(conn: socket, _: Tuple[str, int]) -> None:
         from drivebuildclient import process_request
-        print("_handle_sim_node_message --> " + str(conn.getsockname()))
+        _logger.debug("_handle_sim_node_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
             if action == b"generateSid":
@@ -150,19 +151,19 @@ if __name__ == "__main__":
 
     def _request_ai_for(sid: SimulationID, vid: VehicleID) -> Void:
         from time import sleep
-        print("sim_request_ai_for: enter for " + sid.sid + ":" + vid.vid)
+        _logger.debug("sim_request_ai_for: enter for " + sid.sid + ":" + vid.vid)
         _registered_ais_lock.acquire()
         _init_registered_ais(sid, vid)
         num_sim_ready, num_ai_ready = _registered_ais[sid.sid][vid.vid]
         _registered_ais[sid.sid][vid.vid] = (num_sim_ready + 1, num_ai_ready)
-        print(sid.sid + ":" + vid.vid + " after raf: " + str(_registered_ais[sid.sid][vid.vid]))
+        _logger.debug(sid.sid + ":" + vid.vid + " after raf: " + str(_registered_ais[sid.sid][vid.vid]))
         _registered_ais_lock.release()
         while _registered_ais[sid.sid][vid.vid][1] < _registered_ais[sid.sid][vid.vid][0] \
                 and _is_simulation_running(sid):
-            print(sid.sid + ":" + vid.vid + " wait for ai ready")
+            _logger.debug(sid.sid + ":" + vid.vid + " wait for ai ready")
             sleep(5)
             pass  # Wait for all being ready
-        print("sim_request_ai_for: leave for " + sid.sid + ":" + vid.vid)
+        _logger.debug("sim_request_ai_for: leave for " + sid.sid + ":" + vid.vid)
         void = Void()
         void.message = "Simulation " + sid.sid + " finished requesting vehicle " + vid.vid + "."
         return void
@@ -199,7 +200,7 @@ if __name__ == "__main__":
 
     def _handle_simulation_message(conn: socket, _: Tuple[str, int]) -> None:
         from drivebuildclient import process_requests
-        print("_handle_simulation_message --> " + str(conn.getsockname()))
+        _logger.info("_handle_simulation_message --> " + str(conn.getsockname()))
 
         def _handle_message(action: bytes, data: List[bytes]) -> bytes:
             from drivebuildclient.aiExchangeMessages_pb2 import Bool
@@ -353,7 +354,7 @@ if __name__ == "__main__":
 
     def _wait_for_simulator_request(sid: SimulationID, vid: VehicleID) -> SimStateResponse:
         from time import sleep
-        print("_wait_for_simulator_request: enter for " + sid.sid + ":" + vid.vid)
+        _logger.info("_wait_for_simulator_request: enter for " + sid.sid + ":" + vid.vid)
         _registered_ais_lock.acquire()
         _init_registered_ais(sid, vid)
         num_sim_ready, num_ai_ready = _registered_ais[sid.sid][vid.vid]
@@ -364,7 +365,7 @@ if __name__ == "__main__":
             sleep(5)
             pass  # Wait all being ready
         response = _status(sid)
-        print("_wait_for_simulator_request: leave for " + sid.sid + ":" + vid.vid)
+        _logger.info("_wait_for_simulator_request: leave for " + sid.sid + ":" + vid.vid)
         return response
 
 
@@ -415,7 +416,7 @@ if __name__ == "__main__":
 
 
     def _control(sid: SimulationID, vid: VehicleID, control: Control) -> Void:
-        print("ai_control: enter for " + vid.vid)
+        _logger.info("ai_control: enter for " + vid.vid)
         result = Void()
         if _is_simulation_running(sid):
             command_type = control.WhichOneof("command")
@@ -430,7 +431,7 @@ if __name__ == "__main__":
             result.message = "Controlled vehicle " + vid.vid + " in simulation " + sid.sid + "."
         else:
             result.message = "Simulation " + sid.sid + " does not run."
-        print("ai_control: leave for " + vid.vid)
+        _logger.info("ai_control: leave for " + vid.vid)
         return result
 
 
@@ -540,7 +541,7 @@ if __name__ == "__main__":
             client = create_client(MAIN_APP_HOST, MAIN_APP_PORT)
             client_thread = Thread(target=process_requests, args=(client, _handle_main_app_message))
             client_thread.daemon = True
-            print("_handle_main_app_message --> " + str(client.getsockname()))
+            _logger.info("_handle_main_app_message --> " + str(client.getsockname()))
             client_thread.start()
             result = Void()
             result.message = "Connected another client socket to the main app."
@@ -573,5 +574,5 @@ if __name__ == "__main__":
         main_app_client.close()
         exit(1)
     sim_node_main_app_com = Thread(target=process_requests, args=(main_app_client, _handle_main_app_message))
-    print("_handle_main_app_message --> " + str(main_app_client.getsockname()))
+    _logger.info("_handle_main_app_message --> " + str(main_app_client.getsockname()))
     sim_node_main_app_com.start()
