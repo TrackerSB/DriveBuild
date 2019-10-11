@@ -488,6 +488,8 @@ class Simulation:
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from threading import Thread
         from config import BEAMNG_LEVEL_NAME
+        from beamngpy.beamngcommon import BNGValueError
+        from dbtypes.beamngpy import BeamNGpyException
 
         Simulation._start_simulation.lock.acquire()
         while not Simulation._is_port_available(Simulation._start_simulation.port):
@@ -523,6 +525,8 @@ class Simulation:
         except OSError:
             _logger.exception(
                 "The start of a BeamNG instance failed (Port: " + str(Simulation._start_simulation.port) + ").")
+        except BNGValueError as ex:
+            raise BeamNGpyException from ex
         Simulation._start_simulation.lock.release()
 
         runtime_thread = Thread(target=Simulation._run_runtime_verification, args=(self, test_case.aiFrequency))

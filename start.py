@@ -510,10 +510,16 @@ if __name__ == "__main__":
 
 
     def _handle_main_app_message(action: bytes, data: List[bytes]) -> bytes:
+        from google.protobuf.message import DecodeError
         if action == b"runTests":
             user = User()
-            user.ParseFromString(data[1])
-            result = _run_tests(data[0], user)
+            try:
+                user.ParseFromString(data[1])
+                result = _run_tests(data[0], user)
+            except DecodeError:
+                _logger.exception("Running a test failed since \"" + str(data[1]) + "\" can not be parsed to an User")
+                result = SubmissionResult()
+                result.message.message = "The user parameter could not be parsed."
         elif action == b"waitForSimulatorRequest":
             sid = SimulationID()
             sid.ParseFromString(data[0])
