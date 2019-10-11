@@ -350,8 +350,7 @@ class Simulation:
                 vid = VehicleID()
                 vid.vid = v
                 message = self.send_message_to_sim_node(b"requestAiFor", [self.serialized_sid, vid.SerializeToString()])
-                print(message)
-                # FIXME Continue...
+                _logger.debug(message)
             elif mode == MovementMode.MANUAL:
                 pass  # No AI to request
             else:
