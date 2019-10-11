@@ -1,5 +1,4 @@
-from os import mkdir
-from os.path import join, exists
+from os.path import join
 from queue import Queue
 from threading import Lock
 
