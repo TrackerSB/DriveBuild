@@ -76,8 +76,7 @@ class Simulation:
         else:
             return None
 
-    def _generate_lua_av_command(self, participant: Participant, idx: int, next_mode: MovementMode,
-                                 current_mode: Optional[MovementMode] = None) -> List[str]:
+    def _generate_lua_av_command(self, participant: Participant, idx: int, next_mode: MovementMode) -> List[str]:
         """
         NOTE When using this function the lua file where you include this command has to include the following lines:
         local sh = require('ge/extensions/scenario/scenariohelper')
@@ -99,31 +98,30 @@ class Simulation:
             "    modeFile:close()"
         ]
         remaining_waypoints = participant.movement[idx + 1:]
+        speed_limit = remaining_waypoints[0].speed_limit
+        target_speed = remaining_waypoints[0].target_speed
+        if speed_limit:
+            speed_param = ", routeSpeed=" + str(speed_limit) + ", routeSpeedMode='limit'"
+        elif target_speed:
+            speed_param = ", routeSpeed=" + str(target_speed) + ", routeSpeedMode='set'"
+        else:
+            speed_param = ""
         if next_mode == MovementMode._BEAMNG:
-            # FIXME Recognize speeds
             serialized_waypoints = "{'" + "', '".join([wp.id for wp in remaining_waypoints]) + "'}"
             lua_av_command.append(
                 "    sh.setAiPath({vehicleName='" + participant.id + "', waypoints=" + serialized_waypoints
-                + ", driveInLane='on'})"
+                + ", driveInLane='on'" + speed_param + "})"
             )
         elif next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
-            if current_mode not in [MovementMode.MANUAL, MovementMode.TRAINING]:
-                while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
-                    remaining_waypoints.append(remaining_waypoints[-1])
+            while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
+                remaining_waypoints.append(remaining_waypoints[-1])
 
-                def _waypoint_to_tuple(waypoint: WayPoint) -> str:
-                    return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
+            def _waypoint_to_tuple(waypoint: WayPoint) -> str:
+                return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
 
-                ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
-                ai_path_command = "    sh.setAiLine('" + participant.id + "', {line=" + ai_line + "})"
-                # FIXME Recognize speed values
-                speed_limit = remaining_waypoints[0].speed_limit
-                target_speed = remaining_waypoints[0].target_speed
-                if speed_limit:
-                    pass
-                elif target_speed:
-                    pass
-                lua_av_command.extend([ai_path_command])
+            ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
+            ai_path_command = "    sh.setAiLine('" + participant.id + "', {line=" + ai_line + speed_param + "})"
+            lua_av_command.extend([ai_path_command])
         elif next_mode == MovementMode.AUTONOMOUS:
             lua_av_command.extend([
                 "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
@@ -219,7 +217,6 @@ class Simulation:
 
     def _add_lua_triggers(self, participants: List[Participant]) -> None:
         for participant in participants:
-            current_movement_mode = participant.initial_state.mode
             for idx, waypoint in enumerate(participant.movement[0:-1]):
                 x_pos = waypoint.position[0]
                 y_pos = waypoint.position[1]
@@ -234,7 +231,7 @@ class Simulation:
                         "  if data['event'] == 'enter' then"
                     ])
                     lua_lines.extend(
-                        self._generate_lua_av_command(participant, idx, waypoint.mode, current_movement_mode))
+                        self._generate_lua_av_command(participant, idx, waypoint.mode))
                     lua_lines.extend([
                         "  end",
                         "end",
@@ -262,8 +259,6 @@ class Simulation:
                     "    canSaveDynamicFields = \"1\";",  # FIXME Think about it
                     "};"
                 ])
-
-                current_movement_mode = waypoint.mode
 
     def _enable_participant_movements(self, participants: List[Participant]) -> None:
         """

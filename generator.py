@@ -324,7 +324,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         movements = list()
         waypoint_nodes = xpath(node, "db:movement/db:waypoint")
         for wp_node in waypoint_nodes:
-            common_state_vals = _extract_common_state_vals(initial_state_node)
+            common_state_vals = _extract_common_state_vals(wp_node)
             movements.append(WayPoint(
                 (float(wp_node.get("x")), float(wp_node.get("y"))),
                 float(wp_node.get("tolerance")),
