@@ -8,26 +8,18 @@ local function setAiLine(vehicleName, arg)
   local speedList = {}
   for idx, n in ipairs(nodes) do
     local pos = vec3(n['pos'][1], n['pos'][2], 10000)
-    -- NOTE obj is nil
-    -- if cling then
-    --   z = obj:getSurfaceHeightBelow(pos:toFloat3())
-    -- else
-    --   z = n['pos'][3]
-    -- end
     pos.z = z
     local fauxNode = {
       pos = pos,
       radius = 0,
       radiusOrig = 0,
     }
-    table.insert(speedList, n['speed'])
     table.insert(fauxPath, fauxNode)
   end
 
-  local arg = {
-    script = fauxPath,
-    wpSpeeds = speedList
-  }
+  local routeSpeed = arg['routeSpeed'] or 0
+  local routeSpeedMode = arg['routeSpeedMode'] or 'off'
 
-  queueLuaCommandByName(vehicleName, 'ai.driveUsingPath({script = '..serialize(fauxPath)..', wpSpeeds = '..serialize(speedList)..'})')
+  queueLuaCommandByName(vehicleName, 'ai.driveUsingPath({script = '..serialize(fauxPath)..', routeSpeed = '..routeSpeed..', routeSpeedMode = "'..routeSpeedMode..'"})')
 end
+
