@@ -21,9 +21,12 @@ class DBBeamNGpy(BeamNGpy):
         Path(user_path).mkdir(parents=True, exist_ok=True)
         super().__init__(host, port, BEAMNG_INSTALL_FOLDER, user_path)
         self.current_tick = 0
+        self._sim_lock = Lock()
 
     def step(self, count, wait=True):
+        self._sim_lock.acquire()
         super().step(count, wait)
+        self._sim_lock.release()
         self.current_tick += count
 
     def poll_sensors(self, vehicle):
@@ -35,7 +38,9 @@ class DBBeamNGpy(BeamNGpy):
 
     def close(self):
         try:
+            self._sim_lock.acquire()
             super().close()
+            self._sim_lock.release()
             DBBeamNGpy.user_path_pool.put(self.user)
         except Exception as ex:
             raise BeamNGpyException("Closing BeamNG failed") from ex
