@@ -36,6 +36,16 @@ class DBVehicle(Vehicle):
         _logger.debug(self.vid + ": Release lock for controlling")
         self._vehicle_lock.release()
 
+    def close(self):
+        _logger.debug(self.vid + ": Try acquire lock for controlling")
+        self._vehicle_lock.acquire()
+        _logger.debug(self.vid + ": Acquired lock for controlling")
+        if self.skt:
+            super().close()
+        else:
+            _logger.warning("The connection to the vehicle " + self.vid + "could not be closed")
+        self._vehicle_lock.release()
+
     def apply_request(self, request: AiRequest) -> None:
         self.requests[request.rid] = request
         request.add_sensor_to(self)
