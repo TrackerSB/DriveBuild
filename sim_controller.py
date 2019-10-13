@@ -98,8 +98,8 @@ class Simulation:
             "    modeFile:close()"
         ]
         remaining_waypoints = participant.movement[idx + 1:]
-        speed_limit = remaining_waypoints[0].speed_limit
-        target_speed = remaining_waypoints[0].target_speed
+        speed_limit = remaining_waypoints[0].speed_limit if remaining_waypoints else None
+        target_speed = remaining_waypoints[0].target_speed if remaining_waypoints else None
         if speed_limit:
             speed_param = ", routeSpeed=" + str(speed_limit) + ", routeSpeedMode='limit'"
         elif target_speed:
