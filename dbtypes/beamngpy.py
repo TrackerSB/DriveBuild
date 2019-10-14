@@ -1,3 +1,4 @@
+from logging import getLogger
 from os.path import join
 from queue import Queue
 from threading import Lock
@@ -33,8 +34,8 @@ class DBBeamNGpy(BeamNGpy):
         if self.skt:
             try:
                 super().poll_sensors(vehicle)
-            except Exception as ex:
-                raise BeamNGpyException("Polling sensors failed") from ex
+            except Exception:
+                _logger.exception("Polling sensors failed")
 
     def close(self):
         try:
@@ -42,9 +43,5 @@ class DBBeamNGpy(BeamNGpy):
             super().close()
             self._sim_lock.release()
             DBBeamNGpy.user_path_pool.put(self.user)
-        except Exception as ex:
-            raise BeamNGpyException("Closing BeamNG failed") from ex
-
-
-class BeamNGpyException(RuntimeWarning):
-    pass
+        except Exception:
+            _logger.exception("Closing a BeamNG instance failed.")
