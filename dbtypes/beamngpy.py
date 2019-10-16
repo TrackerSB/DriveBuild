@@ -7,6 +7,8 @@ from beamngpy import BeamNGpy
 
 from config import BEAMNG_USER_PATH, BEAMNG_INSTALL_FOLDER
 
+_logger = getLogger("DriveBuild.SimNode.DBTypes.BeamNGpy")
+
 
 class DBBeamNGpy(BeamNGpy):
     user_path_pool = Queue()
@@ -45,3 +47,12 @@ class DBBeamNGpy(BeamNGpy):
             DBBeamNGpy.user_path_pool.put(self.user)
         except Exception:
             _logger.exception("Closing a BeamNG instance failed.")
+
+    def get_road_edges(self, road):
+        try:
+            self._sim_lock.acquire()
+            result = super().get_road_edges(road)
+            self._sim_lock.release()
+            return result
+        except Exception:
+            _logger.exception("Requesting road edges failed")
