@@ -275,6 +275,7 @@ if __name__ == "__main__":
                         or task.get_state() is TestResult.Result.FAILED:
                     sim_state.state = SimStateResponse.SimState.FINISHED
                 elif task.get_state() is TestResult.Result.SKIPPED:
+                    # FIXME Skipping due to precondition is not the same as canceled
                     sim_state.state = SimStateResponse.SimState.CANCELED
                 else:
                     sim_state.state = SimStateResponse.SimState.TIMEOUT
