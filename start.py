@@ -270,14 +270,16 @@ if __name__ == "__main__":
         if sim:
             scenario = _get_data(sid).scenario
             if scenario.bng is None:
+                # FIXME Detect simulations with enforced result (Manually stopped)
                 task = _get_data(sid).simulation_task
                 if task.get_state() is TestResult.Result.SUCCEEDED \
                         or task.get_state() is TestResult.Result.FAILED:
                     sim_state.state = SimStateResponse.SimState.FINISHED
                 elif task.get_state() is TestResult.Result.SKIPPED:
-                    # FIXME Skipping due to precondition is not the same as canceled
+                    # NOTE Skipped => stopped, canceled or unfulfilled precondition
                     sim_state.state = SimStateResponse.SimState.CANCELED
                 else:
+                    # FIXME Manually stopped with enforced result UNKNOWN => Classified as TIMEOUT
                     sim_state.state = SimStateResponse.SimState.TIMEOUT
             else:
                 sim_state.state = SimStateResponse.SimState.RUNNING
