@@ -438,13 +438,13 @@ if __name__ == "__main__":
 
     def _attach_request_data(data: DataResponse.Data, sid: SimulationID, vid: VehicleID, rid: str) -> None:
         from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, LidarRequest, CameraRequest, \
-            DamageRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
+            DamageRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest, RoadEdgesRequest
         from PIL import Image
         from io import BytesIO
         from shapely.geometry import mapping
         vehicle = _get_data(sid).scenario.get_vehicle(vid.vid)
         if rid in vehicle.requests:
-            sensor_data = vehicle.poll_request(rid)
+            sensor_data = vehicle.poll_request(rid, _get_data(sid).scenario)
             if sensor_data:
                 request_type = type(vehicle.requests[rid])
                 if request_type is PositionRequest:
@@ -479,6 +479,10 @@ if __name__ == "__main__":
                     for point in points:
                         data.bounding_box.points.append(point[0])
                         data.bounding_box.points.append(point[1])
+                elif request_type is RoadEdgesRequest:
+                    for rid, (left_points, right_points) in sensor_data.items():
+                        data.road_edges.edges[rid].left_points.extend([e for p in left_points for e in p])
+                        data.road_edges.edges[rid].right_points.extend([e for p in right_points for e in p])
                 # elif request_type is LightRequest:
                 # response = DataResponse.Data.Light()
                 # FIXME Add DataResponse.Data.Light

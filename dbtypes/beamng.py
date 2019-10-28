@@ -1,6 +1,6 @@
 from typing import Optional
 
-from beamngpy import Vehicle
+from beamngpy import Vehicle, Scenario
 from logging import getLogger
 
 _logger = getLogger("DriveBuild.SimNode.DBTypes.BeamNG")
@@ -50,11 +50,11 @@ class DBVehicle(Vehicle):
         self.requests[request.rid] = request
         request.add_sensor_to(self)
 
-    def poll_request(self, rid: str) -> Optional[Any]:
+    def poll_request(self, rid: str, scenario: Scenario) -> Optional[Any]:
         """
         The return type depends on the return type of the appropriate AIRequest.
         """
         if rid in self.requests:
-            return self.requests[rid].read_sensor_cache_of(self)
+            return self.requests[rid].read_sensor_cache_of(self, scenario)
         else:
             _logger.warning("The vehicle " + self.vid + " has no request called " + rid + " attached.")

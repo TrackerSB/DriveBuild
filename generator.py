@@ -201,7 +201,7 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
         Cylinder, Cone, Bump
     from util.xml import xpath, get_tag_name
     from requests import PositionRequest, SpeedRequest, SteeringAngleRequest, CameraRequest, CameraDirection, \
-        LidarRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest
+        LidarRequest, RoadCenterDistanceRequest, CarToLaneAngleRequest, BoundingBoxRequest, RoadEdgesRequest
 
     roads: List[Road] = list()
 
@@ -314,6 +314,8 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
                 ai_requests.append(CarToLaneAngleRequest(rid, roads))
             elif tag == "boundingBox":
                 ai_requests.append(BoundingBoxRequest(rid))
+            elif tag == "roadEdges":
+                ai_requests.append(RoadEdgesRequest(rid))
             else:
                 _logger.warning("The tag " + tag + " is not supported, yet.")
         # Add default data requests required for debugging and visualization

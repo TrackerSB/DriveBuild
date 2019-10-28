@@ -3,6 +3,8 @@ from enum import Enum
 from logging import getLogger
 from typing import Optional
 
+from beamngpy import Scenario
+
 _logger = getLogger("DriveBuild.SimNode.Requests")
 
 
@@ -19,10 +21,11 @@ class AiRequest(ABC):
         pass
 
     @abstractmethod
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Any]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, scenario: Scenario) -> Optional[Any]:
         """
         This method returns the data the request represents. NOTE It does not call poll_sensors or similar!
         :param vehicle: The vehicle to read the cached sensor data from.
+        :param scenario: The running scenario to extract data for the cache.
         :return: The data to be retrieved by this request.
         """
         pass
@@ -35,7 +38,7 @@ class PositionRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Tuple[float, float]]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Optional[Tuple[float, float]]:
         if vehicle.state:
             x, y, _ = vehicle.state["pos"]
             return x, y
@@ -50,12 +53,33 @@ class BoundingBoxRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Polygon:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Polygon:
         from shapely.geometry import Polygon
         bbox_points = vehicle.get_bbox()
         shell = tuple(map(lambda pos: bbox_points[pos][0:2],
                           ["near_bottom_left", "far_bottom_left", "far_bottom_right", "near_bottom_right"]))
         return Polygon(shell=shell)
+
+
+class RoadEdgesRequest(AiRequest):
+    from beamngpy import Vehicle
+    from typing import Dict, Tuple, List
+
+    def __init__(self, rid: str) -> None:
+        super().__init__(rid)
+
+    def add_sensor_to(self, vehicle: Vehicle) -> None:
+        pass
+
+    def read_sensor_cache_of(self, vehicle: Vehicle, scenario: Scenario) \
+            -> Optional[Dict[str, Tuple[List[Tuple[float, float]], List[Tuple[float, float]]]]]:
+        road_edges = {}
+        for road in scenario.roads:
+            edges = scenario.bng.get_road_edges(road.rid)
+            left_points = [p["left"][0:2] for p in edges]
+            right_points = [p["right"][0:2] for p in edges]
+            road_edges[road.rid] = (left_points, right_points)
+        return road_edges
 
 
 class DamageRequest(AiRequest):
@@ -65,7 +89,7 @@ class DamageRequest(AiRequest):
         from beamngpy.sensors import Damage
         vehicle.attach_sensor(self.rid, Damage())
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> bool:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> bool:
         # FIXME Any more precise way of checking damage?
         return vehicle.sensor_cache[self.rid]["damage"] > 0
 
@@ -76,7 +100,7 @@ class SteeringAngleRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[float]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Optional[float]:
         from numpy import arctan2, rad2deg
         if vehicle.state:
             # FIXME What´s the up vector?
@@ -95,7 +119,7 @@ class SpeedRequest(AiRequest):
     def add_sensor_to(self, _: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[float]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Optional[float]:
         from numpy.linalg import norm
         return norm(vehicle.state["vel"]) if vehicle.state else None
 
@@ -113,7 +137,7 @@ class LidarRequest(AiRequest):
         from beamngpy.sensors import Lidar
         vehicle.attach_sensor(self.rid, Lidar(max_dist=self.max_dist))
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> ndarray:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> ndarray:
         return vehicle.sensor_cache[self.rid]["points"]
 
 
@@ -187,7 +211,7 @@ class CameraRequest(AiRequest):
                               Camera((x_pos, y_pos, z_pos), (x_rot, y_rot, z_rot), self.fov, (self.width, self.height),
                                      colour=True, depth=True, annotation=False))
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Tuple[Image, Image, Image]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Tuple[Image, Image, Image]:
         """
         Returns the colored, annotated and the depth image.
         """
@@ -203,7 +227,7 @@ class LightRequest(AiRequest):
         from beamngpy.sensors import Electrics
         vehicle.attach_sensor(self.rid, Electrics())
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> CarLight:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> CarLight:
         # FIXME How to get lights?
         return None
 
@@ -224,7 +248,7 @@ class RoadCenterDistanceRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Tuple[str, float]]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Optional[Tuple[str, float]]:
         from shapely.geometry import Point
         if vehicle.state:
             x, y, _ = vehicle.state["pos"]
@@ -257,7 +281,7 @@ class CarToLaneAngleRequest(AiRequest):
     def add_sensor_to(self, vehicle: Vehicle) -> None:
         pass
 
-    def read_sensor_cache_of(self, vehicle: Vehicle) -> Optional[Tuple[str, float]]:
+    def read_sensor_cache_of(self, vehicle: Vehicle, _: Scenario) -> Optional[Tuple[str, float]]:
         from shapely.geometry import Point, LineString
         from numpy import rad2deg, arctan2, array
         if vehicle.state:
