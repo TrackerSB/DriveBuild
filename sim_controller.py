@@ -478,7 +478,7 @@ class Simulation:
         result.result = result_queue.get()
         self.send_message_to_sim_node(b"stop", [self.serialized_sid, result.SerializeToString()])
 
-    @static_vars(port=50000, lock=Lock())
+    @static_vars(port=60000, lock=Lock())
     def _start_simulation(self, test_case: TestCase) -> Tuple[Scenario, ExtThread]:
         from threading import Thread
         from config import BEAMNG_LEVEL_NAME
@@ -486,7 +486,7 @@ class Simulation:
 
         Simulation._start_simulation.lock.acquire()
         while not Simulation._is_port_available(Simulation._start_simulation.port):
-            Simulation._start_simulation.port += 100  # Make sure to not interfere with previously started simulations
+            Simulation._start_simulation.port += 200  # Make sure to not interfere with previously started simulations
         self._bng_instance = DBBeamNGpy('localhost', Simulation._start_simulation.port)
         authors = ", ".join(test_case.authors)
         bng_scenario = Scenario(BEAMNG_LEVEL_NAME, self._sim_name, authors=authors)
