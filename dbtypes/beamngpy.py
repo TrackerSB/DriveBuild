@@ -56,3 +56,12 @@ class DBBeamNGpy(BeamNGpy):
             return result
         except Exception:
             _logger.exception("Requesting road edges failed")
+
+    def get_vehicle_bbox(self, vehicle):
+        try:
+            self._sim_lock.acquire()
+            result = super().get_vehicle_bbox(vehicle)
+            self._sim_lock.release()
+            return result
+        except Exception:
+            _logger.exception("Requesting the bounding box of a vehicle failed")
