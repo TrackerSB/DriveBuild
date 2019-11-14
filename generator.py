@@ -73,10 +73,10 @@ class ScenarioBuilder:
                 def _calculate_parallel_coords(offset: float, line_width: float) \
                         -> Optional[List[Tuple[float, float, float, float]]]:
                     original_line = LineString(zip(new_x_vals, new_y_vals))
-                    offset_line = original_line.parallel_offset(offset)
                     try:
+                        offset_line = original_line.parallel_offset(offset)
                         coords = offset_line.coords.xy
-                    except NotImplementedError:
+                    except (NotImplementedError, Exception):  # FIXME Where is TopologyException
                         _logger.exception("Creating an offset line for lane markings failed")
                         return None
                     # NOTE The parallel LineString may have a different number of points than initially given
