@@ -1,17 +1,16 @@
 class MyFancyAI:
-    from aiExchangeMessages_pb2 import SimulationID, VehicleID
+    from drivebuildclient.AIExchangeService import AIExchangeService
+    from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleID
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, service: AIExchangeService) -> None:
+        self.service = service
 
     def start(self, sid: SimulationID, vid: VehicleID) -> None:
-        from AIExchangeService import get_service
         from aiExchangeMessages_pb2 import SimStateResponse, DataRequest, Control
-        service = get_service()
         while True:
             print(sid.sid + ": Test status: " + service.get_status(sid))
             # Wait for the simulation to request this AI
-            sim_state = service.wait_for_simulator_request(sid, vid)
+            sim_state = self.service.wait_for_simulator_request(sid, vid)
             if sim_state is SimStateResponse.SimState.RUNNING:  # Check whether simulation is still running
                 # Request data this AI needs
                 request = DataRequest()
