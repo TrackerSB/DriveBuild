@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Test Monitor{% endblock %}
+{% block content %}
+    <div id="status_text"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <script>
+        (function worker() {
+            $.ajax({
+                url: "/stats/status",
+                type: "get",
+                success: function (response) {
+                    $("#status_text").html(response);
+                },
+                error: function (xhr) {
+                    $("#status_text").html("Status could not be retrieved.")
+                },
+                complete: function () {
+                    // Schedule the next request when the current one's complete
+                    setTimeout(worker, 1000);
+                }
+            });
+        })();
+    </script>
+{% endblock %}

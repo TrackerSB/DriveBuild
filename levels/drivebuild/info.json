@@ -1,0 +1,10 @@
+{
+    "title": "levels.smallgrid.info.title",
+    "description": "levels.smallgrid.info.description",
+    "previews": ["drivebuild_preview.jpg"],
+    "size": [-1,-1],
+    "biome": "levels.smallgrid.info.biome",
+    "roads": "levels.smallgrid.info.roads",
+    "authors": "Stefan Huber",
+	"defaultSpawnPointName":"spawn_default",
+}

@@ -1,0 +1,166 @@
+syntax = "proto3";
+option py_generic_services = false;
+
+message DataRequest {
+    repeated string request_ids = 1;
+}
+
+message DataResponse {
+    message Data {
+        message Position {
+            double x = 1;
+            double y = 2;
+        }
+        message Speed {
+            double speed = 1;
+        }
+        message SteeringAngle {
+            double angle = 1;
+        }
+        message Lidar {
+            repeated double points = 1;
+        }
+        message Camera {
+            bytes color = 1;
+            bytes annotated = 2;
+            bytes depth = 3;
+        }
+        message Damage {
+            bool is_damaged = 1;
+        }
+        message RoadCenterDistance {
+            string road_id = 1;
+            float distance = 2;
+        }
+        message CarToLaneAngle {
+            string lane_id = 1;
+            float angle = 2;
+        }
+        message BoundingBox {
+            repeated float points = 1;
+        }
+        message RoadEdges {
+            message RoadEdge {
+                repeated float left_points = 1;
+                repeated float right_points = 2;
+            }
+            map<string, RoadEdge> edges = 1;
+        }
+        message Error {
+            string message = 1;
+        }
+        oneof data {
+            Position position = 1;
+            Speed speed = 2;
+            SteeringAngle angle = 3;
+            Lidar lidar = 4;
+            Camera camera = 5;
+            Damage damage = 6;
+            RoadCenterDistance road_center_distance = 7;
+            CarToLaneAngle car_to_lane_angle = 8;
+            BoundingBox bounding_box = 9;
+            RoadEdges road_edges = 10;
+            Error error = 11;
+        }
+    }
+    map<string, Data> data = 1;
+}
+
+message Control {
+    message AvCommand {
+        double accelerate = 1; // FIXME Range?
+        double steer = 2; // FIXME positive left, negative right? // In deg
+        double brake = 3; // FIXME Range?
+    }
+
+    message SimCommand {
+        enum Command {
+            SUCCEED = 0;
+            FAIL = 1;
+            CANCEL = 2;
+        }
+        Command command = 1;
+    }
+
+    oneof command {
+        AvCommand avCommand = 1;
+        SimCommand simCommand = 2;
+    }
+}
+
+message VerificationResult {
+    string precondition = 1;
+    string failure = 2;
+    string success = 3;
+}
+
+message VehicleID {
+    string vid = 1;
+}
+
+message VehicleIDs {
+    repeated string vids = 1;
+}
+
+message SimulationID {
+    string sid = 1;
+}
+
+message SimulationIDs {
+    repeated string sids = 1;
+}
+
+message SubmissionResult {
+    message Submissions {
+        map<string, SimulationID> submissions = 1;
+    }
+
+    oneof may_submissions {
+        Submissions result = 1;
+        Void message = 2;
+    }
+}
+
+message SimulationNodeID {
+    string snid = 1;
+}
+
+message Num {
+    int32 num = 1;
+}
+
+message Bool {
+    bool value = 1;
+}
+
+message SimStateResponse {
+    enum SimState {
+        DEFAULT = 0;  // The only purpose of this state is to prohibit empty serialized strings. Do NOT use it!
+        RUNNING = 1;
+        FINISHED = 2;
+        CANCELED = 3;
+        TIMEOUT = 4;
+        UNKNOWN = 5;
+    }
+    SimState state = 1;
+}
+
+message TestResult {
+    enum Result {
+        DEFAULT = 0;  // The only purpose of this state is to prohibit empty serialized strings. Do NOT use it!
+        SUCCEEDED = 1;
+        FAILED = 2;
+        SKIPPED = 3;
+        UNKNOWN = 4;
+    }
+    Result result = 1;
+}
+
+message Void {
+    string message = 1;
+}
+
+message User {
+    string username = 1;
+    string password = 2;
+}

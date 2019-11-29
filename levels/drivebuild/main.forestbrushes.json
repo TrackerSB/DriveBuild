@@ -1,0 +1,1100 @@
+{
+  "childs": [
+    {
+      "ForestItemData": "Trees_Dead",
+      "childs": [
+        {
+          "ForestItemData": "tree_oak_dead_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_dead_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "tree_oak_dead_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_dead_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "tree_beech_dead_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_dead_b",
+          "probability": 2,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.5
+        },
+        {
+          "ForestItemData": "tree_beech_dead_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_dead_a",
+          "probability": 2,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.5
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Trees_Dead"
+    },
+    {
+      "ForestItemData": "Grass_mesh",
+      "childs": [
+        {
+          "ForestItemData": "grass_field_filler",
+          "class": "ForestBrushElement",
+          "internalName": "grass_field_filler",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "grass_field_long",
+          "class": "ForestBrushElement",
+          "internalName": "grass_field_long",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "grass_field_sml",
+          "class": "ForestBrushElement",
+          "internalName": "grass_field_sml",
+          "probability": 10,
+          "scaleMax": 1.600000023841858,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "grass_field_large",
+          "class": "ForestBrushElement",
+          "internalName": "grass_field_large",
+          "scaleExponent": 0,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkRadius": 0,
+          "slopeMax": 25
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Grass_mesh"
+    },
+    {
+      "ForestItemData": "vines",
+      "childs": [
+        {
+          "ForestItemData": "vine_side_8m",
+          "class": "ForestBrushElement",
+          "internalName": "vine_side_8m"
+        },
+        {
+          "ForestItemData": "vine_side_4m",
+          "class": "ForestBrushElement",
+          "internalName": "vine_side_4m"
+        },
+        {
+          "ForestItemData": "vine_side_2m",
+          "class": "ForestBrushElement",
+          "internalName": "vine_side_2m"
+        },
+        {
+          "ForestItemData": "vine_side_1m",
+          "class": "ForestBrushElement",
+          "internalName": "vine_side_1m"
+        },
+        {
+          "ForestItemData": "vine_roof_wide",
+          "class": "ForestBrushElement",
+          "internalName": "vine_roof_wide"
+        },
+        {
+          "ForestItemData": "vine_roof_small",
+          "class": "ForestBrushElement",
+          "internalName": "vine_roof_small"
+        },
+        {
+          "ForestItemData": "vine_roof_end",
+          "class": "ForestBrushElement",
+          "internalName": "vine_roof_end"
+        },
+        {
+          "ForestItemData": "vine_ground_medium",
+          "class": "ForestBrushElement",
+          "internalName": "vine_ground_medium",
+          "scaleMax": 1.200000047683716
+        },
+        {
+          "ForestItemData": "vine_ground_large",
+          "class": "ForestBrushElement",
+          "internalName": "vine_ground_large"
+        },
+        {
+          "ForestItemData": "vine_ground_small",
+          "class": "ForestBrushElement",
+          "internalName": "vine_ground_small",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "vine_wall_wide_a",
+          "class": "ForestBrushElement",
+          "internalName": "vine_wall_wide_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "vine_wall_wide_b",
+          "class": "ForestBrushElement",
+          "internalName": "vine_wall_wide_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "vine_wall_small",
+          "class": "ForestBrushElement",
+          "internalName": "vine_wall_small",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "vine_wall_medium",
+          "class": "ForestBrushElement",
+          "internalName": "vine_wall_medium",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929
+        },
+        {
+          "ForestItemData": "vine_wall_large",
+          "class": "ForestBrushElement",
+          "internalName": "vine_wall_large"
+        },
+        {
+          "ForestItemData": "vine_bush_wide",
+          "class": "ForestBrushElement",
+          "internalName": "vine_bush_wide",
+          "scaleMax": 1.299999952316284
+        },
+        {
+          "ForestItemData": "vine_bush_wide_b",
+          "class": "ForestBrushElement",
+          "internalName": "vine_bush_wide_b"
+        },
+        {
+          "ForestItemData": "vine_bush_small",
+          "class": "ForestBrushElement",
+          "internalName": "vine_bush_small",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.8999999761581421
+        },
+        {
+          "ForestItemData": "vine_bush_large",
+          "class": "ForestBrushElement",
+          "internalName": "vine_bush_large"
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "vines"
+    },
+    {
+      "ForestItemData": "Lush",
+      "childs": [
+        {
+          "ForestItemData": "lush_general_01_a",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_general_01_a",
+          "probability": 2,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_general_01_b",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_general_01_b",
+          "probability": 10,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_general_01_c",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_general_01_c",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.6000000238418579,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_general_01_d",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_general_01_d",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.6000000238418579,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_general_01_e",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_general_01_e",
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_ferns_02_a",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_ferns_02_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_ferns_02_b",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_ferns_02_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_big_a",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_big_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_big_b",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_big_b",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 30
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Lush"
+    },
+    {
+      "ForestItemData": "NeedFix",
+      "childs": [
+        {
+          "ForestItemData": "lush_grass_01_c",
+          "class": "ForestBrushElement",
+          "internalName": "lush_grass_01_c"
+        },
+        {
+          "ForestItemData": "lush_grass_01_a",
+          "class": "ForestBrushElement",
+          "internalName": "lush_grass_01_a"
+        },
+        {
+          "ForestItemData": "lush_grass_01_b",
+          "class": "ForestBrushElement",
+          "internalName": "lush_grass_01_b"
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "NeedFix"
+    },
+    {
+      "ForestItemData": "Trees_oak",
+      "childs": [
+        {
+          "ForestItemData": "tree_oak_large_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_large_a",
+          "probability": 0.300000011920929,
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_oak_large_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_large_b",
+          "probability": 0.699999988079071,
+          "scaleMax": 1.399999976158142,
+          "scaleMin": 0.800000011920929,
+          "slopeMax": 80
+        },
+        {
+          "ForestItemData": "tree_oak_large_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_large_c",
+          "scaleMax": 1.399999976158142,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_oak_forest_canopy_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_forest_canopy_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.6000000238418579,
+          "sinkMax": 3,
+          "slopeMax": 40
+        },
+        {
+          "ForestItemData": "tree_oak_forest_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_forest_a",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_oak_forest_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_forest_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "tree_oak_forest_group",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_forest_group",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "tree_oak_small_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_small_a",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_oak_sml_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_sml_b"
+        },
+        {
+          "ForestItemData": "tree_oak_bush_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_bush_a",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_oak_bush_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_bush_b",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_oak_bush_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_bush_c",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "slopeMax": 25
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Trees_oak"
+    },
+    {
+      "ForestItemData": "Trees_Aspen",
+      "childs": [
+        {
+          "ForestItemData": "tree_aspen_large_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_large_a",
+          "probability": 1.5,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 1,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_large_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_large_b",
+          "probability": 1.5,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 1,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_small_low_group",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_small_low_group",
+          "probability": 1.5,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 0.699999988079071
+        },
+        {
+          "ForestItemData": "tree_aspen_small_low",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_small_low",
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_aspen_small_d",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_small_d",
+          "probability": 0.5,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 1,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_small_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_small_c",
+          "probability": 0.5,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 1,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_small_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_small_b",
+          "probability": 0.5,
+          "scaleMax": 1.399999976158142,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 0.5,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_small_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_small_a",
+          "probability": 0.5,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 0.5,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_forest_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_forest_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_forest_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_forest_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 2,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_forest_group",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_forest_group",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 2,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_overhang_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_overhang_a",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.8999999761581421,
+          "sinkMax": 1,
+          "slopeMax": 25
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Trees_Aspen"
+    },
+    {
+      "ForestItemData": "Trees_Beech",
+      "childs": [
+        {
+          "ForestItemData": "tree_beech_large_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_large_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.6000000238418579,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_beech_large_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_large_c",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.6000000238418579,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_beech_forest_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_forest_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_beech_forest_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_forest_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_beech_forest_group",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_forest_group",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_beech_small_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_small_b",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.5,
+          "slopeMax": 35
+        },
+        {
+          "ForestItemData": "tree_beech_small_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_small_c",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.4000000059604645,
+          "slopeMax": 35
+        },
+        {
+          "ForestItemData": "tree_beech_small_d",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_small_d",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.699999988079071,
+          "slopeMax": 35
+        },
+        {
+          "ForestItemData": "tree_beech_overhang_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_overhang_a",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1.5
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Trees_Beech"
+    },
+    {
+      "ForestItemData": "Trees_palm",
+      "childs": [
+        {
+          "ForestItemData": "tree_palm_g",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_g",
+          "scaleMax": 1.5
+        },
+        {
+          "ForestItemData": "tree_palm_f",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_f",
+          "scaleMax": 1.5
+        },
+        {
+          "ForestItemData": "tree_palm_e",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_e",
+          "scaleMax": 1.5
+        },
+        {
+          "ForestItemData": "tree_palm_d",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_d",
+          "scaleMax": 1.5
+        },
+        {
+          "ForestItemData": "tree_palm_overhang_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_overhang_a",
+          "scaleMax": 1.5
+        },
+        {
+          "ForestItemData": "tree_palm_overhang_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_overhang_b",
+          "scaleMax": 1.5
+        },
+        {
+          "ForestItemData": "tree_palm_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_c",
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421
+        },
+        {
+          "ForestItemData": "tree_palm_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_b",
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421
+        },
+        {
+          "ForestItemData": "tree_palm_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_palm_a",
+          "scaleMax": 1.399999976158142,
+          "scaleMin": 0.8999999761581421
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Trees_palm"
+    },
+    {
+      "ForestItemData": "Trees_Blocker",
+      "childs": [
+        {
+          "ForestItemData": "oak_beech_wallblocker_long",
+          "class": "ForestBrushElement",
+          "internalName": "oak_beech_wallblocker_long",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 1
+        },
+        {
+          "ForestItemData": "tree_oak_blocker_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_oak_blocker_a",
+          "probability": 2,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.5,
+          "sinkMax": 1,
+          "sinkMin": 1,
+          "slopeMax": 40
+        },
+        {
+          "ForestItemData": "tree_aspen_blocker_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_blocker_a",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "sinkMax": 1.5,
+          "slopeMax": 40
+        },
+        {
+          "ForestItemData": "tree_beech_blocker_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_blocker_a",
+          "probability": 0.5,
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.699999988079071,
+          "sinkMax": 1,
+          "slopeMax": 40
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Trees_Blocker"
+    },
+    {
+      "ForestItemData": "Ferns",
+      "childs": [
+        {
+          "ForestItemData": "lush_ferns_01_a",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_ferns_01_a",
+          "probability": 2,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "slopeMax": 30
+        },
+        {
+          "ForestItemData": "lush_ferns_01_b",
+          "class": "ForestBrushElement",
+          "elevationMin": 39.30419921875,
+          "internalName": "lush_ferns_01_b",
+          "probability": 2,
+          "scaleMax": 1.5,
+          "scaleMin": 0.8999999761581421,
+          "slopeMax": 30
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Ferns"
+    },
+    {
+      "ForestItemData": "Bushes_huge",
+      "childs": [
+        {
+          "ForestItemData": "tree_beech_bush_d",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_bush_d",
+          "scaleMax": 1.299999952316284,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.5,
+          "slopeMax": 40
+        },
+        {
+          "ForestItemData": "tree_beech_bush_e",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_bush_e",
+          "scaleMax": 1.320000052452087,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.2000000029802322
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Bushes_huge"
+    },
+    {
+      "ForestItemData": "Bushes_large",
+      "childs": [
+        {
+          "ForestItemData": "tree_aspen_bush_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_bush_b",
+          "probability": 3,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.300000011920929,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_aspen_bush_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_bush_c",
+          "probability": 1.5,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.5,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_beech_bush_c",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_bush_c",
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.5,
+          "slopeMax": 40
+        },
+        {
+          "ForestItemData": "tree_beech_bush_b",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_bush_b",
+          "slopeMax": 40
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Bushes_large"
+    },
+    {
+      "ForestItemData": "Bushes_small",
+      "childs": [
+        {
+          "ForestItemData": "tree_aspen_bush_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_aspen_bush_a",
+          "probability": 1.5,
+          "scaleMax": 1.200000047683716,
+          "scaleMin": 0.800000011920929,
+          "sinkMax": 0.1000000014901161,
+          "slopeMax": 25
+        },
+        {
+          "ForestItemData": "tree_beech_bush_a",
+          "class": "ForestBrushElement",
+          "internalName": "tree_beech_bush_a",
+          "slopeMax": 40
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "Bushes_small"
+    },
+    {
+      "ForestItemData": "rocks_01_a_large",
+      "childs": [
+        {
+          "ForestItemData": "rock_01_a_large_c",
+          "class": "ForestBrushElement",
+          "internalName": "rock_01_a_large_c",
+          "scaleMax": 1.5,
+          "sinkMax": 0.2000000029802322,
+          "slopeMax": 45
+        },
+        {
+          "ForestItemData": "rock_01_a_large_b",
+          "class": "ForestBrushElement",
+          "internalName": "rock_01_a_large_b",
+          "scaleMax": 1.5,
+          "sinkMax": 0.2000000029802322,
+          "slopeMax": 45
+        },
+        {
+          "ForestItemData": "rock_01_a_large_a",
+          "class": "ForestBrushElement",
+          "internalName": "rock_01_a_large_a",
+          "scaleMax": 1.5,
+          "sinkMax": 0.2000000029802322,
+          "slopeMax": 45
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "rocks_01_a_large"
+    },
+    {
+      "ForestItemData": "rocks_01_a_small",
+      "childs": [
+        {
+          "ForestItemData": "rock_01_a_small_c",
+          "class": "ForestBrushElement",
+          "internalName": "rock_01_a_small_c",
+          "scaleMax": 2.5,
+          "sinkMax": 0.05000000074505806,
+          "slopeMax": 45
+        },
+        {
+          "ForestItemData": "rock_01_a_small_b",
+          "class": "ForestBrushElement",
+          "internalName": "rock_01_a_small_b",
+          "scaleMax": 2.5,
+          "sinkMax": 0.05000000074505806,
+          "slopeMax": 45
+        },
+        {
+          "ForestItemData": "rock_01_a_small_a",
+          "class": "ForestBrushElement",
+          "internalName": "rock_01_a_small_a",
+          "scaleMax": 2.5,
+          "sinkMax": 0.05000000074505806,
+          "slopeMax": 45
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "rocks_01_a_small"
+    },
+    {
+      "ForestItemData": "IND_manmade",
+      "childs": [
+        {
+          "ForestItemData": "ind_obj_01_a",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_01_a",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_01_b",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_01_b",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_01_c",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_01_c",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_02_a",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_02_a",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_02_b",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_02_b",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_02_c",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_02_c",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_03_a",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_03_a",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_03_b",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_03_b",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_04_a",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_04_a",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_obj_04_b",
+          "class": "ForestBrushElement",
+          "internalName": "ind_obj_04_b",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_rubbish_01_a",
+          "class": "ForestBrushElement",
+          "internalName": "ind_rubbish_01_a",
+          "rotationRange": 0,
+          "sinkRadius": 0
+        },
+        {
+          "ForestItemData": "ind_rubbish_01_b",
+          "class": "ForestBrushElement",
+          "internalName": "ind_rubbish_01_b",
+          "rotationRange": 0,
+          "scaleExponent": 0
+        },
+        {
+          "ForestItemData": "ind_rubbish_01_c",
+          "class": "ForestBrushElement",
+          "internalName": "ind_rubbish_01_c",
+          "rotationRange": 0,
+          "scaleExponent": 0
+        },
+        {
+          "ForestItemData": "ind_rubbish_01_d",
+          "class": "ForestBrushElement",
+          "internalName": "ind_rubbish_01_d",
+          "rotationRange": 0,
+          "scaleExponent": 0
+        },
+        {
+          "ForestItemData": "ind_rubbish_01_e",
+          "class": "ForestBrushElement",
+          "internalName": "ind_rubbish_01_e",
+          "rotationRange": 0,
+          "scaleExponent": 0
+        },
+        {
+          "ForestItemData": "container_01_a",
+          "class": "ForestBrushElement",
+          "internalName": "container_01_a",
+          "rotationRange": 0,
+          "scaleExponent": 0
+        },
+        {
+          "ForestItemData": "container_01_b",
+          "class": "ForestBrushElement",
+          "internalName": "container_01_b",
+          "rotationRange": 0,
+          "scaleExponent": 0
+        }
+      ],
+      "class": "ForestBrush",
+      "internalName": "IND_manmade"
+    },
+    {
+      "ForestItemData": "coastrock_dark_a",
+      "class": "ForestBrushElement",
+      "internalName": "coastrock_dark_a",
+      "scaleMin": 0.5,
+      "sinkMax": 0.5
+    },
+    {
+      "ForestItemData": "coastrock_dark_b",
+      "class": "ForestBrushElement",
+      "internalName": "coastrock_dark_b",
+      "scaleMin": 0.5,
+      "sinkMax": 1
+    },
+    {
+      "ForestItemData": "coastrock_dark_c",
+      "class": "ForestBrushElement",
+      "internalName": "coastrock_dark_c",
+      "scaleMin": 0.5,
+      "sinkMax": 1
+    },
+    {
+      "ForestItemData": "coastrock_dark_d",
+      "class": "ForestBrushElement",
+      "internalName": "coastrock_dark_d",
+      "scaleMin": 0.5,
+      "sinkMax": 1
+    },
+    {
+      "ForestItemData": "DRI_rock_a",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_a"
+    },
+    {
+      "ForestItemData": "DRI_rock_b",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_b",
+      "scaleMax": 1.299999952316284,
+      "scaleMin": 1.299999952316284,
+      "sinkMax": 0.5
+    },
+    {
+      "ForestItemData": "DRI_rock_c",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_c",
+      "scaleMax": 1.299999952316284,
+      "scaleMin": 1.299999952316284
+    },
+    {
+      "ForestItemData": "DRI_rock_d",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_d",
+      "probability": 15,
+      "scaleMax": 1.299999952316284,
+      "scaleMin": 1.299999952316284,
+      "sinkMax": 0.2000000029802322
+    },
+    {
+      "ForestItemData": "DRI_rock_e",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_e",
+      "scaleMax": 1.299999952316284,
+      "scaleMin": 1.299999952316284
+    },
+    {
+      "ForestItemData": "DRI_rock_f",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_f"
+    },
+    {
+      "ForestItemData": "DRI_rock_g",
+      "class": "ForestBrushElement",
+      "internalName": "DRI_rock_g"
+    }
+  ],
+  "class": "SimGroup",
+  "name": "ForestBrushGroup"
+}

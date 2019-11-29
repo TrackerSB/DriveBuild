@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Error 501{% endblock %}
+{% block content %}
+    <h1>You seem to be pretty fast!</h1>
+    <p>
+        Obviously you need functionality that I did not implement so far...
+    </p>
+    <p>
+        You may want to ask me to give the implementation of this functionality you need a higher priority than it
+        currently has.<br/>
+        Just write an email to <a href="mailto://huberst@fim.uni-passau.de">huberst@fim.uni-passau.de</a>
+    </p>
+    <p>
+        You got the following error:<br/>
+        {{ error }}
+    </p>
+{% endblock %}
