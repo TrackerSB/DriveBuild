@@ -11,7 +11,8 @@ from flask import Flask, Response
 
 app = Flask(__name__)
 app.config.from_pyfile("app.cfg")
-_DBCONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
+_DBCONNECTION = DBConnection(app.config["DBMS_HOST"], app.config["DBMS_PORT"], app.config["DBMS_DBNAME"],
+                             app.config["DBMS_USERNAME"], app.config["DBMS_PASSWORD"])
 _logger = getLogger("DriveBuild.MainApp")
 basicConfig(format='%(asctime)s: %(levelname)s - %(message)s', level=INFO)
 
