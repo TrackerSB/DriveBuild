@@ -11,12 +11,13 @@ from drivebuildclient.aiExchangeMessages_pb2 import SimulationID, VehicleIDs, Vo
 from drivebuildclient.db_handler import DBConnection
 from lxml.etree import _Element
 
-from config import SIM_NODE_PORT, MAIN_APP_HOST, MAIN_APP_PORT
+from config import SIM_NODE_PORT, MAIN_APP_HOST, MAIN_APP_PORT, DBMS_HOST, DBMS_PORT, DBMS_DBNAME, DBMS_USERNAME, \
+    DBMS_PASSWORD
 from dbtypes import SimulationData
 from dbtypes.scheme import MovementMode
 from sim_controller import Simulation
 
-_DB_CONNECTION = DBConnection("dbms.infosun.fim.uni-passau.de", 5432, "huberst", "huberst", "GAUwV5w72YvviLmb")
+_DB_CONNECTION = DBConnection(DBMS_HOST, DBMS_PORT, DBMS_DBNAME, DBMS_USERNAME, DBMS_PASSWORD)
 _logger = getLogger("DriveBuild.SimNode.Start")
 
 
