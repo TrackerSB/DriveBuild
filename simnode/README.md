@@ -38,7 +38,7 @@ These install instructions use PowerShell, WinPython and VirtualEnv which are re
     - Specify DBMS password
 1. Setup BeamNG config
     - Specify BeamNG install folder like `%BEAMNG_HOME%\\trunk`
-    - Specify directory for temporary generated BeamNG scenarios
+    - Specify user path directory for temporary generated BeamNG scenarios (This should be an empty folder which is not part of the repository)
 1. Optionally specify timeout for simulations (default: 10 min)
 
 ## Start SimNode
