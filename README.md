@@ -16,10 +16,12 @@
 ## Setup DBMS
 DriveBuild uses PostgreSQL.
 1. Install PostgreSQL
-1. Create a database user (e.g. `drivebuild`)
-1. Create a database (e.g. `drivebuild`)
-1. Grant access rights to user `drivebuild` for database `drivebuild`
-1. Apply database scheme (`tableScheme.sql`)
+1. Open psql command command line
+1. Create a database (`CREATE DATABASE drivebuild;`)
+1. Create a database user and grant access (`CREATE USER drivebuild WITH LOGIN SUPERUSER CREATEDB CREATEROLE INHERIT NOREPLICATION CONNECTION LIMIT -1 PASSWORD 'password';`)
+1. Connect to the database (`\c drivebuild`)
+1. Apply database scheme (`\i absolute/path/to/tableScheme.sql`)
+1. Create DriveBuild user (`INSERT INTO users VALUES ('test', 'test');`)
 
 ## Install
 The instructions for installing the MainApp and SimNodes as well as for using the client can be found in the appropriate subdirectories.
