@@ -1,4 +1,2 @@
 {"name":"Sky","class":"SimGroup","persistentId":"988d3f23-c873-4293-9783-8b116ce3c293","__parent":"MissionGroup"}
 {"class":"GroundPlane","persistentId":"5e8fa29e-c05f-46e0-9cf9-eee4d273cf7d","__parent":"MissionGroup","position":"2.355672 -2.031166 0.000000","material":"groundmesh_grass2","scaleU":8,"scaleV":8,"squareSize":71}
-{"name":"CameraBookmarks","class":"SimGroup","persistentId":"65ce8b2d-df94-487d-a236-0332252ac1c3","__parent":"MissionGroup"}
-{"name":"PlayerDropPoints","class":"SimGroup","persistentId":"95c6448a-2574-42b8-b199-49248f85e31b","__parent":"MissionGroup","Enabled":"1"}

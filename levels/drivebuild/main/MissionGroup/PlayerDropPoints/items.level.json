@@ -1,1 +1,0 @@
-{"name":"spawn_default","class":"SpawnSphere","persistentId":"31010003-0435-4da4-b94a-0899ac418d31","__parent":"PlayerDropPoints","position":[0,0,0],"Enabled":"1","autoplaceOnSpawn":"0","datablock":"SpawnSphereMarker","homingCount":"0","indoorWeight":"1","isAIControlled":"0","lockCount":"0","outdoorWeight":"1","radius":5,"sphereWeight":"1"}
