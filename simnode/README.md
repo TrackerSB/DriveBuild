@@ -7,7 +7,7 @@ The variables `%REPO_HOME%` and `%BEAMNG_HOME%` are placeholders for the path to
     1. Add content of `%REPO_HOME%\simnode\scenariohelper_extension.lua` to `%BEAMNG_HOME%\trunk\lua\ge\extensions\scenario\scenariohelper.lua`
     1. Add line `M.setAiLine = setAiLine` to the end of edited file
     1. Go to `%BEAMNG_HOME\trunk\levels`
-    1. Open CMD
+    1. Open CMD in this directory
     1. Execute `mklink /J drivebuild %REPO_HOME\levels\drivebuild`
 
 ## Install requirements
