@@ -1,10 +1,15 @@
 {
-    "title": "levels.smallgrid.info.title",
-    "description": "levels.smallgrid.info.description",
-    "previews": ["drivebuild_preview.jpg"],
+    "title": "DriveBuild",
+    "description": "Smallgrid based level with grass",
+    "previews": [
+        "drivebuild_preview.jpg",
+        "drivebuild_preview1.jpg",
+        "drivebuild_preview2.jpg",
+        "drivebuild_preview3.jpg"
+    ],
     "size": [-1,-1],
     "biome": "levels.smallgrid.info.biome",
     "roads": "levels.smallgrid.info.roads",
     "authors": "Stefan Huber",
-	"defaultSpawnPointName":"spawn_default",
+    "defaultSpawnPointName":"spawn_default"
 }
