@@ -5,11 +5,10 @@
 [![](https://tokei.rs/b1/github/TrackerSB/DriveBuild?category=lines)](https://github.com/TrackerSB/DriveBuild)
 [![](https://tokei.rs/b1/github/TrackerSB/DriveBuild?category=comments)](https://github.com/TrackerSB/DriveBuild)
 
-[![](https://img.shields.io/badge/git--lfs-required-informational?logo=git)]()
-
-![PyPI - Package](https://img.shields.io/badge/PyPI-drivebuild--client-informational?logo=pypi)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/drivebuild-client?logo=python)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/drivebuild-client)
+[![PyPI - Package](https://img.shields.io/badge/PyPI-drivebuild--client-informational?logo=pypi&style=for-the-badge)](https://pypi.org/project/drivebuild-client/)
+![PyPI](https://img.shields.io/pypi/v/drivebuild-client?style=for-the-badge)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/drivebuild-client?logo=python&style=for-the-badge)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/drivebuild-client?style=for-the-badge)
 
 ## Directory structure
     ├── client - The DriveBuild client (which is also available as Python package)
