@@ -5,6 +5,12 @@
 [![](https://tokei.rs/b1/github/TrackerSB/DriveBuild?category=lines)](https://github.com/TrackerSB/DriveBuild)
 [![](https://tokei.rs/b1/github/TrackerSB/DriveBuild?category=comments)](https://github.com/TrackerSB/DriveBuild)
 
+[![](https://img.shields.io/badge/git--lfs-required-informational?logo=git)]()
+
+![PyPI - Package](https://img.shields.io/badge/PyPI-drivebuild--client-informational?logo=pypi)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/drivebuild-client?logo=python)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/drivebuild-client)
+
 ## Directory structure
     ├── client - The DriveBuild client (which is also available as Python package)
     ├── examples - A simple example of a formalized test
