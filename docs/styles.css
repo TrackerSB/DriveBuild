@@ -1,0 +1,32 @@
+body {
+    background-color: ghostwhite;
+    font-family: Verdana, Arial;
+    font-size: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+    width: calc(100% - 50px);
+}
+
+h1 {
+    border-bottom: 5px solid blue;
+    text-align: center;
+}
+
+section#research ul>li::before {
+    display: inline-block;
+    margin-left: -1em;
+    width: 1em;
+}
+
+section#research ul>li.presentation::before {
+    content: "\1F3A4";
+}
+
+section#research ul>li.work::before {
+    content: "\270D";
+}
+
+ul {
+    list-style: none;
+}
+
