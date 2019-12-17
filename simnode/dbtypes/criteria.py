@@ -445,7 +445,7 @@ class Not(Connective):
         self.evaluable = evaluable
 
     def eval(self) -> KPValue:
-        return not self.evaluable.eval()  # FIXME How to force usage of custom not?
+        return self.evaluable.eval().__neg__()
 
 
 CriteriaFunction = Callable[[Scenario], Evaluable]
