@@ -17,9 +17,12 @@ local function setAiLine(vehicleName, arg)
     table.insert(fauxPath, fauxNode)
   end
 
-  local routeSpeed = arg['routeSpeed'] or 0
-  local routeSpeedMode = arg['routeSpeedMode'] or 'off'
-
-  queueLuaCommandByName(vehicleName, 'ai.driveUsingPath({script = '..serialize(fauxPath)..', routeSpeed = '..routeSpeed..', routeSpeedMode = "'..routeSpeedMode..'"})')
+  if arg['routeSpeed'] and arg['routeSpeedMode'] then
+    local routeSpeed = arg['routeSpeed']
+    local routeSpeedMode = arg['routeSpeedMode']
+    queueLuaCommandByName(vehicleName, 'ai.driveUsingPath({script = '..serialize(fauxPath)..', routeSpeed = '..routeSpeed..', routeSpeedMode = "'..routeSpeedMode..'"})')
+  else
+    queueLuaCommandByName(vehicleName, 'ai.driveUsingPath({script = '..serialize(fauxPath)..'"})')
+  end
 end
 
