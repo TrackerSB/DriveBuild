@@ -334,13 +334,24 @@
         </xs:attribute>
     </xs:complexType>
     <xs:complexType name="validationConstraint">
-        <xs:complexContent>
-            <xs:extension base="criterion">
-                <xs:sequence>
-                    <xs:element ref="criterion"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:all>
+            <xs:element ref="criterion"/>
+        </xs:all>
+        <xs:attribute name="participant" use="required">
+            <xs:simpleType>
+                <xs:union>
+                    <xs:simpleType>
+                        <xs:list itemType="xs:IDREF"/>
+                    </xs:simpleType>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string">
+                            <xs:enumeration value="any"/>
+                            <!-- Allow "inherit"? => A car that fulfills a certain criterion has to fulfill another -->
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:union>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
     <!-- Connective dbtypes -->
     <xs:complexType name="binaryOp">
