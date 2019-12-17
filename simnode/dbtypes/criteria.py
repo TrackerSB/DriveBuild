@@ -19,23 +19,23 @@ class KPValue(Enum):
 
     # NOTE Do not underestimate the complexity of the implementation of these logical operators!
     def __and__(self, other):
-        if self.value == self.FALSE or other.value == self.FALSE:
+        if self == self.FALSE or other == self.FALSE:
             return self.FALSE
-        if self.value == self.UNKNOWN or other.value == self.UNKNOWN:
+        if self == self.UNKNOWN or other == self.UNKNOWN:
             return self.UNKNOWN
         return self.TRUE
 
     def __or__(self, other):
-        if self.value == self.TRUE or other.value == self.TRUE:
+        if self == self.TRUE or other == self.TRUE:
             return self.TRUE
-        if self.value == self.UNKNOWN or other.value == self.UNKNOWN:
+        if self == self.UNKNOWN or other == self.UNKNOWN:
             return self.UNKNOWN
         return self.FALSE
 
     def __neg__(self):
-        if self.value == self.TRUE:
+        if self == self.TRUE:
             return self.FALSE
-        if self.value == self.FALSE:
+        if self == self.FALSE:
             return self.TRUE
         return self.UNKNOWN
 
