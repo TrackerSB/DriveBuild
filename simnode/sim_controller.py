@@ -98,37 +98,38 @@ class Simulation:
             "    modeFile:close()"
         ]
         remaining_waypoints = participant.movement[idx + 1:]
-        current_waypoint = participant.initial_state if idx < 0 else participant.movement[idx]
-        speed_limit = current_waypoint.speed_limit if remaining_waypoints else None
-        target_speed = current_waypoint.target_speed if remaining_waypoints else None
-        if speed_limit:
-            speed_param = ", routeSpeed=" + str(speed_limit) + ", routeSpeedMode='limit'"
-        elif target_speed:
-            speed_param = ", routeSpeed=" + str(target_speed) + ", routeSpeedMode='set'"
-        else:
-            speed_param = ""
-        if next_mode == MovementMode._BEAMNG:
-            serialized_waypoints = "{'" + "', '".join([wp.id for wp in remaining_waypoints]) + "'}"
-            lua_av_command.append(
-                "    sh.setAiPath({vehicleName='" + participant.id + "', waypoints=" + serialized_waypoints
-                + ", driveInLane='on'" + speed_param + "})"
-            )
-        elif next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
-            while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
-                remaining_waypoints.append(remaining_waypoints[-1])
+        if remaining_waypoints:
+            current_waypoint = participant.initial_state if idx < 0 else participant.movement[idx]
+            speed_limit = current_waypoint.speed_limit if remaining_waypoints else None
+            target_speed = current_waypoint.target_speed if remaining_waypoints else None
+            if speed_limit:
+                speed_param = ", routeSpeed=" + str(speed_limit) + ", routeSpeedMode='limit'"
+            elif target_speed:
+                speed_param = ", routeSpeed=" + str(target_speed) + ", routeSpeedMode='set'"
+            else:
+                speed_param = ""
+            if next_mode == MovementMode._BEAMNG:
+                serialized_waypoints = "{'" + "', '".join([wp.id for wp in remaining_waypoints]) + "'}"
+                lua_av_command.append(
+                    "    sh.setAiPath({vehicleName='" + participant.id + "', waypoints=" + serialized_waypoints
+                    + ", driveInLane='on'" + speed_param + "})"
+                )
+            elif next_mode in [MovementMode.MANUAL, MovementMode.TRAINING]:
+                while len(remaining_waypoints) < 3:  # NOTE At least 3 waypoints have to be passed to setAiRoute(...)
+                    remaining_waypoints.append(remaining_waypoints[-1])
 
-            def _waypoint_to_tuple(waypoint: WayPoint) -> str:
-                return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
+                def _waypoint_to_tuple(waypoint: WayPoint) -> str:
+                    return "{" + ", ".join([str(waypoint.position[0]), str(waypoint.position[1]), "0"]) + "}"
 
-            ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
-            ai_path_command = "    sh.setAiLine('" + participant.id + "', {line=" + ai_line + speed_param + "})"
-            lua_av_command.extend([ai_path_command])
-        elif next_mode == MovementMode.AUTONOMOUS:
-            lua_av_command.extend([
-                "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
-            ])
-        else:
-            _logger.warning("Can not handle MovementMode " + str(next_mode) + ".")
+                ai_line = "{" + ", ".join(["{pos=" + _waypoint_to_tuple(w) + "}" for w in remaining_waypoints]) + "}"
+                ai_path_command = "    sh.setAiLine('" + participant.id + "', {line=" + ai_line + speed_param + "})"
+                lua_av_command.extend([ai_path_command])
+            elif next_mode == MovementMode.AUTONOMOUS:
+                lua_av_command.extend([
+                    "    sh.setAiMode('" + participant.id + "', 'disabled')"  # Disable previous calls to sh.setAiRoute
+                ])
+            else:
+                _logger.warning("Can not handle MovementMode " + str(next_mode) + ".")
         return lua_av_command
 
     def get_user_path(self) -> str:
