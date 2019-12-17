@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<environment xmlns="http://drivebuild.com"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <author>Stefan Huber</author>
+    <timeOfDay>0</timeOfDay>
+    <lanes>
+        <lane>
+            <laneSegment x="-45" y="4" width="8" />
+            <laneSegment x="-35" y="4" width="8" />
+            <laneSegment x="-25" y="4" width="8" />
+            <laneSegment x="-15" y="4" width="8" />
+            <!-- NOTE: w1=8, w2=8, w3=3, intensity=1 -->
+            <laneSegment x="0" y="4" width="8" />
+            <laneSegment x="12" y="4" width="8" />
+            <laneSegment x="25.5" y="13" width="8" />
+            <laneSegment x="36.5" y="13" width="8" />
+            <laneSegment x="49" y="4" width="8" />
+            <laneSegment x="61" y="4" width="8" />
+        </lane>
+    </lanes>
+</environment>

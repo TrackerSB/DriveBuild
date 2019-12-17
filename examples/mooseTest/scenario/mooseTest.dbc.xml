@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<criteria xmlns="http://drivebuild.com"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <author>Stefan Huber</author>
+    <version>1</version>
+    <name>Moose Test</name>
+    <environment>mooseTest.dbe.xml</environment>
+    <stepsPerSecond>60</stepsPerSecond>
+    <aiFrequency>6</aiFrequency>
+    <participants>
+        <participant id="ego" model="ETK800">
+            <initialState x="-40" y="4" orientation="0" movementMode="MANUAL" speed="50"/>
+            <ai>
+                <speed id="egoSpeed" />
+            </ai>
+            <movement>
+                <waypoint x="0" y="4" tolerance="4" movementMode="_BEAMNG" speedLimit="1000" />  <!-- FIXME Use speed mode 'off' -->
+                <waypoint x="61" y="4" tolerance="4" movementMode="_BEAMNG" />
+            </movement>
+        </participant>
+    </participants>
+
+    <precondition>
+        <vcPosition participant="ego" x="-4" y="4" tolerance="4">
+            <not>
+                <scSpeed participant="ego" limit="15" />
+            </not>
+        </vcPosition>
+    </precondition>
+    <success>
+        <scPosition participant="ego" x="61" y="4" tolerance="4" />
+    </success>
+    <failure>
+        <or>
+            <scDamage participant="ego" />
+            <scLane participant="ego" onLane="offroad" />
+        </or>
+    </failure>
+</criteria>
