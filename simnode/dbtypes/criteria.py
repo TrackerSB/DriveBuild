@@ -235,7 +235,7 @@ class SCSpeed(StateCondition):
     def _eval_impl(self) -> KPValue:
         speed = self._poll_request_data()[0]
         if speed:
-            return KPValue.TRUE if speed <= self.speed_limit else KPValue.FALSE
+            return KPValue.TRUE if speed > self.speed_limit else KPValue.FALSE
         else:
             return KPValue.UNKNOWN
 
