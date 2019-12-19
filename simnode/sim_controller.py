@@ -506,7 +506,7 @@ class Simulation:
             for wp in wps:
                 if wp.id is not None:  # FIXME Waypoints are added in wrong order
                     waypoints.add(wp.id)
-        self._add_lap_config(waypoints)
+        # self._add_lap_config(waypoints)
 
         try:
             self._bng_instance.open(launch=True)
