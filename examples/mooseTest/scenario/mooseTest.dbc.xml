@@ -16,7 +16,7 @@
             </ai>
             <movement>
                 <waypoint x="0" y="4" tolerance="4" movementMode="_BEAMNG" speedLimit="1000" />  <!-- FIXME Use speed mode 'off' -->
-                <waypoint x="61" y="4" tolerance="4" movementMode="_BEAMNG" />
+                <waypoint x="61" y="4" tolerance="5" movementMode="_BEAMNG" />
             </movement>
         </participant>
     </participants>
