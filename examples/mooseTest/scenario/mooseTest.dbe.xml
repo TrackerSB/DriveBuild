@@ -6,6 +6,7 @@
     <timeOfDay>0</timeOfDay>
     <lanes>
         <lane>
+            <!-- Ensure straight start segment -->
             <laneSegment x="-45" y="4" width="8" />
             <laneSegment x="-35" y="4" width="8" />
             <laneSegment x="-25" y="4" width="8" />
