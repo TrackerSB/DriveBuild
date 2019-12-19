@@ -17,7 +17,7 @@ The variables `%REPO_HOME%` and `%BEAMNG_HOME%` are placeholders for the path to
 ## Install
 These install instructions use PowerShell, WinPython and VirtualEnv which are recommended.
 1. `cd %REPO_HOME%\simnode`
-1. Create VirtualEnv (`python3 -m venv venv`)
+1. Create VirtualEnv (`python -m venv venv`)
 1. Activate VirtualEnv (`.\venv\Scripts\Activate.ps1`)
 1. Install dependencies
     1. Download a wheel file for shapely ([https://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely](https://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely))

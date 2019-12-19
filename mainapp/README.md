@@ -7,7 +7,7 @@ The variable `%REPO_HOME%` is a placeholders for the path to this repo.
 ## Install
 These install instructions use Linux, ZSH and VirtualEnv which is recommended.
 1. `cd %REPO_HOME%/mainapp`
-1. Create VirtualEnv (`python3 -m venv venv`)
+1. Create VirtualEnv (`python -m venv venv`)
 1. Activate VirtualEnv (`source ./venv/bin/activate`)
 1. Install dependencies (`pip install -r requirements.txt`)
 
