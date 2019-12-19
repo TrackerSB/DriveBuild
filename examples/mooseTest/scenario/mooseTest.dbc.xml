@@ -29,7 +29,7 @@
         </vcPosition>
     </precondition>
     <success>
-        <scPosition participant="ego" x="61" y="4" tolerance="4" />
+        <scPosition participant="ego" x="61" y="4" tolerance="5" />
     </success>
     <failure>
         <or>
