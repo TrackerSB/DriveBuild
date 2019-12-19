@@ -15,7 +15,7 @@ h1 {
 section#research ul>li::before {
     display: inline-block;
     margin-left: -1em;
-    width: 1em;
+    width: 1.2em;
 }
 
 section#research ul>li.presentation::before {
