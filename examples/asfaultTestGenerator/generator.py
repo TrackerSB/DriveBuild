@@ -1,3 +1,4 @@
+from logging import getLogger
 from os import remove
 from os.path import basename
 from tempfile import NamedTemporaryFile
@@ -8,8 +9,8 @@ from jinja2 import Environment, FileSystemLoader
 
 from drivebuildclient.aiExchangeMessages_pb2 import VehicleID, SimStateResponse
 from asfault.tests import RoadTest
-from drivebuildclient.common import eprint
 
+_LOGGER = getLogger("asfaultTestGenerator")
 ENV_SIZE: float = 100
 TEMPLATE_PATH = "templates"
 TEMPLATE_ENV = Environment(loader=FileSystemLoader(TEMPLATE_PATH))
@@ -131,7 +132,7 @@ def _main() -> None:
             print("Result of \"" + test_name + "\": " + service.get_result(sid))
             break  # NOTE Assume only one test was uploaded
     else:
-        eprint("DriveBuild denied running the given test.")
+        _LOGGER.warning("DriveBuild denied running the given test.")
 
     remove(temp_dbe_file.name)
     remove(temp_dbc_file.name)

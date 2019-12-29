@@ -1,10 +1,7 @@
 asfault
 descartes
 drivebuild-client
-flask
-jinja2
 networkx
 numpy
-protobuf
 pyqtree
 shapely
