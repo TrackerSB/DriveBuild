@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<criteria xmlns="http://drivebuild.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <environment>provided.dbe.xml</environment>
+    <author>Stefan Huber</author>
+    <version>1</version>
+    <participants>
+        <participant id="ego" model="ETK800">
+            <initialState x="1.0" y="2.0" orientation="0" movementMode="MANUAL" speed="50" />
+            <ai>
+                <speed id="egoSpeed" />
+            </ai>
+            <movement>
+                <waypoint x="1.0" y="0.0" tolerance="4" movementMode="MANUAL" />
+                <waypoint x="57.0" y="26.0" tolerance="4" movementMode="MANUAL" />
+            </movement>
+        </participant>
+    </participants>
+    <precondition>
+        <vcPosition participant="ego" tolerance="4" x="7.928566676731771" y="2.6178515585789097">
+            <not>
+                <scSpeed participant="ego" limit="15" />
+            </not>
+        </vcPosition>
+    </precondition>
+    <success>
+        <scPosition participant="ego" x="57.0" y="26.0" tolerance="4" />
+    </success>
+    <failure>
+        <or>
+            <scDamage participant="ego" />
+            <scLane participant="ego" onLane="offroad" />
+        </or>
+    </failure>
+    <name>Example Test</name>
+    <stepsPerSecond>60</stepsPerSecond>
+    <aiFrequency>6</aiFrequency>
+</criteria>
