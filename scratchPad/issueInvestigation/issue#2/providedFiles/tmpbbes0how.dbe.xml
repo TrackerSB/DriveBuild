@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<environment xmlns="http://drivebuild.com"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <author>Stefan Huber</author>
+    <timeOfDay>0</timeOfDay>
+
+    <lanes>
+        
+        <lane leftLanes="1" rightLanes="1">
+            
+            <laneSegment x="16.55349351675946" y="105.0" width="8.0"/>
+            
+            <laneSegment x="14.99620417958528" y="95.12200172502932" width="8.0"/>
+            
+            <laneSegment x="13.7400385070228" y="84.02631874772874" width="8.0"/>
+            
+            <laneSegment x="13.455705415270385" y="72.86337614182875" width="8.0"/>
+            
+            <laneSegment x="14.145368850841288" y="61.71813064092933" width="8.0"/>
+            
+            <laneSegment x="15.803780058560642" y="50.675404292975514" width="8.0"/>
+            
+            <laneSegment x="18.41831752776164" y="39.81923891325573" width="8.0"/>
+            
+            <laneSegment x="21.96908304960278" y="29.232256475441503" width="8.0"/>
+            
+            <laneSegment x="26.429053154452003" y="18.995030308479414" width="8.0"/>
+            
+            <laneSegment x="31.764284776807823" y="9.185471884906178" width="8.0"/>
+            
+            <laneSegment x="37.9341735825232" y="-0.1217621325015017" width="8.0"/>
+            
+            <laneSegment x="44.891762992305885" y="-8.85583807300958" width="8.0"/>
+            
+            <laneSegment x="52.58410154964011" y="-16.950284344931546" width="8.0"/>
+            
+            <laneSegment x="60.95264591334356" y="-24.343497324577783" width="8.0"/>
+            
+            <laneSegment x="69.93370640774316" y="-30.979210197029147" width="8.0"/>
+            
+            <laneSegment x="79.45893173956401" y="-36.80692118057331" width="8.0"/>
+            
+            <laneSegment x="89.4558291925426" y="-41.78227787575739" width="8.0"/>
+            
+            <laneSegment x="99.84831634077003" y="-45.86741481392849" width="8.0"/>
+            
+            <laneSegment x="110.557300081893" y="-49.031241636314036" width="8.0"/>
+            
+            <laneSegment x="121.50127858338038" y="-51.24967971042483" width="8.0"/>
+            
+            <laneSegment x="132.59696156068097" y="-52.5058453829873" width="8.0"/>
+            
+            <laneSegment x="143.75990416658092" y="-52.79017847473972" width="8.0"/>
+            
+            <laneSegment x="154.90514966748037" y="-52.10051503916881" width="8.0"/>
+            
+        </lane>
+        
+    </lanes>
+</environment>
