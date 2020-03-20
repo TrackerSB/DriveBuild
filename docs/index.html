@@ -35,6 +35,28 @@
                 <li><a href="downloads/manual_stop.py">Example stop of simulation</a></li>
             </ul>
         </section>
+        <section>
+            <h2>FAQ</h2>
+            <details>
+                <summary>What are movement modes?</summary>
+                <p>
+                    Movement modes control the behavior of vehicles in the simulation.<br />
+                    The mode <b>MANUAL</b> makes a vehicle strictly follow a list of points.
+                    It drives from position to position as precise as possible recognizing target speeds and speed limits.
+                    But it ignores any lanes, obstacles or other participants.<br />
+                    The mode <b>AUTONOMOUS</b> makes a vehicle request an user defined AI which has to control the vehicle on its own.
+                    Therefore this mode allows to request data about the state of a vehicle, its sensors or (for checking additional test criteria) the environment.<br />
+                    The mode <b>TRAINING</b> is a combination of MANUAL and AUTONOMOUS.
+                    In this mode a vehicle drives as it would be in mode MANUAL but it also makes requests to a dummy AI which can collect all kinds of data as in mode AUTONOMOUS.
+                    Any control commands which the dummy AI sends are ignored by DriveBuild.<br />
+                    The mode <b>_BEAMNG</b> is a special type of TRAINING mode.
+                    In contrast to the mode TRAINING this mode utilizes the BeamNG.AI which has perfect knowledge about all lanes and thus has perfect lane keeping capabilities.
+                    So in this mode it is sufficient to specify a goal position where the vehicle has to head to.
+                    Still a vehicle does not consider any obstacles or other participants.
+                    The mechanism of collecting training data is the same as in mode TRAINING.
+                </p>
+            </details>
+        </section>
     </main>
 </body>
 
