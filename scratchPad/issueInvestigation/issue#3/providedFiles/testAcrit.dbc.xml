@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<criteria xmlns="http://drivebuild.com"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <author>Bill Bosshard</author>
+    <version>1</version>
+    <name>Test</name>
+    <environment>testAenv.dbe.xml</environment>
+    <stepsPerSecond>10</stepsPerSecond>
+    <aiFrequency>5</aiFrequency>
+
+    <participants>
+        <participant id="ego" model="ETK800">
+            <initialState x="101.7994851745926" y="79.76461787394915" movementMode="_BEAMNG" orientation="-142.81"/>
+            <movement>
+                <waypoint x="105.0" y="79.68273471116593" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="97.03409425455126" y="73.6375427659398" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="89.78437121881038" y="67.61993536591707" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="83.08670461048452" y="60.993371782921976" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="76.99206771662467" y="53.80828416704959" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="71.54684440403553" y="46.11935537353122" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="66.79247611004158" y="37.98510279318769" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="62.76514644812622" y="29.467432999751416" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="59.495505828784744" y="20.63117060346007" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="57.008438191393324" y="11.543564896630542" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="55.32287162240501" y="2.2737780459381725" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="53.01302113897661" y="-10.429263193899525" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="49.6048173395884" y="-22.882648792147393" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="45.12419871308344" y="-34.99160096484294" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="39.60526547268092" y="-46.66396327436676" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="33.09002003276332" y="-57.81090199557826" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="25.62804734514117" y="-68.34758219410344" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="17.276137527629565" y="-78.19381337141007" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="8.097853656960801" y="-87.27465976292189" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-1.8369519846100246" y="-95.52101064443453" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-12.45266952735087" y="-102.87010630645688" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-23.66850695081599" y="-109.26601569349567" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-35.39910495990501" y="-114.66006207315986" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-47.555186620640036" y="-119.01119349548595" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-60.04423681154007" y="-122.28629522306507" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-72.77120631955765" y="-124.46044175418983" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-85.63923522198255" y="-125.51708652097282" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-98.55039004893894" y="-125.44818781871922" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-111.40640911622532" y="-124.2542700081554" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-124.10945035606304" y="-121.94441952472701" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-136.56283595431086" y="-118.53621572533883" movementMode="_BEAMNG" tolerance="1"/>
+                <waypoint x="-148.67178812700644" y="-114.05559709883387" movementMode="_BEAMNG" tolerance="1"/>
+            </movement>
+        </participant>
+    </participants>
+
+    <success>
+        <scPosition participant="ego" x="-148.67178812700644" y="-114.05559709883387" tolerance="4.0"/>
+    </success>
+
+    <failure>
+        <or>
+            <scDamage participant="ego"/>
+            <scLane participant="ego" onLane="offroad"/>
+        </or>
+    </failure>
+</criteria>
