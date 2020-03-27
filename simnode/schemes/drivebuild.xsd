@@ -175,6 +175,30 @@
             </xs:complexContent>
         </xs:complexType>
     </xs:element>
+    <xs:element name="stopsign" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="trafficlightsingle" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="trafficlightdouble" substitutionGroup="obstacle">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="obstacle">
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
 
     <!-- Request data/sensors -->
     <xs:complexType name="aiData">

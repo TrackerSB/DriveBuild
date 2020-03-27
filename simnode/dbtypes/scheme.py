@@ -97,6 +97,27 @@ class Bump(Obstacle):
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
 
+@dataclass
+class Stopsign(Obstacle):
+    oid: Optional[str] = None
+    x_rot: Optional[float] = 0
+    y_rot: Optional[float] = 0
+    z_rot: Optional[float] = 0
+
+@dataclass
+class TrafficLightSingle(Obstacle):
+    oid: Optional[str] = None
+    x_rot: Optional[float] = 0
+    y_rot: Optional[float] = 0
+    z_rot: Optional[float] = 0
+
+@dataclass
+class TrafficLightDouble(Obstacle):
+    oid: Optional[str] = None
+    x_rot: Optional[float] = 0
+    y_rot: Optional[float] = 0
+    z_rot: Optional[float] = 0
+
 
 @dataclass
 class Participant:
