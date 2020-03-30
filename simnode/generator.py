@@ -21,6 +21,7 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
+    # TODO should num_nodes be fixed?
     @static_vars(line_width=0.15, num_nodes=100, smoothness=0)
     def add_roads_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
@@ -67,7 +68,7 @@ class ScenarioBuilder:
             main_nodes = list(zip(new_x_vals, new_y_vals, z_vals, new_width_vals))
             main_road.nodes.extend(main_nodes)
             scenario.add_road(main_road)
-            # FIXME Recognize changing widths
+            # FIXME Recognize changing widths --- mostly done
             road_width = unique_nodes[0].width
             if road.markings:
                 def _calculate_parallel_coords(offset: float, line_width: float) \
@@ -85,21 +86,126 @@ class ScenarioBuilder:
                     marking_widths = repeat(line_width, num_coords)
                     return list(zip(coords[0], coords[1], z_vals, marking_widths))
 
+                def _calculate_offset_list(relative_offset: float, absolute_offset: float = 0,
+                                           output_number_of_points: int = self.add_roads_to_scenario.num_nodes//3) \
+                                            -> List[float]:
+                    """ calculates a list of relative offsets to the road centre
+                    uses new_width_vals for dynamic offset
+                    change the default value of output_number_of_points for more precision, has to be less \
+                    than num_nodes//2
+
+                    :param relative_offset: relative to the width of the road, must be between -0.5 and 0.5
+                    :param absolute_offset: absolute, to account for line width
+                    :param output_number_of_points: number of outputs in list
+                    :return: list of width offsets
+                    """
+                    assert 0 < output_number_of_points < new_width_vals.__len__()//2, \
+                        "choose a valid number of output vals"
+                    assert -0.5 <= relative_offset <= 0.5, "relative offset must be between -0.5 and 0.5"
+                    assert -max(new_width_vals)/2 < absolute_offset < max(new_width_vals)/2, \
+                        "absolute offset must be smaller than half of the road"
+                    cutting_points = linspace(0, new_width_vals.__len__()-1, dtype=int, num=output_number_of_points)
+                    output_vals = list(map(lambda i: new_width_vals[i]*relative_offset + absolute_offset, cutting_points))
+                    return output_vals
+
+                # TODO Should this method coexist to _calculate_parallel_coords(offset: float, line_width: float)? Or
+                #  should the older method be integrated? (by simulating overloading using type()?)
+                #  The functionality is basically the same, except it works for changing widths and needs a list as
+                #  input. I tried to make the operation similar.
+                def _calculate_parallel_coords_list(offset: list, line_width: float) \
+                        -> Optional[List[Tuple[float, float, float, float]]]:
+                    """ calculates parallel coordinates of a road
+
+                    :param offset: list of offsets, must be smaller than num_nodes//2, should be equidistant
+                    :param line_width: specifies the width of the output coordinates
+                    :return: coordinates for the road
+                    """
+
+                    assert offset.__len__() < self.add_roads_to_scenario.num_nodes//2, \
+                        "there have to be less than half offset points of num_node for shapely LineStrings to work"
+
+                    original_line = LineString(zip(new_x_vals, new_y_vals))
+                    # num_points = original_line.length # seems to sometimes be trimmed to a bit more than 100?
+                    num_points = self.add_roads_to_scenario.num_nodes
+                    cutting_points = linspace(0, num_points-1, dtype=int, num=min(num_points, offset.__len__()))
+                    # extend the last point just a bit to get all nodes
+                    cutting_points[-1] = cutting_points[-1] + cutting_points [-1] - cutting_points[-2]
+
+                    offset_sub_lines = ()
+                    previous_p = 1
+                    i = 0
+                    for p in cutting_points:
+                        # cython int32 to int
+                        p = int(p)
+                        if p > 0:
+                            try:
+                                road_lnstr = LineString(original_line.coords[previous_p: p]).parallel_offset(offset[i])
+                                if offset_sub_lines.__len__() == 0:
+                                    offset_sub_lines = road_lnstr.coords.xy
+                                    # needs to be reversed for positive offset (why?)
+                                    if offset[i] > 0:
+                                        offset_sub_lines[0].reverse()
+                                        offset_sub_lines[1].reverse()
+                                else:
+                                    # try except not pretty, but problems with empty line string segments solved
+                                    try:
+                                        line_str_0 = (road_lnstr.coords.xy)[0]
+                                        line_str_1 = (road_lnstr.coords.xy)[1]
+                                        # needs to be reversed for positive offset (why?)
+                                        if offset[i] > 0:
+                                            line_str_0.reverse()
+                                            line_str_1.reverse()
+                                        offset_sub_lines[0].extend(line_str_0)
+                                        offset_sub_lines[1].extend(line_str_1)
+                                    except Exception:
+                                        # this break fixes failing calculation, if a line segment is empty, but
+                                        # it is really ugly
+                                        break
+                            except (NotImplementedError, Exception):  # FIXME Where is TopologyException
+                                _logger.exception("Creating an offset line for lane markings failed")
+                                return None
+                        previous_p = p
+                        i += 1
+                    if offset_sub_lines.__len__() > 1:
+                        # softens stair stepping if the road width changes fast
+                        # TODO tolerance parameter may need to be adjusted
+                        # could be expensive --> replace with #coords = offset_sub_lines
+                        point_list = list(map(lambda i: (offset_sub_lines[0][i], offset_sub_lines[1][i]),
+                                              range(0, offset_sub_lines[0].__len__()-1)))
+                        lstr = LineString(point_list)
+                        lstr = lstr.simplify(tolerance=0.13)
+                        coords = lstr.coords.xy
+
+                        # for plotting the generated road, useful for debugging
+                        '''import matplotlib.pyplot as plt
+                        plt.plot(offset_sub_lines[0], offset_sub_lines[1])
+                        plt.ylabel("first offset: " + str(offset[0]))
+                        plt.show()
+                        '''
+                    # NOTE The parallel LineString may have a different number of points than initially given
+                    num_coords = len(coords[0])
+                    z_vals = repeat(0.01, num_coords)
+                    marking_widths = repeat(line_width, num_coords)
+                    return list(zip(coords[0], coords[1], z_vals, marking_widths))
+
                 # Draw side lines
                 num_lines = road.left_lanes + road.right_lanes + 1
                 initial_line_offsets = [d - (road_width / 2) for d in linspace(0, road_width, num=num_lines)]
                 side_line_offset = 1.5 * self.add_roads_to_scenario.line_width
                 left_side_line = Road('line_white', rid=road.rid + "_left_line")
-                left_side_line_nodes = _calculate_parallel_coords(
-                    initial_line_offsets[0] + side_line_offset, self.add_roads_to_scenario.line_width)
+                offset_list_line_left = _calculate_offset_list(relative_offset=-0.5,
+                                                                absolute_offset=side_line_offset)
+                left_side_line_nodes = _calculate_parallel_coords_list(offset_list_line_left,
+                                                                        self.add_roads_to_scenario.line_width)
                 if left_side_line_nodes:
                     left_side_line.nodes.extend(left_side_line_nodes)
                     scenario.add_road(left_side_line)
                 else:
                     _logger.warning("Could not create left side line")
                 right_side_line = Road('line_white', rid=road.rid + "_right_line")
-                right_side_line_nodes = _calculate_parallel_coords(
-                    initial_line_offsets[-1] - side_line_offset, self.add_roads_to_scenario.line_width)
+                offset_list_line_right = _calculate_offset_list(relative_offset=.5, absolute_offset=-side_line_offset)
+                right_side_line_nodes = _calculate_parallel_coords_list(offset_list_line_right,
+                                                                        self.add_roads_to_scenario.line_width)
                 if right_side_line_nodes:
                     right_side_line.nodes.extend(right_side_line_nodes)
                     scenario.add_road(right_side_line)
@@ -107,11 +213,14 @@ class ScenarioBuilder:
                     _logger.warning("Could not create right side line")
 
                 # Draw line separating left from right lanes
+                # FIXME rightLanes cannot be 0, is this by design?
                 if road.left_lanes > 0 and road.right_lanes > 0:
-                    offset = initial_line_offsets[road.left_lanes]
+                    divider_rel_off = -0.5 + road.left_lanes/(road.left_lanes+road.right_lanes)
+                    offset_list_divider = _calculate_offset_list(relative_offset=divider_rel_off,
+                                                                 absolute_offset=-side_line_offset)
                     left_right_divider = Road("line_yellow_double", rid=road.rid + "_left_right_divider")
-                    left_right_divider_nodes \
-                        = _calculate_parallel_coords(offset, 2 * self.add_roads_to_scenario.line_width)
+                    left_right_divider_nodes = \
+                        _calculate_parallel_coords_list(offset_list_divider, 2 * self.add_roads_to_scenario.line_width)
                     if left_right_divider_nodes:
                         left_right_divider.nodes.extend(left_right_divider_nodes)
                         scenario.add_road(left_right_divider)
@@ -119,16 +228,22 @@ class ScenarioBuilder:
                         _logger.warning("Could not create line separating lanes having different directions")
 
                 # Draw lines separating left and right lanes from each other
-                offset_indices = []
-                if road.left_lanes > 1:
-                    offset_indices.extend(range(1, road.left_lanes))
-                if road.right_lanes > 1:
-                    offset_indices.extend(range(road.left_lanes + 1, len(initial_line_offsets) - 1))
-                for index in offset_indices:
-                    offset = initial_line_offsets[index]
-                    lane_separation_line = Road('line_dashed_short', rid=road.rid + "_separator_" + str(index))
+                total_num_lane_markings = road.left_lanes + road.right_lanes
+                offsets_dashed = linspace(-0.5, 0.5, num=total_num_lane_markings, endpoint=False)
+                offsets_dashed = offsets_dashed[1:len(offsets_dashed)]  # why does 1:-1 not work?
+                for offs in offsets_dashed:
+                    # do not draw dashed line over divider line
+                    if (road.left_lanes > 1 and road.right_lanes > 0) or (road.left_lanes > 0 and road.right_lanes > 1):
+                        if offsets_dashed[road.left_lanes - 1] + 0.01 > offs > offsets_dashed[road.left_lanes - 1] - 0.01:
+                            continue
+
+                    # '.' have to be removed from the name, else there are prefab parsing errors for positive offsets
+                    lane_separation_line = Road('line_dashed_short',
+                                                rid=road.rid + "_separator_" + str(offs).replace('.', ''))
+                    offs_list = _calculate_offset_list(offs)
                     lane_separation_line_nodes \
-                        = _calculate_parallel_coords(offset, self.add_roads_to_scenario.line_width)
+                        = _calculate_parallel_coords_list(offs_list, self.add_roads_to_scenario.line_width)
+
                     if lane_separation_line_nodes:
                         lane_separation_line.nodes.extend(lane_separation_line_nodes)
                         scenario.add_road(lane_separation_line)
