@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<environment xmlns="http://drivebuild.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <author>Michael Heine</author>
+    <timeOfDay>0</timeOfDay>
+    <lanes>
+        <lane markings="true">
+            <laneSegment x="1.0" y="0.0" width="4" />
+            <laneSegment x="50.0" y="0.0" width="4" />
+            <laneSegment x="90.0" y="40.0" width="4" />
+
+        </lane>
+    </lanes>
+    <obstacles>
+        <stopsign x="10" y="-2" height="10" />
+        <stopsign x="60" y="6" height="10" zRot="45" />
+        <trafficlightsingle x="20" y="-2" height="10"/>
+        <trafficlightsingle x="70" y="16" height="10" zRot="45" />
+        <trafficlightdouble x="30" y="-2" height="10"/>
+        <trafficlightdouble x="80" y="26" height="10" zRot="45" />
+    </obstacles>
+</environment>

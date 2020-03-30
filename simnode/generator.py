@@ -156,44 +156,47 @@ class ScenarioBuilder:
                 mesh = ProceduralBump(pos, rot, obstacle.width, obstacle.length, height, obstacle.upper_length,
                                       obstacle.upper_width)
             elif obstacle_type is Stopsign:
+                rot = (0, 0, -(obstacle.z_rot - 90))
                 id_number = randrange(1000)
                 name_sign = "stopsign" + str(id_number)
-                stopsign = StaticObject(pos=(obstacle.x, obstacle.y, 0), rot=rot, name=name_sign, scale=(3, 3, 3),
+                stopsign = StaticObject(pos=(obstacle.x, obstacle.y, 0), rot=rot, name=name_sign, scale=(1.9, 1.9, 1.9),
                                         shape='/levels/drivebuild/art/objects/stopsign.dae')
                 scenario.add_object(stopsign)
             elif obstacle_type is TrafficLightSingle:
                 id_number = randrange(1000)
                 name_light = "trafficlight" + str(id_number)
                 name_pole = "pole" + str(id_number)
-                traffic_light = StaticObject(name=name_light, pos=(obstacle.x, obstacle.y, 5.32), rot=rot,
+                rot=(0, 0, -(obstacle.z_rot) - 90)
+                traffic_light = StaticObject(name=name_light, pos=(obstacle.x, obstacle.y, 4.62), rot=rot,
                                              scale=(1, 1, 1),
                                              shape='/levels/drivebuild/art/objects/trafficlight1a.dae')
                 scenario.add_object(traffic_light)
-                pole = StaticObject(name=name_pole, pos=(obstacle.x, obstacle.y, 0), rot=rot, scale=(1, 1, 1.3),
+                pole = StaticObject(name=name_pole, pos=(obstacle.x, obstacle.y, 0), rot=rot, scale=(1, 1, 1.1),
                                     shape='/levels/drivebuild/art/objects/pole_traffic1.dae')
                 scenario.add_object(pole)
             elif obstacle_type is TrafficLightDouble:
                 from math import radians, sin, cos
                 from numpy import dot
                 id_number = randrange(1000)
+                rot = (0, 0, -(obstacle.z_rot + 90))
                 name_light1 = "trafficlight" + str(id_number)
                 name_light2 = "trafficlight" + str(id_number) + 'a'
                 name_pole = "pole" + str(id_number)
-                rad = radians(obstacle.z_rot)
+                rad = radians(rot[2])
                 pole_coords = (obstacle.x, obstacle.y, 0)
-                traffic_light1_coords = (7.5, 0.35)
-                traffic_light2_coords = (3, 0.35)
+                traffic_light1_coords = (5.7, 0.17)
+                traffic_light2_coords = (2.1, 0.17)
                 rot_matrix = [[cos(rad), sin(rad)], [-sin(rad), cos(rad)]]
                 traffic_light1_coords = dot(rot_matrix, traffic_light1_coords)
                 traffic_light1_coords = (
-                    traffic_light1_coords[0] + pole_coords[0], traffic_light1_coords[1] + pole_coords[1], 7.8)
+                    traffic_light1_coords[0] + pole_coords[0], traffic_light1_coords[1] + pole_coords[1], 5.9)
                 traffic_light2_coords = dot(rot_matrix, traffic_light2_coords)
                 traffic_light2_coords = (
-                    traffic_light2_coords[0] + pole_coords[0], traffic_light2_coords[1] + pole_coords[1], 7.3)
+                    traffic_light2_coords[0] + pole_coords[0], traffic_light2_coords[1] + pole_coords[1], 5.5)
 
-                pole2 = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(1, 1, 1),
+                pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(0.75, 0.75, 0.75),
                                      shape='/levels/drivebuild/art/objects/pole_light_signal1.dae')
-                scenario.add_object(pole2)
+                scenario.add_object(pole)
                 traffic_light1 = StaticObject(name=name_light1, pos=traffic_light1_coords, rot=rot, scale=(1, 1, 1),
                                                 shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
                 scenario.add_object(traffic_light1)
