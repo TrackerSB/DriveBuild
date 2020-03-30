@@ -71,6 +71,7 @@ class ScenarioBuilder:
             # FIXME Recognize changing widths --- mostly done
             road_width = unique_nodes[0].width
             if road.markings:
+                # could theoretically be removed or integrated in _calculate_parallel_coords_list()
                 def _calculate_parallel_coords(offset: float, line_width: float) \
                         -> Optional[List[Tuple[float, float, float, float]]]:
                     original_line = LineString(zip(new_x_vals, new_y_vals))
@@ -134,11 +135,13 @@ class ScenarioBuilder:
                     offset_sub_lines = ()
                     previous_p = 1
                     i = 0
+                    # split road into multiple pieces
                     for p in cutting_points:
                         # cython int32 to int
                         p = int(p)
                         if p > 0:
                             try:
+                                # calculate parallel offset for each road piece
                                 road_lnstr = LineString(original_line.coords[previous_p: p]).parallel_offset(offset[i])
                                 if offset_sub_lines.__len__() == 0:
                                     offset_sub_lines = road_lnstr.coords.xy
