@@ -51,7 +51,6 @@ class InitialState:
 class Obstacle(ABC):
     x: float
     y: float
-    height: float
     # oid: Optional[str] = None  # NOTE Limitation of inheritance from dataclasses
     # x_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
     # y_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
@@ -60,34 +59,41 @@ class Obstacle(ABC):
 
 @dataclass
 class Cube(Obstacle):
+    height: float
     width: float
     length: float
     oid: Optional[str] = None
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 
 @dataclass
 class Cylinder(Obstacle):
+    height: float
     radius: float
     oid: Optional[str] = None
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 
 @dataclass
 class Cone(Obstacle):
+    height: float
     base_radius: float
     oid: Optional[str] = None
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 
 @dataclass
 class Bump(Obstacle):
+    height: float
     width: float
     length: float
     upper_length: float
@@ -96,6 +102,7 @@ class Bump(Obstacle):
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 @dataclass
 class Stopsign(Obstacle):
@@ -103,6 +110,7 @@ class Stopsign(Obstacle):
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 @dataclass
 class TrafficLightSingle(Obstacle):
@@ -110,6 +118,7 @@ class TrafficLightSingle(Obstacle):
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 @dataclass
 class TrafficLightDouble(Obstacle):
@@ -117,6 +126,7 @@ class TrafficLightDouble(Obstacle):
     x_rot: Optional[float] = 0
     y_rot: Optional[float] = 0
     z_rot: Optional[float] = 0
+    z: Optional[float] = 0
 
 
 @dataclass

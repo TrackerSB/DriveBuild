@@ -130,7 +130,6 @@
         <xs:attribute name="xRot" type="nonNegativeDecimal" default="0"/>
         <xs:attribute name="yRot" type="nonNegativeDecimal" default="0"/>
         <xs:attribute name="zRot" type="nonNegativeDecimal" default="0"/>
-        <xs:attribute name="height" type="positiveDecimal" use="required"/>
         <xs:attribute name="id" type="xs:ID"/>
     </xs:complexType>
     <xs:element name="obstacle" type="obstacle" abstract="true"/>
@@ -138,6 +137,7 @@
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="obstacle">
+                    <xs:attribute name="height" type="positiveDecimal" use="required"/>
                     <xs:attribute name="width" type="positiveDecimal" use="required"/>
                     <xs:attribute name="length" type="positiveDecimal" use="required"/>
                 </xs:extension>
@@ -148,6 +148,7 @@
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="obstacle">
+                    <xs:attribute name="height" type="positiveDecimal" use="required"/>
                     <xs:attribute name="radius" type="positiveDecimal" use="required"/>
                 </xs:extension>
             </xs:complexContent>
@@ -157,6 +158,7 @@
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="obstacle">
+                    <xs:attribute name="height" type="positiveDecimal" use="required"/>
                     <xs:attribute name="baseRadius" type="positiveDecimal" use="required"/>
                 </xs:extension>
             </xs:complexContent>
@@ -166,6 +168,7 @@
         <xs:complexType>
             <xs:complexContent>
                 <xs:extension base="obstacle">
+                    <xs:attribute name="height" type="positiveDecimal" use="required"/>
                     <xs:attribute name="width" type="positiveDecimal" use="required"/>
                     <xs:attribute name="length" type="positiveDecimal" use="required"/>
                     <xs:attribute name="upperLength" type="positiveDecimal"
