@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<environment xmlns="http://drivebuild.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <author>Michael Heine</author>
+    <timeOfDay>0</timeOfDay>
+    <lanes>
+        <lane markings="true">
+            <laneSegment x="1.0" y="0.0" width="4"/>
+            <laneSegment x="50.0" y="0.0" width="4"/>
+            <laneSegment x="90.0" y="40.0" width="4"/>
+        </lane>
+    </lanes>
+    <obstacles>
+        <stopsign x="10" y="-3"/>
+        <stopsign x="60" y="6" zRot="45"/>
+        <trafficlightsingle x="20" y="-3"/>
+        <trafficlightsingle x="70" y="16" zRot="45"/>
+        <trafficlightdouble x="30" y="-3"/>
+        <trafficlightdouble x="80" y="26" zRot="45"/>
+
+        <!-- Just to show that you can also rotate these objects on every axis -->
+        <stopsign x="5" y="6" xRot="30" yRot="10" zRot="45"/>
+        <trafficlightsingle x="0" y="10" xRot="30" yRot="50" zRot="45"/>
+        <trafficlightdouble x="0" y="25" xRot="30" yRot="45" zRot="135"/>
+    </obstacles>
+</environment>

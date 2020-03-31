@@ -141,59 +141,85 @@ class ScenarioBuilder:
         from random import randrange
         for obstacle in self.obstacles:
             obstacle_type = type(obstacle)
-            height = obstacle.height
-            pos = (obstacle.x, obstacle.y, height / 2.0)
+            pos = (obstacle.x, obstacle.y, obstacle.z)
             rot = (obstacle.x_rot, obstacle.y_rot, obstacle.z_rot)
             name = obstacle.oid
             mesh = None
             if obstacle_type is Cube:
-                mesh = ProceduralCube(pos, rot, (obstacle.length, obstacle.width, height), name=name)
+                mesh = ProceduralCube(pos, rot, (obstacle.length, obstacle.width, obstacle.height), name=name)
             elif obstacle_type is Cylinder:
-                mesh = ProceduralCylinder(pos, rot, obstacle.radius, height=height, name=name)
+                mesh = ProceduralCylinder(pos, rot, obstacle.radius, height=obstacle.height, name=name)
             elif obstacle_type is Cone:
-                mesh = ProceduralCone(pos, rot, obstacle.base_radius, height, name=name)
+                mesh = ProceduralCone(pos, rot, obstacle.base_radius, obstacle.height, name=name)
             elif obstacle_type is Bump:
-                mesh = ProceduralBump(pos, rot, obstacle.width, obstacle.length, height, obstacle.upper_length,
+                mesh = ProceduralBump(pos, rot, obstacle.width, obstacle.length, obstacle.height, obstacle.upper_length,
                                       obstacle.upper_width, name=name)
             elif obstacle_type is Stopsign:
+                rot = (rot[0], rot[1], 90 - obstacle.z_rot)
                 id_number = randrange(1000)
                 name_sign = "stopsign" + str(id_number)
-                stopsign = StaticObject(pos=(obstacle.x, obstacle.y, 0), rot=rot, name=name_sign, scale=(3, 3, 3),
-                                        shape='/levels/drivebuild/art/objects/stopsign.dae')
+                stopsign = StaticObject(pos=(obstacle.x, obstacle.y, obstacle.z), rot=rot, name=name_sign,
+                                        scale=(1.9, 1.9, 1.9), shape='/levels/drivebuild/art/objects/stopsign.dae')
                 scenario.add_object(stopsign)
             elif obstacle_type is TrafficLightSingle:
+                from math import radians, sin, cos
+                from numpy import dot
                 id_number = randrange(1000)
                 name_light = "trafficlight" + str(id_number)
                 name_pole = "pole" + str(id_number)
-                traffic_light = StaticObject(name=name_light, pos=(obstacle.x, obstacle.y, 5.32), rot=rot,
+                rot=(rot[0], rot[1], -(obstacle.z_rot) - 90)
+                rad_x = radians(rot[0])
+                rad_y = radians(rot[1])
+                rad_z = radians(rot[2])
+                pole_coords = (obstacle.x, obstacle.y, obstacle.z)
+                traffic_light_coords = (0, 0, 4.62)         # x y z coordinates when pole is placed at (0,0,0)
+                rot_matrix_x = [[1, 0, 0], [0, cos(rad_x), sin(rad_x)], [0, -sin(rad_x), cos(rad_x)]]
+                rot_matrix_y = [[cos(rad_y), 0, -sin(rad_y)], [0, 1, 0], [sin(rad_y), 0, cos(rad_y)]]
+                rot_matrix_z = [[cos(rad_z), sin(rad_z), 0], [-sin(rad_z), cos(rad_z), 0], [0, 0, 1]]
+                rot_matrix = dot(rot_matrix_z, rot_matrix_y)
+                rot_matrix = dot(rot_matrix, rot_matrix_x)
+                traffic_light_coords = dot(rot_matrix, traffic_light_coords)
+                traffic_light_coords = (
+                    traffic_light_coords[0] + pole_coords[0], traffic_light_coords[1] + pole_coords[1],
+                    traffic_light_coords[2] + pole_coords[2])
+                traffic_light = StaticObject(name=name_light, pos=traffic_light_coords, rot=rot,
                                              scale=(1, 1, 1),
                                              shape='/levels/drivebuild/art/objects/trafficlight1a.dae')
                 scenario.add_object(traffic_light)
-                pole = StaticObject(name=name_pole, pos=(obstacle.x, obstacle.y, 0), rot=rot, scale=(1, 1, 1.3),
+                pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(1, 1, 1.1),
                                     shape='/levels/drivebuild/art/objects/pole_traffic1.dae')
                 scenario.add_object(pole)
             elif obstacle_type is TrafficLightDouble:
                 from math import radians, sin, cos
                 from numpy import dot
                 id_number = randrange(1000)
+                rot = (rot[0], rot[1], -(obstacle.z_rot + 90))
                 name_light1 = "trafficlight" + str(id_number)
                 name_light2 = "trafficlight" + str(id_number) + 'a'
                 name_pole = "pole" + str(id_number)
-                rad = radians(obstacle.z_rot)
-                pole_coords = (obstacle.x, obstacle.y, 0)
-                traffic_light1_coords = (7.5, 0.35)
-                traffic_light2_coords = (3, 0.35)
-                rot_matrix = [[cos(rad), sin(rad)], [-sin(rad), cos(rad)]]
+                rad_x = radians(rot[0])
+                rad_y = radians(rot[1])
+                rad_z = radians(rot[2])
+                pole_coords = (obstacle.x, obstacle.y, obstacle.z)
+                traffic_light1_coords = (5.7, 0.17, 5.9)     # x y z coordinates when pole is placed at (0,0,0)
+                traffic_light2_coords = (2.1, 0.17, 5.5)
+                rot_matrix_x = [[1, 0, 0], [0, cos(rad_x), sin(rad_x)], [0, -sin(rad_x), cos(rad_x)]]
+                rot_matrix_y = [[cos(rad_y), 0, -sin(rad_y)], [0, 1, 0], [sin(rad_y), 0, cos(rad_y)]]
+                rot_matrix_z = [[cos(rad_z), sin(rad_z), 0], [-sin(rad_z), cos(rad_z), 0], [0, 0, 1]]
+                rot_matrix = dot(rot_matrix_z, rot_matrix_y)
+                rot_matrix = dot(rot_matrix, rot_matrix_x)
                 traffic_light1_coords = dot(rot_matrix, traffic_light1_coords)
                 traffic_light1_coords = (
-                    traffic_light1_coords[0] + pole_coords[0], traffic_light1_coords[1] + pole_coords[1], 7.8)
+                    traffic_light1_coords[0] + pole_coords[0], traffic_light1_coords[1] + pole_coords[1],
+                    traffic_light1_coords[2] + pole_coords[2])
                 traffic_light2_coords = dot(rot_matrix, traffic_light2_coords)
                 traffic_light2_coords = (
-                    traffic_light2_coords[0] + pole_coords[0], traffic_light2_coords[1] + pole_coords[1], 7.3)
+                    traffic_light2_coords[0] + pole_coords[0], traffic_light2_coords[1] + pole_coords[1],
+                    traffic_light2_coords[2] + pole_coords[2])
 
-                pole2 = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(1, 1, 1),
+                pole = StaticObject(name=name_pole, pos=pole_coords, rot=rot, scale=(0.75, 0.75, 0.75),
                                      shape='/levels/drivebuild/art/objects/pole_light_signal1.dae')
-                scenario.add_object(pole2)
+                scenario.add_object(pole)
                 traffic_light1 = StaticObject(name=name_light1, pos=traffic_light1_coords, rot=rot, scale=(1, 1, 1),
                                                 shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
                 scenario.add_object(traffic_light1)
@@ -275,58 +301,62 @@ def generate_scenario(env: _ElementTree, participants_node: _Element) -> Scenari
             node.get("id", _generate_road_id()))
         roads.append(road)
 
-    def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, float, Optional[str]]:
+    def get_obstacle_common(node: _Element) -> Tuple[float, float, float, float, float, Optional[str], float]:
         """
         Returns the attributes all types of obstacles have in common.
         :param node: The obstacle node
-        :return: x, y, x_rot, y_rot, z_rot, height, id
+        :return: x, y, x_rot, y_rot, z_rot, id, z
         """
         return float(node.get("x")), float(node.get("y")), float(node.get("xRot", 0)), float(node.get("yRot", 0)), \
-               float(node.get("zRot", 0)), float(node.get("height")), node.get("id", None)
+               float(node.get("zRot", 0)), node.get("id", None), node.get("z", 0)
 
     obstacles = list()
     cube_nodes = xpath(env, "db:obstacles/db:cube")
     for node in cube_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
         width = float(node.get("width"))
         length = float(node.get("length"))
-        obstacles.append(Cube(x, y, height, width, length, oid, x_rot, y_rot, z_rot))
+        height = float(node.get("height"))
+        obstacles.append(Cube(x, y, height, width, length, oid, x_rot, y_rot, z_rot, z))
 
     cylinder_nodes = xpath(env, "db:obstacles/db:cylinder")
     for node in cylinder_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
         radius = float(node.get("radius"))
-        obstacles.append(Cylinder(x, y, height, radius, oid, x_rot, y_rot, z_rot))
+        height = float(node.get("height"))
+        obstacles.append(Cylinder(x, y, height, radius, oid, x_rot, y_rot, z_rot, z))
 
     cone_nodes = xpath(env, "db:obstacles/db:cone")
     for node in cone_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
         base_radius = float(node.get("baseRadius"))
-        obstacles.append(Cone(x, y, height, base_radius, oid, x_rot, y_rot, z_rot))
+        height = float(node.get("height"))
+        obstacles.append(Cone(x, y, height, base_radius, oid, x_rot, y_rot, z_rot, z))
 
     stopsign_nodes = xpath(env, "db:obstacles/db:stopsign")
     for node in stopsign_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
-        obstacles.append(Stopsign(x, y, height, oid, x_rot, y_rot, z_rot))
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
+        obstacles.append(Stopsign(x, y, oid, x_rot, y_rot, z_rot, z))
 
     traffic_light_single_nodes = xpath(env, "db:obstacles/db:trafficlightsingle")
     for node in traffic_light_single_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
-        obstacles.append(TrafficLightSingle(x, y, height, oid, x_rot, y_rot, z_rot))
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
+        obstacles.append(TrafficLightSingle(x, y, oid, x_rot, y_rot, z_rot, z))
 
     traffic_light_double_nodes = xpath(env, "db:obstacles/db:trafficlightdouble")
     for node in traffic_light_double_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
-        obstacles.append(TrafficLightDouble(x, y, height, oid, x_rot, y_rot, z_rot))
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
+        obstacles.append(TrafficLightDouble(x, y, oid, x_rot, y_rot, z_rot, z))
 
     bump_nodes = xpath(env, "db:obstacles/db:bump")
     for node in bump_nodes:
-        x, y, x_rot, y_rot, z_rot, height, oid = get_obstacle_common(node)
+        x, y, x_rot, y_rot, z_rot, oid, z = get_obstacle_common(node)
         length = float(node.get("length"))
         width = float(node.get("width"))
         upper_length = float(node.get("upperLength"))
         upper_width = float(node.get("upperWidth"))
-        obstacles.append(Bump(x, y, height, width, length, upper_length, upper_width, oid, x_rot, y_rot, z_rot))
+        height = float(node.get("height"))
+        obstacles.append(Bump(x, y, height, width, length, upper_length, upper_width, oid, x_rot, y_rot, z_rot, z))
 
     def _extract_common_state_vals(n: _Element) -> Tuple[MovementMode, Optional[float], Optional[float]]:
         speed_limit = n.get("speedLimit")

@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<criteria xmlns="http://drivebuild.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://drivebuild.com drivebuild.xsd">
+    <environment>trafficLightsStopSignTest.dbe.xml</environment>
+    <author>Michael Heine</author>
+    <version>1</version>
+    <participants>
+        <participant id="ego" model="ETK800">
+            <initialState x="1.0" y="0.0" orientation="0" movementMode="_BEAMNG" speed="50" />
+            <movement>
+                <waypoint x="50.0" y="0.0" tolerance="2" movementMode="_BEAMNG" />
+                <waypoint x="90.0" y="40.0" tolerance="2" movementMode="_BEAMNG" />
+            </movement>
+        </participant>
+    </participants>
+    <success>
+        <scPosition participant="ego" x="90" y="40" tolerance="2" />
+    </success>
+    <failure>
+        <or>
+            <scDamage participant="ego" />
+            <scLane participant="ego" onLane="offroad" />
+        </or>
+    </failure>
+    <name>Traffic Lights and Stop Signs Showcase</name>
+    <stepsPerSecond>60</stepsPerSecond>
+    <aiFrequency>6</aiFrequency>
+</criteria>
