@@ -51,6 +51,7 @@ class InitialState:
 class Obstacle(ABC):
     x: float
     y: float
+    # z: float = 0  # NOTE Limitation of inheritance from dataclasses
     # oid: Optional[str] = None  # NOTE Limitation of inheritance from dataclasses
     # x_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
     # y_rot: Optional[float] = 0  # NOTE Limitation of inheritance from dataclasses
