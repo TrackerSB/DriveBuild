@@ -153,7 +153,7 @@ class ScenarioBuilder:
                 mesh = ProceduralCone(pos, rot, obstacle.base_radius, obstacle.height, name=name)
             elif obstacle_type is Bump:
                 mesh = ProceduralBump(pos, rot, obstacle.width, obstacle.length, obstacle.height, obstacle.upper_length,
-                                      obstacle.upper_width)
+                                      obstacle.upper_width, name=name)
             elif obstacle_type is Stopsign:
                 rot = (rot[0], rot[1], 90 - obstacle.z_rot)
                 id_number = randrange(1000)
