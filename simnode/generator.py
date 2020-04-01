@@ -74,7 +74,6 @@ class ScenarioBuilder:
             #  sampling rate may fix this.
             road_width = unique_nodes[0].width
             if road.markings:
-                # could theoretically be removed or integrated in _calculate_parallel_coords_list()
                 def _calculate_parallel_coords(offset: float, line_width: float) \
                         -> Optional[List[Tuple[float, float, float, float]]]:
                     original_line = LineString(zip(new_x_vals, new_y_vals))
