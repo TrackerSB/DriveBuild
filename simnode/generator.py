@@ -117,9 +117,9 @@ class ScenarioBuilder:
                 def _calculate_parallel_pieces(offset: List[float], cutting_points: List[int]) \
                         -> Tuple[List[float], List[float]]:
                     """ This method will calculate offsets for smaller pieces of road.
+                    uses new_x_vals and new_y_vals as baseline road
 
                     :param offset: list of width offsets, must be smaller than num_nodes//2, should be equidistant
-                    :param original_line: LineString of baseline road coordinates
                     :param cutting_points: list of points at which the road is split into pieces
                     :return: Returns a tuple of float lists for x and y values
                     """
@@ -179,7 +179,7 @@ class ScenarioBuilder:
                     :return: Smoothed tuple of float lists for x and y values
                     """
                     assert offset_sub_lines_x.__len__() > 1 and offset_sub_lines_y.__len__() > 1, \
-                        "cannot smooth a empty line or point"
+                        "cannot smooth an empty line or a point"
 
                     point_list = list(map(lambda i: (offset_sub_lines_x[i], offset_sub_lines_y[i]),
                                           range(0, offset_sub_lines_x.__len__() - 1)))
