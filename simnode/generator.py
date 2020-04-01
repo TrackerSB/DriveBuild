@@ -21,7 +21,6 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
-    # TODO Added markings_smoothing for easier adjustment and experimenting, is this ok?
     @static_vars(line_width=0.15, num_nodes=100, smoothness=0, markings_smoothing=0.13)
     def add_roads_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
