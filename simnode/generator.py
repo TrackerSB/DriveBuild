@@ -21,7 +21,7 @@ class ScenarioBuilder:
         self.participants = participants
         self.time_of_day = time_of_day
 
-    @static_vars(line_width=0.15, num_nodes=100, smoothness=0)
+    @static_vars(line_width=0.15, num_nodes=100, smoothness=0, markings_smoothing=0.13)
     def add_roads_to_scenario(self, scenario: Scenario) -> None:
         from beamngpy import Road
         from shapely.geometry import LineString
@@ -67,7 +67,10 @@ class ScenarioBuilder:
             main_nodes = list(zip(new_x_vals, new_y_vals, z_vals, new_width_vals))
             main_road.nodes.extend(main_nodes)
             scenario.add_road(main_road)
-            # FIXME Recognize changing widths
+            # FIXME Recognize changing widths --- Basic drawing works for all the roads I have testes so far,
+            #  however strong width changes cause stair stepping, this can be countered by a smoothing parameter,
+            #  but this itself can introduce low poly lines and inaccuracies. Better post processing or a dynamic
+            #  sampling rate may fix this.
             road_width = unique_nodes[0].width
             if road.markings:
                 def _calculate_parallel_coords(offset: float, line_width: float) \
@@ -85,21 +88,146 @@ class ScenarioBuilder:
                     marking_widths = repeat(line_width, num_coords)
                     return list(zip(coords[0], coords[1], z_vals, marking_widths))
 
+                def _calculate_offset_list(relative_offset: float, absolute_offset: float,
+                                           output_number_of_points: int = self.add_roads_to_scenario.num_nodes // 3) \
+                        -> List[float]:
+                    """ calculates a list of relative offsets to the road centre
+                    uses new_width_vals for dynamic offset
+                    change the default value of output_number_of_points for more precision, has to be less \
+                    than num_nodes//2
+
+                    :param relative_offset: relative to the width of the road, must be between -0.5 and 0.5
+                    :param absolute_offset: absolute, to account for line width
+                    :param output_number_of_points: number of outputs in list
+                    :return: list of width offsets
+                    """
+                    assert 0 < output_number_of_points < new_width_vals.__len__() // 2, \
+                        "choose a valid number of output vals"
+                    assert -0.5 <= relative_offset <= 0.5, "relative offset must be between -0.5 and 0.5"
+                    assert -max(new_width_vals) / 2 < absolute_offset < max(new_width_vals) / 2, \
+                        "absolute offset must be smaller than half of the road"
+
+                    cutting_points = linspace(0, new_width_vals.__len__() - 1, dtype=int, num=output_number_of_points)
+                    output_vals = list(
+                        map(lambda i: new_width_vals[i] * relative_offset + absolute_offset, cutting_points))
+                    return output_vals
+
+                def _calculate_parallel_pieces(offset: List[float], cutting_points: List[int]) \
+                        -> Tuple[List[float], List[float]]:
+                    """ This method will calculate offsets for smaller pieces of road.
+                    uses new_x_vals and new_y_vals as baseline road
+
+                    :param offset: list of width offsets, must be smaller than num_nodes//2, should be equidistant
+                    :param cutting_points: list of points at which the road is split into pieces
+                    :return: Returns a tuple of float lists for x and y values
+                    """
+                    assert cutting_points.__len__() < self.add_roads_to_scenario.num_nodes // 2, \
+                        "too many cutting points"
+                    assert new_x_vals.__len__() > 1 and new_y_vals.__len__() > 1 and new_width_vals.__len__() > 1, \
+                        "cannot work with an empty road or a point"
+
+                    original_line = LineString(zip(new_x_vals, new_y_vals))
+
+                    i = 0
+                    previous_p = 0
+                    offset_sub_lines_x = []
+                    offset_sub_lines_y = []
+                    for p in cutting_points:
+                        if p > previous_p:
+                            new_x_piece, new_y_piece = _road_piece(offset[i], original_line,
+                                                                   first_cutting_point=previous_p,
+                                                                   second_cutting_point=p)
+                            offset_sub_lines_x.extend(new_x_piece)
+                            offset_sub_lines_y.extend(new_y_piece)
+                        previous_p = p
+                        i += 1
+                    return offset_sub_lines_x, offset_sub_lines_y
+
+                def _road_piece(offset: float, original_line: LineString, first_cutting_point: int,
+                                second_cutting_point: int) \
+                        -> Tuple[List[float], List[float]]:
+                    """ helper method for _calculate_parallel_pieces, calculates each road piece for a certain offset
+
+                    :param offset: absolute offset of the piece
+                    :param original_line: LineString of baseline road coordinates
+                    :param first_cutting_point: first point to split
+                    :param second_cutting_point: second point to split
+                    :return: returns a tuple of float lists for x and y values
+                    """
+                    from shapely.errors import TopologicalError
+                    try:
+                        piece_coords = original_line.coords[first_cutting_point: second_cutting_point]
+                        road_lnstr = LineString(piece_coords).parallel_offset(offset)
+                        offset_sub_lines = road_lnstr.coords.xy
+                        # shapely reverses if the offset is positive
+                        if offset > 0:
+                            offset_sub_lines[0].reverse()
+                            offset_sub_lines[1].reverse()
+                        return offset_sub_lines
+                    except ValueError:
+                        _logger.exception("Some portions of the LineString are empty")
+                    except TopologicalError:
+                        _logger.exception("Shapely cannot create a valid polygon")
+
+                def _smoothen_line(offset_sub_lines_x: List[float], offset_sub_lines_y: List[float]) \
+                        -> Tuple[List[float], List[float]]:
+                    """ Smoothens a line by the usage of LineString.simplify() and reduces stair stepping
+
+                    :param offset_sub_lines: Tuple of float lists for x and y values
+                    :return: Smoothed tuple of float lists for x and y values
+                    """
+                    assert offset_sub_lines_x.__len__() > 1 and offset_sub_lines_y.__len__() > 1, \
+                        "cannot smooth an empty line or a point"
+
+                    point_list = list(map(lambda i: (offset_sub_lines_x[i], offset_sub_lines_y[i]),
+                                          range(0, offset_sub_lines_x.__len__() - 1)))
+                    lstr = LineString(point_list)
+                    lstr = lstr.simplify(tolerance=self.add_roads_to_scenario.markings_smoothing)
+                    return lstr.coords.xy
+
+                def _calculate_parallel_coords_list(offset: List[float], line_width: float) \
+                        -> Optional[List[Tuple[float, float, float, float]]]:
+                    """ calculates parallel coordinates of a road
+
+                    :param offset: list of offsets, must be smaller than num_nodes//2, should be equidistant
+                    :param line_width: specifies the width of the output coordinates
+                    :return: coordinates for the road
+                    """
+
+                    assert offset.__len__() < self.add_roads_to_scenario.num_nodes // 2, \
+                        "there have to be less than half offset points of num_node for shapely LineStrings to work"
+
+                    num_points = self.add_roads_to_scenario.num_nodes
+                    # cutting points for LineString
+                    cutting_points = linspace(0, num_points - 1, dtype=int,
+                                              num=min(num_points, offset.__len__())).tolist()
+                    # extend the last point just a bit to get all nodes
+                    cutting_points[-1] = cutting_points[-1] + cutting_points[-1] - cutting_points[-2]
+
+                    offset_sub_lines_x, offset_sub_lines_y = _calculate_parallel_pieces(offset, cutting_points)
+                    coords = _smoothen_line(offset_sub_lines_x, offset_sub_lines_y)
+                    # NOTE The parallel LineString may have a different number of points than initially given
+                    num_coords = len(coords[0])
+                    z_vals = repeat(0.01, num_coords)
+                    marking_widths = repeat(line_width, num_coords)
+                    return list(zip(coords[0], coords[1], z_vals, marking_widths))
+
                 # Draw side lines
-                num_lines = road.left_lanes + road.right_lanes + 1
-                initial_line_offsets = [d - (road_width / 2) for d in linspace(0, road_width, num=num_lines)]
                 side_line_offset = 1.5 * self.add_roads_to_scenario.line_width
                 left_side_line = Road('line_white', rid=road.rid + "_left_line")
-                left_side_line_nodes = _calculate_parallel_coords(
-                    initial_line_offsets[0] + side_line_offset, self.add_roads_to_scenario.line_width)
+                offset_list_line_left = _calculate_offset_list(relative_offset=-0.5,
+                                                               absolute_offset=side_line_offset * 1.5)
+                left_side_line_nodes = _calculate_parallel_coords_list(offset_list_line_left,
+                                                                       self.add_roads_to_scenario.line_width)
                 if left_side_line_nodes:
                     left_side_line.nodes.extend(left_side_line_nodes)
                     scenario.add_road(left_side_line)
                 else:
                     _logger.warning("Could not create left side line")
                 right_side_line = Road('line_white', rid=road.rid + "_right_line")
-                right_side_line_nodes = _calculate_parallel_coords(
-                    initial_line_offsets[-1] - side_line_offset, self.add_roads_to_scenario.line_width)
+                offset_list_line_right = _calculate_offset_list(relative_offset=.5, absolute_offset=-side_line_offset)
+                right_side_line_nodes = _calculate_parallel_coords_list(offset_list_line_right,
+                                                                        self.add_roads_to_scenario.line_width)
                 if right_side_line_nodes:
                     right_side_line.nodes.extend(right_side_line_nodes)
                     scenario.add_road(right_side_line)
@@ -108,10 +236,13 @@ class ScenarioBuilder:
 
                 # Draw line separating left from right lanes
                 if road.left_lanes > 0 and road.right_lanes > 0:
-                    offset = initial_line_offsets[road.left_lanes]
+                    divider_rel_off = -0.5 + road.left_lanes / (road.left_lanes + road.right_lanes)
+                    offset_list_divider = _calculate_offset_list(relative_offset=divider_rel_off,
+                                                                 absolute_offset=-side_line_offset)
                     left_right_divider = Road("line_yellow_double", rid=road.rid + "_left_right_divider")
                     left_right_divider_nodes \
-                        = _calculate_parallel_coords(offset, 2 * self.add_roads_to_scenario.line_width)
+                        = _calculate_parallel_coords_list(offset_list_divider,
+                                                          2 * self.add_roads_to_scenario.line_width)
                     if left_right_divider_nodes:
                         left_right_divider.nodes.extend(left_right_divider_nodes)
                         scenario.add_road(left_right_divider)
@@ -119,16 +250,21 @@ class ScenarioBuilder:
                         _logger.warning("Could not create line separating lanes having different directions")
 
                 # Draw lines separating left and right lanes from each other
-                offset_indices = []
-                if road.left_lanes > 1:
-                    offset_indices.extend(range(1, road.left_lanes))
-                if road.right_lanes > 1:
-                    offset_indices.extend(range(road.left_lanes + 1, len(initial_line_offsets) - 1))
-                for index in offset_indices:
-                    offset = initial_line_offsets[index]
-                    lane_separation_line = Road('line_dashed_short', rid=road.rid + "_separator_" + str(index))
+                total_num_lane_markings = road.left_lanes + road.right_lanes
+                offsets_dashed = linspace(-0.5, 0.5, num=total_num_lane_markings, endpoint=False).tolist()
+                offsets_dashed = offsets_dashed[1:len(offsets_dashed)]
+                # do not draw dashed line over divider line
+                if road.left_lanes > 0 and road.right_lanes > 0:
+                    offsets_dashed.remove(offsets_dashed[road.left_lanes - 1])
+                # add each separating line
+                for offs in offsets_dashed:
+                    # '.' have to be removed from the name, else there are prefab parsing errors for positive offsets
+                    lane_separation_line = Road('line_dashed_short',
+                                                rid=road.rid + "_separator_" + str(offs).replace('.', ''))
+                    offs_list = _calculate_offset_list(offs, 0)
                     lane_separation_line_nodes \
-                        = _calculate_parallel_coords(offset, self.add_roads_to_scenario.line_width)
+                        = _calculate_parallel_coords_list(offs_list, self.add_roads_to_scenario.line_width)
+
                     if lane_separation_line_nodes:
                         lane_separation_line.nodes.extend(lane_separation_line_nodes)
                         scenario.add_road(lane_separation_line)
@@ -221,10 +357,10 @@ class ScenarioBuilder:
                                      shape='/levels/drivebuild/art/objects/pole_light_signal1.dae')
                 scenario.add_object(pole)
                 traffic_light1 = StaticObject(name=name_light1, pos=traffic_light1_coords, rot=rot, scale=(1, 1, 1),
-                                                shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
+                                              shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
                 scenario.add_object(traffic_light1)
                 traffic_lights2 = StaticObject(name=name_light2, pos=traffic_light2_coords, rot=rot, scale=(1, 1, 1),
-                                                 shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
+                                               shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
                 scenario.add_object(traffic_lights2)
             else:
                 _logger.warning(
