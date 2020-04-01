@@ -7,11 +7,6 @@ from lxml.etree import _ElementTree, _Element
 
 _logger = getLogger("DriveBuild.SimNode.Generator")
 
-# TODO only needed for parameter types, does this make sense? Or should i convert array to list --> unneccessary
-#  performance decrease
-from array import array
-from numpy import ndarray
-
 
 class ScenarioBuilder:
     from beamngpy import Scenario
@@ -96,8 +91,8 @@ class ScenarioBuilder:
                     return list(zip(coords[0], coords[1], z_vals, marking_widths))
 
                 def _calculate_offset_list(relative_offset: float, absolute_offset: float,
-                                           output_number_of_points: int = self.add_roads_to_scenario.num_nodes//3) \
-                                            -> List[float]:
+                                           output_number_of_points: int = self.add_roads_to_scenario.num_nodes // 3) \
+                        -> List[float]:
                     """ calculates a list of relative offsets to the road centre
                     uses new_width_vals for dynamic offset
                     change the default value of output_number_of_points for more precision, has to be less \
@@ -108,17 +103,19 @@ class ScenarioBuilder:
                     :param output_number_of_points: number of outputs in list
                     :return: list of width offsets
                     """
-                    assert 0 < output_number_of_points < new_width_vals.__len__()//2, \
+                    assert 0 < output_number_of_points < new_width_vals.__len__() // 2, \
                         "choose a valid number of output vals"
                     assert -0.5 <= relative_offset <= 0.5, "relative offset must be between -0.5 and 0.5"
-                    assert -max(new_width_vals)/2 < absolute_offset < max(new_width_vals)/2, \
+                    assert -max(new_width_vals) / 2 < absolute_offset < max(new_width_vals) / 2, \
                         "absolute offset must be smaller than half of the road"
-                    cutting_points = linspace(0, new_width_vals.__len__()-1, dtype=int, num=output_number_of_points)
-                    output_vals = list(map(lambda i: new_width_vals[i]*relative_offset + absolute_offset, cutting_points))
+
+                    cutting_points = linspace(0, new_width_vals.__len__() - 1, dtype=int, num=output_number_of_points)
+                    output_vals = list(
+                        map(lambda i: new_width_vals[i] * relative_offset + absolute_offset, cutting_points))
                     return output_vals
 
-                def _calculate_parallel_pieces(offset: List[float], original_line: LineString,
-                                               cutting_points: List[int]) -> Tuple[List[float], List[float]]:
+                def _calculate_parallel_pieces(offset: List[float], cutting_points: List[int]) \
+                        -> Tuple[List[float], List[float]]:
                     """ This method will calculate offsets for smaller pieces of road.
 
                     :param offset: list of width offsets, must be smaller than num_nodes//2, should be equidistant
@@ -126,41 +123,46 @@ class ScenarioBuilder:
                     :param cutting_points: list of points at which the road is split into pieces
                     :return: Returns a tuple of float lists for x and y values
                     """
-                    from shapely.errors import TopologicalError
+                    assert cutting_points.__len__() < self.add_roads_to_scenario.num_nodes // 2, \
+                        "too many cutting points"
+                    assert new_x_vals.__len__() > 1 and new_y_vals.__len__() > 1 and new_width_vals.__len__() > 1, \
+                        "cannot work with an empty road or a point"
 
-                    assert not original_line.is_empty, "Original line has to contain a road"
-                    assert cutting_points.__len__() < self.add_roads_to_scenario.num_nodes//2, "too many cutting points"
+                    original_line = LineString(zip(new_x_vals, new_y_vals))
 
-                    cutting_points.remove(0)
-                    offset_sub_lines = _initial_piece(first_offset=offset[0], original_line=original_line,
-                                                      first_cutting_point=cutting_points[0])
-                    offset_sub_lines_x = offset_sub_lines[0].tolist()
-                    offset_sub_lines_y = offset_sub_lines[1].tolist()
-                    previous_p = cutting_points[0]
-                    cutting_points.pop(0)
+                    i = 0
+                    previous_p = 0
+                    offset_sub_lines_x = []
+                    offset_sub_lines_y = []
+                    for p in cutting_points:
+                        if p > previous_p:
+                            new_x_piece, new_y_piece = _road_piece(offset[i], original_line,
+                                                                   first_cutting_point=previous_p,
+                                                                   second_cutting_point=p)
+                            offset_sub_lines_x.extend(new_x_piece)
+                            offset_sub_lines_y.extend(new_y_piece)
+                        previous_p = p
+                        i += 1
+                    return offset_sub_lines_x, offset_sub_lines_y
 
-                    # attempt to shorten the method, i don't think this makes sense
-                    return _further_parallel_pieces(offset=offset, original_line=original_line,
-                                                    cutting_points=cutting_points, previous_p=previous_p,
-                                                    offset_sub_lines_x=offset_sub_lines_x,
-                                                    offset_sub_lines_y=offset_sub_lines_y)
-
-                def _initial_piece(first_offset: float, original_line: LineString, first_cutting_point: int)\
+                def _road_piece(offset: float, original_line: LineString, first_cutting_point: int,
+                                second_cutting_point: int) \
                         -> Tuple[List[float], List[float]]:
-                    """ helper method for _calculate_parallel_pieces, calculates the first piece
+                    """ helper method for _calculate_parallel_pieces, calculates each road piece for a certain offset
 
-                    :param first_offset: offset of first piece
+                    :param offset: absolute offset of the piece
                     :param original_line: LineString of baseline road coordinates
                     :param first_cutting_point: first point to split
+                    :param second_cutting_point: second point to split
                     :return: returns a tuple of float lists for x and y values
                     """
                     from shapely.errors import TopologicalError
                     try:
-                        piece_coords = original_line.coords[0: first_cutting_point]
-                        road_lnstr = LineString(piece_coords).parallel_offset(first_offset)
+                        piece_coords = original_line.coords[first_cutting_point: second_cutting_point]
+                        road_lnstr = LineString(piece_coords).parallel_offset(offset)
                         offset_sub_lines = road_lnstr.coords.xy
                         # shapely reverses if the offset is positive
-                        if first_offset > 0:
+                        if offset > 0:
                             offset_sub_lines[0].reverse()
                             offset_sub_lines[1].reverse()
                         return offset_sub_lines
@@ -169,44 +171,6 @@ class ScenarioBuilder:
                     except TopologicalError:
                         _logger.exception("Shapely cannot create a valid polygon")
 
-                def _further_parallel_pieces(offset: List[float], original_line: LineString, cutting_points: List[int],
-                                             previous_p: int, offset_sub_lines_x: List[float],
-                                             offset_sub_lines_y: List[float]) -> Tuple[List[float], List[float]]:
-                    """ helper method for _calculate_parallel_pieces, calculates all pieces except the first
-
-                    ::param offset: list of width offsets, must be smaller than num_nodes//2, should be equidistant
-                    :param original_line: LineString of baseline road coordinates
-                    :param cutting_points: list of points at which the road is split into pieces
-                    :param previous_p: the index where to start cutting
-                    :param offset_sub_lines_x: list of x values
-                    :param offset_sub_lines_y: list of y values
-                    :return: returns a tuple of float lists for x and y values
-                    """
-                    from shapely.errors import TopologicalError
-                    i = 1
-                    for p in cutting_points:
-                        if p > 0:
-                            try:
-                                piece_coords = original_line.coords[previous_p: p]
-                                if piece_coords.__len__() > 1:
-                                    road_lnstr = LineString(piece_coords).parallel_offset(offset[i])
-                                    line_str_x = (road_lnstr.coords.xy)[0]
-                                    line_str_y = (road_lnstr.coords.xy)[1]
-                                    # shapely reverses if the offset is positive
-                                    if offset[i] > 0:
-                                        line_str_x.reverse()
-                                        line_str_y.reverse()
-                                    offset_sub_lines_x.extend(line_str_x)
-                                    offset_sub_lines_y.extend(line_str_y)
-                            # Does the program continue if there is no return None?
-                            except ValueError:
-                                _logger.exception("Some portions of the LineString are empty")
-                            except TopologicalError:
-                                _logger.exception("Shapely cannot create a valid polygon")
-                        previous_p = p
-                        i += 1
-                    return offset_sub_lines_x, offset_sub_lines_y
-
                 def _smoothen_line(offset_sub_lines_x: List[float], offset_sub_lines_y: List[float]) \
                         -> Tuple[List[float], List[float]]:
                     """ Smoothens a line by the usage of LineString.simplify() and reduces stair stepping
@@ -214,6 +178,9 @@ class ScenarioBuilder:
                     :param offset_sub_lines: Tuple of float lists for x and y values
                     :return: Smoothed tuple of float lists for x and y values
                     """
+                    assert offset_sub_lines_x.__len__() > 1 and offset_sub_lines_y.__len__() > 1, \
+                        "cannot smooth a empty line or point"
+
                     point_list = list(map(lambda i: (offset_sub_lines_x[i], offset_sub_lines_y[i]),
                                           range(0, offset_sub_lines_x.__len__() - 1)))
                     lstr = LineString(point_list)
@@ -229,23 +196,18 @@ class ScenarioBuilder:
                     :return: coordinates for the road
                     """
 
-                    assert offset.__len__() < self.add_roads_to_scenario.num_nodes//2, \
+                    assert offset.__len__() < self.add_roads_to_scenario.num_nodes // 2, \
                         "there have to be less than half offset points of num_node for shapely LineStrings to work"
 
-                    original_line = LineString(zip(new_x_vals, new_y_vals))
                     num_points = self.add_roads_to_scenario.num_nodes
-                    cutting_points = linspace(0, num_points-1, dtype=int, num=min(num_points, offset.__len__())).tolist()
+                    # cutting points for LineString
+                    cutting_points = linspace(0, num_points - 1, dtype=int,
+                                              num=min(num_points, offset.__len__())).tolist()
                     # extend the last point just a bit to get all nodes
-                    cutting_points[-1] = cutting_points[-1] + cutting_points [-1] - cutting_points[-2]
+                    cutting_points[-1] = cutting_points[-1] + cutting_points[-1] - cutting_points[-2]
 
-                    print("cutting_points to list: ", cutting_points)
-                    print("type(cutting_points): ", type(cutting_points))
-
-                    offset_sub_lines_x, offset_sub_lines_y = _calculate_parallel_pieces(offset, original_line,
-                                                                                        cutting_points)
-
-                    if offset_sub_lines_x.__len__() > 1:
-                        coords = _smoothen_line(offset_sub_lines_x, offset_sub_lines_y)
+                    offset_sub_lines_x, offset_sub_lines_y = _calculate_parallel_pieces(offset, cutting_points)
+                    coords = _smoothen_line(offset_sub_lines_x, offset_sub_lines_y)
                     # NOTE The parallel LineString may have a different number of points than initially given
                     num_coords = len(coords[0])
                     z_vals = repeat(0.01, num_coords)
@@ -253,14 +215,12 @@ class ScenarioBuilder:
                     return list(zip(coords[0], coords[1], z_vals, marking_widths))
 
                 # Draw side lines
-                num_lines = road.left_lanes + road.right_lanes + 1
-                initial_line_offsets = [d - (road_width / 2) for d in linspace(0, road_width, num=num_lines)]
                 side_line_offset = 1.5 * self.add_roads_to_scenario.line_width
                 left_side_line = Road('line_white', rid=road.rid + "_left_line")
                 offset_list_line_left = _calculate_offset_list(relative_offset=-0.5,
-                                                                absolute_offset=side_line_offset*1.5)
+                                                               absolute_offset=side_line_offset * 1.5)
                 left_side_line_nodes = _calculate_parallel_coords_list(offset_list_line_left,
-                                                                        self.add_roads_to_scenario.line_width)
+                                                                       self.add_roads_to_scenario.line_width)
                 if left_side_line_nodes:
                     left_side_line.nodes.extend(left_side_line_nodes)
                     scenario.add_road(left_side_line)
@@ -278,12 +238,13 @@ class ScenarioBuilder:
 
                 # Draw line separating left from right lanes
                 if road.left_lanes > 0 and road.right_lanes > 0:
-                    divider_rel_off = -0.5 + road.left_lanes/(road.left_lanes+road.right_lanes)
+                    divider_rel_off = -0.5 + road.left_lanes / (road.left_lanes + road.right_lanes)
                     offset_list_divider = _calculate_offset_list(relative_offset=divider_rel_off,
                                                                  absolute_offset=-side_line_offset)
                     left_right_divider = Road("line_yellow_double", rid=road.rid + "_left_right_divider")
                     left_right_divider_nodes \
-                        = _calculate_parallel_coords_list(offset_list_divider, 2 * self.add_roads_to_scenario.line_width)
+                        = _calculate_parallel_coords_list(offset_list_divider,
+                                                          2 * self.add_roads_to_scenario.line_width)
                     if left_right_divider_nodes:
                         left_right_divider.nodes.extend(left_right_divider_nodes)
                         scenario.add_road(left_right_divider)
@@ -292,14 +253,13 @@ class ScenarioBuilder:
 
                 # Draw lines separating left and right lanes from each other
                 total_num_lane_markings = road.left_lanes + road.right_lanes
-                offsets_dashed = linspace(-0.5, 0.5, num=total_num_lane_markings, endpoint=False)
-                offsets_dashed = offsets_dashed[1:len(offsets_dashed)]  # why does 1:-1 not work?
+                offsets_dashed = linspace(-0.5, 0.5, num=total_num_lane_markings, endpoint=False).tolist()
+                offsets_dashed = offsets_dashed[1:len(offsets_dashed)]
+                # do not draw dashed line over divider line
+                if road.left_lanes > 0 and road.right_lanes > 0:
+                    offsets_dashed.remove(offsets_dashed[road.left_lanes - 1])
+                # add each separating line
                 for offs in offsets_dashed:
-                    # do not draw dashed line over divider line
-                    if (road.left_lanes > 1 and road.right_lanes > 0) or (road.left_lanes > 0 and road.right_lanes > 1):
-                        if offsets_dashed[road.left_lanes - 1] + 0.01 > offs > offsets_dashed[road.left_lanes - 1] - 0.01:
-                            continue
-
                     # '.' have to be removed from the name, else there are prefab parsing errors for positive offsets
                     lane_separation_line = Road('line_dashed_short',
                                                 rid=road.rid + "_separator_" + str(offs).replace('.', ''))
@@ -373,10 +333,10 @@ class ScenarioBuilder:
                                      shape='/levels/drivebuild/art/objects/pole_light_signal1.dae')
                 scenario.add_object(pole2)
                 traffic_light1 = StaticObject(name=name_light1, pos=traffic_light1_coords, rot=rot, scale=(1, 1, 1),
-                                                shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
+                                              shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
                 scenario.add_object(traffic_light1)
                 traffic_lights2 = StaticObject(name=name_light2, pos=traffic_light2_coords, rot=rot, scale=(1, 1, 1),
-                                                 shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
+                                               shape='/levels/drivebuild/art/objects/trafficlight2a.dae')
                 scenario.add_object(traffic_lights2)
             else:
                 _logger.warning(
