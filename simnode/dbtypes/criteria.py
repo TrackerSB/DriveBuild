@@ -198,23 +198,18 @@ class SCLane(StateCondition):
             return Polygon(shell=points)
 
         if bbox:
-            if self.lane == "offroad":
-                is_offroad = KPValue.TRUE
-                for road in self.scenario.roads:
-                    if road.rid:
-                        edges = self.scenario.bng.get_road_edges(road.rid)
-                        polygon = _to_polygon(edges)
-                        if polygon.intersects(bbox):
-                            is_offroad = KPValue.FALSE
-                            break
-                    else:
-                        _logger.warning("SCLane can not consider roads without ID.")
-                return is_offroad
-            else:
-                for road in self.scenario.roads:
+            check_offroad = self.lane == "offroad"
+            for road in self.scenario.roads:
+                if road.rid and self.lane in ["offroad", road.rid]:
                     edges = self.scenario.bng.get_road_edges(road.rid)
                     polygon = _to_polygon(edges)
-                    return KPValue.TRUE if polygon.intersects(bbox) else KPValue.FALSE
+                    if polygon.intersects(bbox):
+                        condition_fulfilled = not check_offroad
+                        break
+            else:
+                condition_fulfilled = check_offroad
+            assert condition_fulfilled is not None, "SCLane has an execution path which did not validate the condition"
+            return condition_fulfilled
         else:
             return KPValue.UNKNOWN
 
