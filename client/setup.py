@@ -6,7 +6,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.md"), "r") as fh:
 
 setuptools.setup(
     name="drivebuild-client",
-    version="0.40",
+    version="0.41",
     author="Stefan Huber",
     author_email="huberst@fim.uni-passau.de",
     description="A client for accessing a DriveBuild MainApp.",
