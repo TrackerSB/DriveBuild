@@ -68,9 +68,8 @@ if __name__ == "__main__":
 
     # Actions to be requested by the SimNode itself (not a simulation)
     def _generate_sid() -> SimulationID:
-        sid_cursor = _DB_CONNECTION.run_query("""
-        INSERT INTO tests VALUES (DEFAULT, NULL, NULL, NULL, NULL, NULL, NULL, NULL) RETURNING sid;
-        """)
+        sid_cursor = _DB_CONNECTION.run_query(
+            "INSERT INTO tests VALUES (DEFAULT, NULL, NULL, NULL, NULL, NULL, NULL, NULL) RETURNING sid;")
         if sid_cursor:
             result = sid_cursor.fetchall()
             sid = SimulationID()
