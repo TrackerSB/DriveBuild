@@ -57,7 +57,7 @@ class BoundingBoxRequest(AiRequest):
         from shapely.geometry import Polygon
         bbox_points = vehicle.get_bbox()
         shell = tuple(map(lambda pos: bbox_points[pos][0:2],
-                          ["near_bottom_left", "far_bottom_left", "far_bottom_right", "near_bottom_right"]))
+                          ["rear_bottom_left", "front_bottom_left", "front_bottom_right", "rear_bottom_right"]))
         return Polygon(shell=shell)
 
 
