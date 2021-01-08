@@ -14,9 +14,11 @@ class DBConnection:
         self._user = user
         self._password = password
 
-    def run_query(self, query: str, args: Dict[str, Any] = {}) -> Optional[Any]:
+    def run_query(self, query: str, args=None) -> Optional[Any]:
         from pg8000 import connect
         import pg8000
+        if args is None:
+            args = {}
         pg8000.paramstyle = "named"
         try:
             with connect(host=self._host, port=self._port, database=self._db_name, user=self._user,
