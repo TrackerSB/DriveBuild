@@ -15,6 +15,6 @@ FIRST_SIM_PORT = 40000
 TIMEOUT = 600  # In seconds
 
 # BeamNG
-BEAMNG_INSTALL_FOLDER = "G:\\gitrepos\\beamng-research_unlimited\\trunk"
-BEAMNG_USER_PATH = "G:\\gitrepos\\BeamNG_user_path"
+BEAMNG_INSTALL_FOLDER = "E:\\gitrepos\\beamng-research_unlimited\\trunk"
+BEAMNG_USER_PATH = "E:\\gitrepos\\BeamNG_user_path"
 BEAMNG_LEVEL_NAME = "drivebuild"
