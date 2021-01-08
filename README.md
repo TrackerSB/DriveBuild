@@ -25,7 +25,7 @@ DriveBuild uses PostgreSQL.
 1. Create a database (`CREATE DATABASE drivebuild;`)
 1. Create a database user and grant access (`CREATE USER drivebuild WITH LOGIN SUPERUSER CREATEDB CREATEROLE INHERIT NOREPLICATION CONNECTION LIMIT -1 PASSWORD 'password';`)
 1. Connect to the database (`\c drivebuild`)
-1. Apply database scheme (`\i absolute/path/to/tableScheme.sql`)
+1. Apply database scheme (`\i absolute/path/to/tableScheme.sql`) NOTE: The path is required to have slashes in its path even though being on Windows
 1. Create DriveBuild user (`INSERT INTO users VALUES ('test', 'test');`)
 
 ## Install
